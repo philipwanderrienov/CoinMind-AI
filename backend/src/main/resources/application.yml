@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: coinmind-backend
+
+server:
+  port: ${BACKEND_PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+coinmind:
+  market:
+    binance-websocket-base-url: ${BINANCE_WS_URL:wss://stream.binance.com:9443}
+    symbols:
+      - BTCUSDT
+      - ETHUSDT
+      - SOLUSDT

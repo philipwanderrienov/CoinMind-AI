@@ -1,0 +1,33 @@
+# Environment
+.env
+*.env.local
+
+# Java
+backend/target/
+*.class
+*.jar
+*.war
+.idea/
+*.iml
+
+# Angular / Node
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+data/
+redis-data/
+postgres-data/

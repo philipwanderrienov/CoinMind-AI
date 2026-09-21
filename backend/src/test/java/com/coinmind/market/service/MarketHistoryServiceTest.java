@@ -18,7 +18,7 @@ class MarketHistoryServiceTest {
         Candlestick newer = candle("2026-09-21T00:01:00Z", "82100");
         Candlestick older = candle("2026-09-21T00:00:00Z", "82000");
 
-        service.replace("BTCUSDT", "1m", List.of(newer, older));
+        service.mergeBootstrap("BTCUSDT", "1m", List.of(newer, older));
 
         assertThat(service.get("BTCUSDT", "1m", 500))
                 .extracting(Candlestick::close)
@@ -30,7 +30,7 @@ class MarketHistoryServiceTest {
         Candlestick initial = candle("2026-09-21T00:00:00Z", "82000");
         Candlestick updated = candle("2026-09-21T00:00:00Z", "82200");
 
-        service.replace("BTCUSDT", "1m", List.of(initial));
+        service.mergeBootstrap("BTCUSDT", "1m", List.of(initial));
         service.upsert(updated);
 
         assertThat(service.get("BTCUSDT", "1m", 500))

@@ -580,3 +580,50 @@ h1 span {
   font-size: 15px;
   color: #b9afff;
 }
+
+
+.ai-context-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin: 0 0 18px;
+}
+
+.ai-context-grid > div {
+  padding: 10px;
+  border: 1px solid rgba(125, 99, 255, .18);
+  border-radius: 10px;
+  background: rgba(125, 99, 255, .035);
+}
+
+.ai-context-grid span,
+.provider-status span {
+  display: block;
+  color: var(--muted);
+  font-size: 9px;
+  margin-bottom: 4px;
+}
+
+.ai-context-grid strong {
+  font-size: 15px;
+  color: #c6bbff;
+}
+
+.provider-status {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.provider-status span {
+  margin: 0;
+}
+
+.provider-status strong {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--muted);
+}

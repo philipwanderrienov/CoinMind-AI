@@ -20,6 +20,16 @@ export class MarketApiService {
     return this.http.get<Candlestick>(`${this.baseUrl}/candles/${symbol}/${interval}`);
   }
 
+  getHistoricalCandles(
+    symbol: string,
+    interval: string,
+    limit = 500
+  ): Observable<Candlestick[]> {
+    return this.http.get<Candlestick[]>(
+      `${this.baseUrl}/history/${symbol}/${interval}?limit=${limit}`
+    );
+  }
+
   tickerStream(): Observable<TickerSnapshot> {
     return this.eventSource<TickerSnapshot>(`${this.baseUrl}/tickers/stream`);
   }

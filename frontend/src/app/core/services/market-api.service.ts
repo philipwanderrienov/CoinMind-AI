@@ -5,6 +5,7 @@ import {
   Candlestick,
   MarketMicrostructure,
   OrderBookSnapshot,
+  TechnicalIndicators,
   TickerSnapshot
 } from '../models/market.models';
 
@@ -32,6 +33,12 @@ export class MarketApiService {
   ): Observable<Candlestick[]> {
     return this.http.get<Candlestick[]>(
       `${this.baseUrl}/history/${symbol}/${interval}?limit=${limit}`
+    );
+  }
+
+  getIndicators(symbol: string, interval: string): Observable<TechnicalIndicators> {
+    return this.http.get<TechnicalIndicators>(
+      `/api/v1/indicators/${symbol}/${interval}`
     );
   }
 

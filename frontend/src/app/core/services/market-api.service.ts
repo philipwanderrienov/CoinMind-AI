@@ -1,7 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Candlestick, TickerSnapshot } from '../models/market.models';
+import {
+  Candlestick,
+  MarketMicrostructure,
+  OrderBookSnapshot,
+  TickerSnapshot
+} from '../models/market.models';
 
 @Injectable({ providedIn: 'root' })
 export class MarketApiService {
@@ -27,6 +32,24 @@ export class MarketApiService {
   ): Observable<Candlestick[]> {
     return this.http.get<Candlestick[]>(
       `${this.baseUrl}/history/${symbol}/${interval}?limit=${limit}`
+    );
+  }
+
+  getOrderBook(symbol: string): Observable<OrderBookSnapshot> {
+    return this.http.get<OrderBookSnapshot>(
+      `${this.baseUrl}/microstructure/order-books/${symbol}`
+    );
+  }
+
+  getMicrostructure(symbol: string): Observable<MarketMicrostructure> {
+    return this.http.get<MarketMicrostructure>(
+      `${this.baseUrl}/microstructure/${symbol}/summary`
+    );
+  }
+
+  orderBookStream(): Observable<OrderBookSnapshot> {
+    return this.eventSource<OrderBookSnapshot>(
+      `${this.baseUrl}/microstructure/order-books/stream`
     );
   }
 

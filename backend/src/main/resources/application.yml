@@ -1,6 +1,10 @@
 spring:
   application:
     name: coinmind-backend
+  r2dbc:
+    url: ${DATABASE_URL:r2dbc:postgresql://localhost:5432/coinmind}
+    username: ${POSTGRES_USER:coinmind}
+    password: ${POSTGRES_PASSWORD:change_me}
 
 server:
   port: ${BACKEND_PORT:8080}
@@ -12,6 +16,8 @@ management:
         include: health,info
 
 coinmind:
+  persistence:
+    enabled: ${PERSISTENCE_ENABLED:false}
   market:
     binance-websocket-base-url: ${BINANCE_WS_URL:wss://stream.binance.com:9443}
     binance-rest-base-url: ${BINANCE_REST_URL:https://api.binance.com}

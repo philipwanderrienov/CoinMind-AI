@@ -26,3 +26,26 @@ export interface Candlestick {
 }
 
 export type ConnectionState = 'connecting' | 'live' | 'offline';
+
+
+export interface OrderBookSnapshot {
+  symbol: string;
+  bestBidPrice: number;
+  bestBidQuantity: number;
+  bestAskPrice: number;
+  bestAskQuantity: number;
+  spread: number;
+  midPrice: number;
+  eventTime: string;
+}
+
+export interface MarketMicrostructure {
+  symbol: string;
+  spread: number;
+  spreadBps: number;
+  midPrice: number;
+  buyVolume: number;
+  sellVolume: number;
+  buySellRatio: number;
+  updatedAt: string;
+}

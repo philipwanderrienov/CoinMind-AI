@@ -2,10 +2,12 @@ package com.coinmind.market.exchange;
 
 import com.coinmind.config.MarketProperties;
 import com.coinmind.market.model.Candlestick;
+import com.coinmind.market.persistence.CandlestickPersistenceService;
 import com.coinmind.market.service.MarketHistoryService;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -23,15 +25,18 @@ public class BinanceHistoricalKlineClient {
 
     private final MarketProperties properties;
     private final MarketHistoryService historyService;
+    private final ObjectProvider<CandlestickPersistenceService> persistenceService;
     private final WebClient webClient;
 
     public BinanceHistoricalKlineClient(
             MarketProperties properties,
             MarketHistoryService historyService,
+            ObjectProvider<CandlestickPersistenceService> persistenceService,
             WebClient.Builder webClientBuilder
     ) {
         this.properties = properties;
         this.historyService = historyService;
+        this.persistenceService = persistenceService;
         this.webClient = webClientBuilder
                 .baseUrl(properties.binanceRestBaseUrl())
                 .build();
@@ -45,6 +50,17 @@ public class BinanceHistoricalKlineClient {
                                 .subscribe(
                                         candles -> {
                                             historyService.mergeBootstrap(symbol, interval, candles);
+
+                                            persistenceService.ifAvailable(service ->
+                                                    service.backfillClosed(candles)
+                                                            .subscribe(count -> log.info(
+                                                                    "Historical candles backfilled. symbol={}, interval={}, count={}",
+                                                                    symbol,
+                                                                    interval,
+                                                                    count
+                                                            ))
+                                            );
+
                                             log.info(
                                                     "Historical candles loaded. symbol={}, interval={}, count={}",
                                                     symbol,

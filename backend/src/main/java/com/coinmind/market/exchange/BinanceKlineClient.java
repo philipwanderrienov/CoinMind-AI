@@ -3,6 +3,7 @@ package com.coinmind.market.exchange;
 import com.coinmind.config.MarketProperties;
 import com.coinmind.market.model.Candlestick;
 import com.coinmind.market.service.MarketCandlestickService;
+import com.coinmind.market.service.MarketHistoryService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -27,16 +28,19 @@ public class BinanceKlineClient {
 
     private final MarketProperties properties;
     private final MarketCandlestickService candlestickService;
+    private final MarketHistoryService historyService;
     private final ObjectMapper objectMapper;
     private final ReactorNettyWebSocketClient webSocketClient = new ReactorNettyWebSocketClient();
 
     public BinanceKlineClient(
             MarketProperties properties,
             MarketCandlestickService candlestickService,
+            MarketHistoryService historyService,
             ObjectMapper objectMapper
     ) {
         this.properties = properties;
         this.candlestickService = candlestickService;
+        this.historyService = historyService;
         this.objectMapper = objectMapper;
     }
 
@@ -99,6 +103,7 @@ public class BinanceKlineClient {
             );
 
             candlestickService.publish(candlestick);
+            historyService.upsert(candlestick);
         } catch (Exception ex) {
             log.warn("Unable to parse Binance kline payload", ex);
         }

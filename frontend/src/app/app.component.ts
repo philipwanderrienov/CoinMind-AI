@@ -157,17 +157,24 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private mergeSeries(history: Candlestick[]): void {
     this.candles.update(current => {
-      const incomingKeys = new Set(
-        history.map(candle =>
-          `${candle.symbol}:${candle.interval}:${candle.openTime}`
-        )
-      );
+      const merged = new Map<string, Candlestick>();
 
-      const preserved = current.filter(candle =>
-        !incomingKeys.has(`${candle.symbol}:${candle.interval}:${candle.openTime}`)
-      );
+      history.forEach(candle => {
+        merged.set(
+          `${candle.symbol}:${candle.interval}:${candle.openTime}`,
+          candle
+        );
+      });
 
-      return [...preserved, ...history]
+      // Realtime data wins when the REST bootstrap overlaps the currently-forming candle.
+      current.forEach(candle => {
+        merged.set(
+          `${candle.symbol}:${candle.interval}:${candle.openTime}`,
+          candle
+        );
+      });
+
+      return [...merged.values()]
         .sort((a, b) => new Date(a.openTime).getTime() - new Date(b.openTime).getTime())
         .slice(-3000);
     });

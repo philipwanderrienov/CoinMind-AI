@@ -6,6 +6,7 @@ import {
   ConnectionState,
   MarketMicrostructure,
   OrderBookSnapshot,
+  TechnicalIndicators,
   TickerSnapshot
 } from './core/models/market.models';
 import { MarketApiService } from './core/services/market-api.service';
@@ -35,6 +36,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly historyLoading = signal(false);
   readonly orderBooks = signal<Record<string, OrderBookSnapshot>>({});
   readonly microstructure = signal<MarketMicrostructure | null>(null);
+  readonly indicators = signal<TechnicalIndicators | null>(null);
 
   readonly selectedTicker = computed(() => this.tickers()[this.selectedSymbol()] ?? null);
 
@@ -68,6 +70,8 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadSnapshots();
     this.loadHistory();
     this.loadMicrostructure();
+    this.loadIndicators();
+    this.loadIndicators();
     this.connectRealtime();
   }
 
@@ -84,6 +88,7 @@ export class AppComponent implements OnInit, OnDestroy {
   selectInterval(interval: string): void {
     this.selectedInterval.set(interval);
     this.loadHistory();
+    this.loadIndicators();
   }
 
   formatPrice(value: number | null | undefined): string {
@@ -132,6 +137,18 @@ export class AppComponent implements OnInit, OnDestroy {
         error: () => {
           this.historyLoading.set(false);
         }
+      })
+    );
+  }
+
+  private loadIndicators(): void {
+    this.subscriptions.add(
+      this.marketApi.getIndicators(
+        this.selectedSymbol(),
+        this.selectedInterval()
+      ).subscribe({
+        next: indicators => this.indicators.set(indicators),
+        error: () => this.indicators.set(null)
       })
     );
   }
@@ -191,6 +208,14 @@ export class AppComponent implements OnInit, OnDestroy {
             this.connectionState.set('live');
             this.lastMarketEventAt.set(new Date());
             this.upsertCandle(candle);
+
+            if (
+              candle.symbol === this.selectedSymbol() &&
+              candle.interval === this.selectedInterval() &&
+              candle.closed
+            ) {
+              this.loadIndicators();
+            }
           },
           error: () => this.connectionState.set('offline')
         })

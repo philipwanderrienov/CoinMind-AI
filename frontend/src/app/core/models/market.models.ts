@@ -49,3 +49,26 @@ export interface MarketMicrostructure {
   buySellRatio: number;
   updatedAt: string;
 }
+
+
+export interface TechnicalIndicators {
+  symbol: string;
+  interval: string;
+  lastPrice: number;
+  ema20: number;
+  ema50: number;
+  ema200: number;
+  rsi14: number;
+  macd: number;
+  macdSignal: number;
+  macdHistogram: number;
+  atr14: number;
+  bollingerMiddle: number;
+  bollingerUpper: number;
+  bollingerLower: number;
+  volumeRatio: number;
+  trendScore: number;
+  momentumScore: number;
+  volatilityScore: number;
+  calculatedAt: string;
+}

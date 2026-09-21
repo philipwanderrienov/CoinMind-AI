@@ -1,0 +1,175 @@
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">CM</div>
+      <div>
+        <div class="brand-name">CoinMind <span>AI</span></div>
+        <div class="brand-tagline">Crypto market intelligence</div>
+      </div>
+    </div>
+
+    <div class="connection" [class.live]="connectionState() === 'live'">
+      <span class="status-dot"></span>
+      <div>
+        <strong>{{ connectionState() === 'live' ? 'Market live' : 'Connecting' }}</strong>
+        <small>
+          @if (lastMarketEventAt()) {
+            Updated {{ lastMarketEventAt() | date:'HH:mm:ss' }}
+          } @else {
+            Waiting for backend
+          }
+        </small>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero-row">
+      <div>
+        <p class="eyebrow">MARKET OVERVIEW</p>
+        <h1>Read the market.<br><span>Reason with AI.</span></h1>
+        <p class="hero-copy">
+          Realtime BTC, ETH and SOL market data—built as the data foundation for
+          CoinMind's technical and AI analysis engine.
+        </p>
+      </div>
+
+      <div class="hero-status">
+        <span>Phase 1</span>
+        <strong>Market Data Foundation</strong>
+        <small>Binance realtime feed</small>
+      </div>
+    </section>
+
+    <section class="ticker-grid">
+      @for (symbol of symbols; track symbol) {
+        @let ticker = tickers()[symbol];
+        <button
+          type="button"
+          class="ticker-card"
+          [class.active]="selectedSymbol() === symbol"
+          (click)="selectSymbol(symbol)">
+          <div class="ticker-head">
+            <div class="asset-icon">{{ symbolLabel(symbol).slice(0, 1) }}</div>
+            <div>
+              <strong>{{ symbolLabel(symbol) }}</strong>
+              <small>/ USDT</small>
+            </div>
+            <span class="live-pill">LIVE</span>
+          </div>
+
+          <div class="ticker-price">{{ formatPrice(ticker?.closePrice) }}</div>
+
+          @if (ticker) {
+            @let change = ((ticker.closePrice - ticker.openPrice) / ticker.openPrice) * 100;
+            <div class="ticker-meta">
+              <span [class]="changeClass(change)">
+                {{ change >= 0 ? '+' : '' }}{{ change | number:'1.2-2' }}%
+              </span>
+              <span>Vol {{ formatCompact(ticker.quoteVolume) }}</span>
+            </div>
+          } @else {
+            <div class="ticker-meta muted">Waiting for market data</div>
+          }
+        </button>
+      }
+    </section>
+
+    <section class="workspace-grid">
+      <article class="panel chart-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">LIVE MARKET</p>
+            <div class="market-title">
+              <h2>{{ symbolLabel(selectedSymbol()) }} / USDT</h2>
+              @if (selectedTicker()) {
+                <span class="selected-price">
+                  {{ formatPrice(selectedTicker()?.closePrice) }}
+                </span>
+                <span [class]="changeClass(dailyChange())">
+                  {{ (dailyChange() ?? 0) >= 0 ? '+' : '' }}
+                  {{ dailyChange() | number:'1.2-2' }}%
+                </span>
+              }
+            </div>
+          </div>
+
+          <div class="timeframes">
+            @for (interval of intervals; track interval) {
+              <button
+                type="button"
+                [class.active]="selectedInterval() === interval"
+                (click)="selectInterval(interval)">
+                {{ interval }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="chart-wrap">
+          @if (selectedCandles().length) {
+            <app-market-chart [candles]="selectedCandles()"></app-market-chart>
+          } @else {
+            <div class="empty-chart">
+              <div class="pulse-ring"></div>
+              <strong>Waiting for {{ selectedSymbol() }} {{ selectedInterval() }} candles</strong>
+              <span>The chart will begin updating as soon as the backend receives Binance data.</span>
+            </div>
+          }
+        </div>
+
+        <div class="chart-footer">
+          <span>
+            Session candles
+            <strong>{{ selectedCandles().length }}</strong>
+          </span>
+          <span class="footer-note">
+            Historical preload will be added in the next backend milestone.
+          </span>
+        </div>
+      </article>
+
+      <aside class="side-stack">
+        <article class="panel market-stats">
+          <div class="panel-header compact">
+            <div>
+              <p class="eyebrow">CURRENT CANDLE</p>
+              <h3>{{ selectedInterval() }} snapshot</h3>
+            </div>
+            @if (currentCandle()) {
+              <span class="state-pill" [class.closed]="currentCandle()?.closed">
+                {{ currentCandle()?.closed ? 'CLOSED' : 'FORMING' }}
+              </span>
+            }
+          </div>
+
+          <div class="stat-list">
+            <div><span>Open</span><strong>{{ formatPrice(currentCandle()?.open) }}</strong></div>
+            <div><span>High</span><strong>{{ formatPrice(currentCandle()?.high) }}</strong></div>
+            <div><span>Low</span><strong>{{ formatPrice(currentCandle()?.low) }}</strong></div>
+            <div><span>Close</span><strong>{{ formatPrice(currentCandle()?.close) }}</strong></div>
+            <div><span>Volume</span><strong>{{ formatCompact(currentCandle()?.quoteVolume) }}</strong></div>
+            <div><span>Trades</span><strong>{{ formatCompact(currentCandle()?.tradeCount) }}</strong></div>
+          </div>
+        </article>
+
+        <article class="panel ai-panel">
+          <div class="ai-orb">AI</div>
+          <p class="eyebrow">COINMIND INTELLIGENCE</p>
+          <h3>AI analysis is the next layer.</h3>
+          <p>
+            Technical indicators, news sentiment and market regime will be combined here
+            after the market-data pipeline is validated.
+          </p>
+
+          <div class="pipeline">
+            <div class="done"><span>01</span> Market feed</div>
+            <div class="active"><span>02</span> Historical candles</div>
+            <div><span>03</span> Indicators</div>
+            <div><span>04</span> AI reasoning</div>
+          </div>
+        </article>
+      </aside>
+    </section>
+  </main>
+</div>

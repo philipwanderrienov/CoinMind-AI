@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
   Candlestick,
+  AiAnalysisResult,
+  MarketContext,
   MarketMicrostructure,
   OrderBookSnapshot,
   TechnicalIndicators,
@@ -33,6 +35,18 @@ export class MarketApiService {
   ): Observable<Candlestick[]> {
     return this.http.get<Candlestick[]>(
       `${this.baseUrl}/history/${symbol}/${interval}?limit=${limit}`
+    );
+  }
+
+  getMarketContext(symbol: string, interval: string): Observable<MarketContext> {
+    return this.http.get<MarketContext>(
+      `/api/v1/ai/context/${symbol}/${interval}`
+    );
+  }
+
+  getAiAnalysis(symbol: string, interval: string): Observable<AiAnalysisResult> {
+    return this.http.get<AiAnalysisResult>(
+      `/api/v1/ai/analysis/${symbol}/${interval}`
     );
   }
 

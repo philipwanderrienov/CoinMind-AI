@@ -44,7 +44,7 @@ public class BinanceHistoricalKlineClient {
                         loadSeries(symbol, interval)
                                 .subscribe(
                                         candles -> {
-                                            historyService.replace(symbol, interval, candles);
+                                            historyService.mergeBootstrap(symbol, interval, candles);
                                             log.info(
                                                     "Historical candles loaded. symbol={}, interval={}, count={}",
                                                     symbol,
@@ -85,6 +85,7 @@ public class BinanceHistoricalKlineClient {
             String interval
     ) {
         List<Candlestick> candles = new ArrayList<>();
+        Instant now = Instant.now();
 
         if (!root.isArray()) {
             return candles;
@@ -95,11 +96,13 @@ public class BinanceHistoricalKlineClient {
                 continue;
             }
 
+            Instant closeTime = Instant.ofEpochMilli(row.get(6).asLong());
+
             candles.add(new Candlestick(
                     symbol,
                     interval,
                     Instant.ofEpochMilli(row.get(0).asLong()),
-                    Instant.ofEpochMilli(row.get(6).asLong()),
+                    closeTime,
                     decimal(row.get(1)),
                     decimal(row.get(2)),
                     decimal(row.get(3)),
@@ -107,8 +110,8 @@ public class BinanceHistoricalKlineClient {
                     decimal(row.get(5)),
                     decimal(row.get(7)),
                     row.get(8).asLong(),
-                    true,
-                    Instant.ofEpochMilli(row.get(6).asLong())
+                    !closeTime.isAfter(now),
+                    closeTime.isAfter(now) ? now : closeTime
             ));
         }
 

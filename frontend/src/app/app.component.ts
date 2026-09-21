@@ -1,7 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { Subscription, retry, timer } from 'rxjs';
-import { Candlestick, ConnectionState, TickerSnapshot } from './core/models/market.models';
+import {
+  Candlestick,
+  ConnectionState,
+  MarketMicrostructure,
+  OrderBookSnapshot,
+  TickerSnapshot
+} from './core/models/market.models';
 import { MarketApiService } from './core/services/market-api.service';
 import { MarketChartComponent } from './features/market-chart/market-chart.component';
 import { formatCompact, formatPrice } from './shared/price-format';
@@ -27,6 +33,8 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly candles = signal<Candlestick[]>([]);
   readonly lastMarketEventAt = signal<Date | null>(null);
   readonly historyLoading = signal(false);
+  readonly orderBooks = signal<Record<string, OrderBookSnapshot>>({});
+  readonly microstructure = signal<MarketMicrostructure | null>(null);
 
   readonly selectedTicker = computed(() => this.tickers()[this.selectedSymbol()] ?? null);
 
@@ -37,6 +45,10 @@ export class AppComponent implements OnInit, OnDestroy {
         candle.interval === this.selectedInterval()
       )
       .sort((a, b) => new Date(a.openTime).getTime() - new Date(b.openTime).getTime())
+  );
+
+  readonly selectedOrderBook = computed(() =>
+    this.orderBooks()[this.selectedSymbol()] ?? null
   );
 
   readonly currentCandle = computed(() => {
@@ -55,6 +67,7 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadSnapshots();
     this.loadHistory();
+    this.loadMicrostructure();
     this.connectRealtime();
   }
 
@@ -65,6 +78,7 @@ export class AppComponent implements OnInit, OnDestroy {
   selectSymbol(symbol: string): void {
     this.selectedSymbol.set(symbol);
     this.loadHistory();
+    this.loadMicrostructure();
   }
 
   selectInterval(interval: string): void {
@@ -122,6 +136,15 @@ export class AppComponent implements OnInit, OnDestroy {
     );
   }
 
+  private loadMicrostructure(): void {
+    this.subscriptions.add(
+      this.marketApi.getMicrostructure(this.selectedSymbol()).subscribe({
+        next: summary => this.microstructure.set(summary),
+        error: () => this.microstructure.set(null)
+      })
+    );
+  }
+
   private connectRealtime(): void {
     const retryDelay = () => timer(3000);
 
@@ -138,6 +161,25 @@ export class AppComponent implements OnInit, OnDestroy {
             }));
           },
           error: () => this.connectionState.set('offline')
+        })
+    );
+
+    this.subscriptions.add(
+      this.marketApi.orderBookStream()
+        .pipe(retry({ delay: retryDelay }))
+        .subscribe({
+          next: orderBook => {
+            this.orderBooks.update(current => ({
+              ...current,
+              [orderBook.symbol]: orderBook
+            }));
+
+            if (orderBook.symbol === this.selectedSymbol()) {
+              this.marketApi.getMicrostructure(orderBook.symbol).subscribe({
+                next: summary => this.microstructure.set(summary)
+              });
+            }
+          }
         })
     );
 

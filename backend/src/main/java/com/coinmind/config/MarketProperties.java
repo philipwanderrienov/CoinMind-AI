@@ -7,6 +7,7 @@ import java.util.List;
 @ConfigurationProperties(prefix = "coinmind.market")
 public record MarketProperties(
         String binanceWebsocketBaseUrl,
-        List<String> symbols
+        List<String> symbols,
+        List<String> intervals
 ) {
 }

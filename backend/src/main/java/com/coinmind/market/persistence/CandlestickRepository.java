@@ -1,10 +1,15 @@
 package com.coinmind.market.persistence;
 
 import com.coinmind.market.model.Candlestick;
+import io.r2dbc.spi.Row;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.math.BigDecimal;
+import java.time.Instant;
 
 @Repository
 @ConditionalOnProperty(
@@ -78,5 +83,62 @@ public class CandlestickRepository {
                 .bind("closed", candle.closed())
                 .bind("eventTime", candle.eventTime())
                 .then();
+    }
+
+    public Flux<Candlestick> findRecent(String symbol, String interval, int limit) {
+        int safeLimit = Math.max(1, Math.min(limit, 1500));
+
+        return databaseClient.sql("""
+                SELECT *
+                FROM (
+                    SELECT
+                        symbol,
+                        interval,
+                        open_time,
+                        close_time,
+                        open_price,
+                        high_price,
+                        low_price,
+                        close_price,
+                        base_volume,
+                        quote_volume,
+                        trade_count,
+                        closed,
+                        event_time
+                    FROM market_candles
+                    WHERE symbol = :symbol
+                      AND interval = :interval
+                    ORDER BY open_time DESC
+                    LIMIT :limit
+                ) recent
+                ORDER BY open_time ASC
+                """)
+                .bind("symbol", symbol.toUpperCase())
+                .bind("interval", interval.toLowerCase())
+                .bind("limit", safeLimit)
+                .map((row, metadata) -> map(row))
+                .all();
+    }
+
+    private Candlestick map(Row row) {
+        return new Candlestick(
+                row.get("symbol", String.class),
+                row.get("interval", String.class),
+                row.get("open_time", Instant.class),
+                row.get("close_time", Instant.class),
+                row.get("open_price", BigDecimal.class),
+                row.get("high_price", BigDecimal.class),
+                row.get("low_price", BigDecimal.class),
+                row.get("close_price", BigDecimal.class),
+                row.get("base_volume", BigDecimal.class),
+                row.get("quote_volume", BigDecimal.class),
+                value(row.get("trade_count", Long.class)),
+                Boolean.TRUE.equals(row.get("closed", Boolean.class)),
+                row.get("event_time", Instant.class)
+        );
+    }
+
+    private long value(Long value) {
+        return value == null ? 0L : value;
     }
 }

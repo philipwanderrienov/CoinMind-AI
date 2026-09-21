@@ -171,6 +171,40 @@
           </div>
         </article>
 
+        <article class="panel market-stats">
+          <div class="panel-header compact">
+            <div>
+              <p class="eyebrow">TECHNICAL INDICATORS</p>
+              <h3>{{ selectedInterval() }} market structure</h3>
+            </div>
+          </div>
+
+          <div class="stat-list">
+            <div><span>EMA 20</span><strong>{{ formatPrice(indicators()?.ema20) }}</strong></div>
+            <div><span>EMA 50</span><strong>{{ formatPrice(indicators()?.ema50) }}</strong></div>
+            <div><span>EMA 200</span><strong>{{ formatPrice(indicators()?.ema200) }}</strong></div>
+            <div><span>RSI 14</span><strong>{{ indicators()?.rsi14 | number:'1.1-2' }}</strong></div>
+            <div><span>MACD</span><strong>{{ indicators()?.macdHistogram | number:'1.2-4' }}</strong></div>
+            <div><span>ATR 14</span><strong>{{ indicators()?.atr14 | number:'1.2-4' }}</strong></div>
+            <div><span>Volume ratio</span><strong>{{ indicators()?.volumeRatio | number:'1.2-2' }}</strong></div>
+          </div>
+
+          <div class="score-grid">
+            <div>
+              <span>Trend</span>
+              <strong>{{ indicators()?.trendScore | number:'1.0-0' }}</strong>
+            </div>
+            <div>
+              <span>Momentum</span>
+              <strong>{{ indicators()?.momentumScore | number:'1.0-0' }}</strong>
+            </div>
+            <div>
+              <span>Volatility</span>
+              <strong>{{ indicators()?.volatilityScore | number:'1.0-0' }}</strong>
+            </div>
+          </div>
+        </article>
+
         <article class="panel ai-panel">
           <div class="ai-orb">AI</div>
           <p class="eyebrow">COINMIND INTELLIGENCE</p>

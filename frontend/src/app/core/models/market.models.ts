@@ -72,3 +72,56 @@ export interface TechnicalIndicators {
   volatilityScore: number;
   calculatedAt: string;
 }
+
+
+export interface MarketContext {
+  symbol: string;
+  interval: string;
+  generatedAt: string;
+  price: {
+    lastPrice: number;
+    open24h: number;
+    high24h: number;
+    low24h: number;
+    quoteVolume24h: number;
+  };
+  technical: {
+    ema20: number;
+    ema50: number;
+    ema200: number;
+    rsi14: number;
+    macd: number;
+    macdSignal: number;
+    macdHistogram: number;
+    atr14: number;
+    bollingerMiddle: number;
+    bollingerUpper: number;
+    bollingerLower: number;
+    volumeRatio: number;
+    trendScore: number;
+    momentumScore: number;
+    volatilityScore: number;
+  };
+  microstructure: {
+    bestBid: number;
+    bestAsk: number;
+    spread: number;
+    spreadBps: number;
+    midPrice: number;
+    buyVolume: number;
+    sellVolume: number;
+    buySellRatio: number;
+  };
+}
+
+export interface AiAnalysisResult {
+  symbol: string;
+  interval: string;
+  marketBias: string;
+  confidence: number;
+  summary: string;
+  supportingFactors: string[];
+  riskFactors: string[];
+  model: string;
+  analyzedAt: string;
+}

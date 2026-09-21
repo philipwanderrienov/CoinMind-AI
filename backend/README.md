@@ -10,7 +10,7 @@ Implemented:
 - Spring WebFlux
 - Actuator health endpoint
 - Configurable market symbols and timeframes
-- Binance combined WebSocket connection
+- Binance public REST + WebSocket market-data integration
 - Realtime mini-ticker ingestion:
   - BTCUSDT
   - ETHUSDT
@@ -22,8 +22,11 @@ Implemented:
   - 1h
   - 4h
   - 1d
-- In-memory latest ticker and candle stores
-- REST endpoints for latest market snapshots
+- Historical candle bootstrap from Binance REST
+- Default historical depth: 500 candles per symbol/timeframe
+- In-memory bounded historical candle store
+- Realtime candle updates merged into historical series
+- REST endpoints for ticker, current candle and history
 - Server-Sent Events streams for realtime development verification
 - Basic unit tests
 
@@ -53,65 +56,46 @@ Latest tickers:
 curl http://localhost:8080/api/v1/market/tickers
 ```
 
-Single ticker:
+Historical BTC 1-minute candles:
 
 ```bash
-curl http://localhost:8080/api/v1/market/tickers/BTCUSDT
+curl "http://localhost:8080/api/v1/market/history/BTCUSDT/1m?limit=500"
 ```
 
-Realtime ticker stream:
-
-```bash
-curl -N http://localhost:8080/api/v1/market/tickers/stream
-```
-
-Latest candles across all configured symbols/timeframes:
-
-```bash
-curl http://localhost:8080/api/v1/market/candles
-```
-
-Latest candles for BTC:
-
-```bash
-curl http://localhost:8080/api/v1/market/candles/BTCUSDT
-```
-
-Latest BTC 1-minute candle:
-
-```bash
-curl http://localhost:8080/api/v1/market/candles/BTCUSDT/1m
-```
-
-Realtime candlestick stream:
+Realtime candles:
 
 ```bash
 curl -N http://localhost:8080/api/v1/market/candles/stream
 ```
 
-## Planned package structure
+## Data flow
 
 ```text
-com.coinmind
-├── config
-├── market
-│   ├── api
-│   ├── exchange
-│   ├── model
-│   └── service
-├── indicator
-├── news
-├── ai
-├── signal
-└── common
-```
+Startup
+  ↓
+Binance REST /api/v3/klines
+  ↓
+Historical candle store
+  ↓
+REST history endpoint
+  ↓
+Angular initial chart
 
-The MVP remains a modular monolith.
+Binance WebSocket
+  ↓
+Realtime kline
+  ↓
+Latest candle + history upsert
+  ↓
+SSE
+  ↓
+Angular realtime chart update
+```
 
 ## Next market-data milestones
 
-1. Historical candle bootstrap via Binance REST
-2. PostgreSQL/TimescaleDB persistence for closed candles
-3. Order-book ingestion
-4. Trade-stream ingestion
-5. Technical indicator engine
+1. PostgreSQL/TimescaleDB persistence for closed candles
+2. Order-book ingestion
+3. Trade-stream ingestion
+4. Technical indicator engine
+5. AI market context builder

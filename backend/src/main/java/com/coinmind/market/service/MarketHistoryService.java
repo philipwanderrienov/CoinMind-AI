@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,15 +17,30 @@ public class MarketHistoryService {
 
     private final Map<String, List<Candlestick>> candlesBySeries = new ConcurrentHashMap<>();
 
-    public synchronized void replace(String symbol, String interval, List<Candlestick> candles) {
+    public synchronized void mergeBootstrap(
+            String symbol,
+            String interval,
+            List<Candlestick> historicalCandles
+    ) {
         String key = key(symbol, interval);
 
-        List<Candlestick> normalized = candles.stream()
+        Map<java.time.Instant, Candlestick> merged = new LinkedHashMap<>();
+
+        historicalCandles.stream()
                 .sorted(Comparator.comparing(Candlestick::openTime))
-                .skip(Math.max(0, candles.size() - MAX_CANDLES_PER_SERIES))
+                .forEach(candle -> merged.put(candle.openTime(), candle));
+
+        // Preserve realtime observations if WebSocket data arrived while REST bootstrap was running.
+        candlesBySeries.getOrDefault(key, List.of()).stream()
+                .sorted(Comparator.comparing(Candlestick::openTime))
+                .forEach(candle -> merged.put(candle.openTime(), candle));
+
+        List<Candlestick> normalized = merged.values().stream()
+                .sorted(Comparator.comparing(Candlestick::openTime))
                 .toList();
 
-        candlesBySeries.put(key, new ArrayList<>(normalized));
+        int from = Math.max(0, normalized.size() - MAX_CANDLES_PER_SERIES);
+        candlesBySeries.put(key, new ArrayList<>(normalized.subList(from, normalized.size())));
     }
 
     public synchronized void upsert(Candlestick candle) {

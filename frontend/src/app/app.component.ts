@@ -2,8 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { Subscription, retry, timer } from 'rxjs';
 import {
+  AiAnalysisResult,
   Candlestick,
   ConnectionState,
+  MarketContext,
   MarketMicrostructure,
   OrderBookSnapshot,
   TechnicalIndicators,
@@ -37,6 +39,8 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly orderBooks = signal<Record<string, OrderBookSnapshot>>({});
   readonly microstructure = signal<MarketMicrostructure | null>(null);
   readonly indicators = signal<TechnicalIndicators | null>(null);
+  readonly marketContext = signal<MarketContext | null>(null);
+  readonly aiAnalysis = signal<AiAnalysisResult | null>(null);
 
   readonly selectedTicker = computed(() => this.tickers()[this.selectedSymbol()] ?? null);
 
@@ -71,7 +75,9 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadHistory();
     this.loadMicrostructure();
     this.loadIndicators();
+    this.loadMarketContext();
     this.loadIndicators();
+    this.loadMarketContext();
     this.connectRealtime();
   }
 
@@ -89,6 +95,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.selectedInterval.set(interval);
     this.loadHistory();
     this.loadIndicators();
+    this.loadMarketContext();
   }
 
   formatPrice(value: number | null | undefined): string {
@@ -137,6 +144,28 @@ export class AppComponent implements OnInit, OnDestroy {
         error: () => {
           this.historyLoading.set(false);
         }
+      })
+    );
+  }
+
+  private loadMarketContext(): void {
+    this.subscriptions.add(
+      this.marketApi.getMarketContext(
+        this.selectedSymbol(),
+        this.selectedInterval()
+      ).subscribe({
+        next: context => this.marketContext.set(context),
+        error: () => this.marketContext.set(null)
+      })
+    );
+
+    this.subscriptions.add(
+      this.marketApi.getAiAnalysis(
+        this.selectedSymbol(),
+        this.selectedInterval()
+      ).subscribe({
+        next: result => this.aiAnalysis.set(result),
+        error: () => this.aiAnalysis.set(null)
       })
     );
   }
@@ -215,6 +244,7 @@ export class AppComponent implements OnInit, OnDestroy {
               candle.closed
             ) {
               this.loadIndicators();
+              this.loadMarketContext();
             }
           },
           error: () => this.connectionState.set('offline')

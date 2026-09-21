@@ -5,7 +5,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @Service
 @ConditionalOnProperty(
@@ -42,5 +45,12 @@ public class CandlestickPersistenceService {
                         candle.openTime(),
                         error
                 ));
+    }
+
+    public Mono<Long> backfillClosed(List<Candlestick> candles) {
+        return Flux.fromIterable(candles)
+                .filter(Candlestick::closed)
+                .concatMap(candle -> repository.upsert(candle).thenReturn(1L))
+                .reduce(0L, Long::sum);
     }
 }

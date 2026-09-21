@@ -153,6 +153,24 @@
           </div>
         </article>
 
+        <article class="panel market-stats">
+          <div class="panel-header compact">
+            <div>
+              <p class="eyebrow">MARKET MICROSTRUCTURE</p>
+              <h3>Liquidity & pressure</h3>
+            </div>
+          </div>
+
+          <div class="stat-list">
+            <div><span>Best bid</span><strong>{{ formatPrice(selectedOrderBook()?.bestBidPrice) }}</strong></div>
+            <div><span>Best ask</span><strong>{{ formatPrice(selectedOrderBook()?.bestAskPrice) }}</strong></div>
+            <div><span>Spread</span><strong>{{ microstructure()?.spreadBps | number:'1.2-2' }} bps</strong></div>
+            <div><span>Buy volume</span><strong>{{ formatCompact(microstructure()?.buyVolume) }}</strong></div>
+            <div><span>Sell volume</span><strong>{{ formatCompact(microstructure()?.sellVolume) }}</strong></div>
+            <div><span>Buy/Sell ratio</span><strong>{{ microstructure()?.buySellRatio | number:'1.2-2' }}</strong></div>
+          </div>
+        </article>
+
         <article class="panel ai-panel">
           <div class="ai-orb">AI</div>
           <p class="eyebrow">COINMIND INTELLIGENCE</p>

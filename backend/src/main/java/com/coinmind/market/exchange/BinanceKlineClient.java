@@ -2,12 +2,14 @@ package com.coinmind.market.exchange;
 
 import com.coinmind.config.MarketProperties;
 import com.coinmind.market.model.Candlestick;
+import com.coinmind.market.persistence.CandlestickPersistenceService;
 import com.coinmind.market.service.MarketCandlestickService;
 import com.coinmind.market.service.MarketHistoryService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -29,6 +31,7 @@ public class BinanceKlineClient {
     private final MarketProperties properties;
     private final MarketCandlestickService candlestickService;
     private final MarketHistoryService historyService;
+    private final ObjectProvider<CandlestickPersistenceService> persistenceService;
     private final ObjectMapper objectMapper;
     private final ReactorNettyWebSocketClient webSocketClient = new ReactorNettyWebSocketClient();
 
@@ -36,11 +39,13 @@ public class BinanceKlineClient {
             MarketProperties properties,
             MarketCandlestickService candlestickService,
             MarketHistoryService historyService,
+            ObjectProvider<CandlestickPersistenceService> persistenceService,
             ObjectMapper objectMapper
     ) {
         this.properties = properties;
         this.candlestickService = candlestickService;
         this.historyService = historyService;
+        this.persistenceService = persistenceService;
         this.objectMapper = objectMapper;
     }
 
@@ -104,6 +109,10 @@ public class BinanceKlineClient {
 
             candlestickService.publish(candlestick);
             historyService.upsert(candlestick);
+
+            persistenceService.ifAvailable(service ->
+                    service.persistIfClosed(candlestick).subscribe()
+            );
         } catch (Exception ex) {
             log.warn("Unable to parse Binance kline payload", ex);
         }

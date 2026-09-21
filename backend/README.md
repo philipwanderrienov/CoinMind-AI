@@ -25,6 +25,8 @@ Implemented:
 - Historical candle bootstrap from Binance REST
 - Default historical depth: 500 candles per symbol/timeframe
 - In-memory bounded historical candle store
+- Optional PostgreSQL + TimescaleDB persistence via R2DBC
+- Closed-candle upsert persistence (disabled by default until server DB is ready)
 - Realtime candle updates merged into historical series
 - REST endpoints for ticker, current candle and history
 - Server-Sent Events streams for realtime development verification
@@ -94,7 +96,7 @@ Angular realtime chart update
 
 ## Next market-data milestones
 
-1. PostgreSQL/TimescaleDB persistence for closed candles
+1. Historical REST backfill into TimescaleDB
 2. Order-book ingestion
 3. Trade-stream ingestion
 4. Technical indicator engine

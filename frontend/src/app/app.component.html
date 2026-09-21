@@ -208,17 +208,48 @@
         <article class="panel ai-panel">
           <div class="ai-orb">AI</div>
           <p class="eyebrow">COINMIND INTELLIGENCE</p>
-          <h3>AI analysis is the next layer.</h3>
-          <p>
-            Technical indicators, news sentiment and market regime will be combined here
-            after the market-data pipeline is validated.
-          </p>
+          <h3>Structured market context is ready.</h3>
+
+          @if (marketContext()) {
+            <p>
+              CoinMind is now combining price, technical structure and realtime
+              microstructure into one compact AI-ready payload.
+            </p>
+
+            <div class="ai-context-grid">
+              <div>
+                <span>Trend</span>
+                <strong>{{ marketContext()?.technical?.trendScore | number:'1.0-0' }}</strong>
+              </div>
+              <div>
+                <span>Momentum</span>
+                <strong>{{ marketContext()?.technical?.momentumScore | number:'1.0-0' }}</strong>
+              </div>
+              <div>
+                <span>Buy/Sell</span>
+                <strong>{{ marketContext()?.microstructure?.buySellRatio | number:'1.2-2' }}</strong>
+              </div>
+              <div>
+                <span>RSI</span>
+                <strong>{{ marketContext()?.technical?.rsi14 | number:'1.1-1' }}</strong>
+              </div>
+            </div>
+          } @else {
+            <p>
+              Waiting for enough live market data to assemble the AI context.
+            </p>
+          }
 
           <div class="pipeline">
             <div class="done"><span>01</span> Market feed</div>
-            <div class="active"><span>02</span> Historical candles</div>
-            <div><span>03</span> Indicators</div>
-            <div><span>04</span> AI reasoning</div>
+            <div class="done"><span>02</span> Historical candles</div>
+            <div class="done"><span>03</span> Indicators</div>
+            <div class="active"><span>04</span> AI provider</div>
+          </div>
+
+          <div class="provider-status">
+            <span>Provider</span>
+            <strong>{{ aiAnalysis()?.model ?? 'none' }}</strong>
           </div>
         </article>
       </aside>

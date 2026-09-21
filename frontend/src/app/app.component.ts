@@ -26,6 +26,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly tickers = signal<Record<string, TickerSnapshot>>({});
   readonly candles = signal<Candlestick[]>([]);
   readonly lastMarketEventAt = signal<Date | null>(null);
+  readonly historyLoading = signal(false);
 
   readonly selectedTicker = computed(() => this.tickers()[this.selectedSymbol()] ?? null);
 
@@ -53,6 +54,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadSnapshots();
+    this.loadHistory();
     this.connectRealtime();
   }
 
@@ -62,12 +64,12 @@ export class AppComponent implements OnInit, OnDestroy {
 
   selectSymbol(symbol: string): void {
     this.selectedSymbol.set(symbol);
-    this.seedCurrentCandle();
+    this.loadHistory();
   }
 
   selectInterval(interval: string): void {
     this.selectedInterval.set(interval);
-    this.seedCurrentCandle();
+    this.loadHistory();
   }
 
   formatPrice(value: number | null | undefined): string {
@@ -99,16 +101,22 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       })
     );
-
-    this.seedCurrentCandle();
   }
 
-  private seedCurrentCandle(): void {
+  private loadHistory(): void {
+    const symbol = this.selectedSymbol();
+    const interval = this.selectedInterval();
+
+    this.historyLoading.set(true);
+
     this.subscriptions.add(
-      this.marketApi.getCandle(this.selectedSymbol(), this.selectedInterval()).subscribe({
-        next: candle => this.upsertCandle(candle),
+      this.marketApi.getHistoricalCandles(symbol, interval, 500).subscribe({
+        next: history => {
+          this.mergeSeries(history);
+          this.historyLoading.set(false);
+        },
         error: () => {
-          // It is valid for no candle to be available while the backend is still connecting.
+          this.historyLoading.set(false);
         }
       })
     );
@@ -147,6 +155,24 @@ export class AppComponent implements OnInit, OnDestroy {
     );
   }
 
+  private mergeSeries(history: Candlestick[]): void {
+    this.candles.update(current => {
+      const incomingKeys = new Set(
+        history.map(candle =>
+          `${candle.symbol}:${candle.interval}:${candle.openTime}`
+        )
+      );
+
+      const preserved = current.filter(candle =>
+        !incomingKeys.has(`${candle.symbol}:${candle.interval}:${candle.openTime}`)
+      );
+
+      return [...preserved, ...history]
+        .sort((a, b) => new Date(a.openTime).getTime() - new Date(b.openTime).getTime())
+        .slice(-3000);
+    });
+  }
+
   private upsertCandle(candle: Candlestick): void {
     this.candles.update(current => {
       const withoutSameCandle = current.filter(item =>
@@ -157,10 +183,9 @@ export class AppComponent implements OnInit, OnDestroy {
         )
       );
 
-      const next = [...withoutSameCandle, candle];
-
-      // Keep the browser session bounded while historical persistence is not yet implemented.
-      return next.slice(-1500);
+      return [...withoutSameCandle, candle]
+        .sort((a, b) => new Date(a.openTime).getTime() - new Date(b.openTime).getTime())
+        .slice(-3000);
     });
   }
 }

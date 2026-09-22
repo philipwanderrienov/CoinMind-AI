@@ -81,9 +81,6 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadIndicators();
     this.loadMarketContext();
     this.loadNews();
-    this.loadIndicators();
-    this.loadMarketContext();
-    this.loadNews();
     this.connectRealtime();
   }
 
@@ -95,6 +92,9 @@ export class AppComponent implements OnInit, OnDestroy {
     this.selectedSymbol.set(symbol);
     this.loadHistory();
     this.loadMicrostructure();
+    this.loadIndicators();
+    this.loadMarketContext();
+    this.loadNews();
   }
 
   selectInterval(interval: string): void {

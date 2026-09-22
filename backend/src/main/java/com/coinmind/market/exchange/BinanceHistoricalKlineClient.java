@@ -31,13 +31,12 @@ public class BinanceHistoricalKlineClient {
     public BinanceHistoricalKlineClient(
             MarketProperties properties,
             MarketHistoryService historyService,
-            ObjectProvider<CandlestickPersistenceService> persistenceService,
-            WebClient.Builder webClientBuilder
+            ObjectProvider<CandlestickPersistenceService> persistenceService
     ) {
         this.properties = properties;
         this.historyService = historyService;
         this.persistenceService = persistenceService;
-        this.webClient = webClientBuilder
+        this.webClient = WebClient.builder()
                 .baseUrl(properties.binanceRestBaseUrl())
                 .build();
     }

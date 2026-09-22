@@ -63,8 +63,7 @@ public class BinanceKlineClient {
                 .retryWhen(Retry.backoff(Long.MAX_VALUE, Duration.ofSeconds(2))
                         .maxBackoff(Duration.ofSeconds(30))
                         .doBeforeRetry(signal ->
-                                log.warn("Binance kline WebSocket disconnected. Reconnecting. attempt={}",
-                                        signal.totalRetries() + 1)))
+                                log.warn("Binance kline WebSocket disconnected. Reconnecting. attempt={}, cause={}", signal.totalRetries() + 1, signal.failure().toString())))
                 .subscribe(
                         ignored -> { },
                         error -> log.error("Binance kline WebSocket terminated unexpectedly", error)

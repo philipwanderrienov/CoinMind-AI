@@ -33,3 +33,8 @@ coinmind:
       - 1h
       - 4h
       - 1d
+
+  news:
+    enabled: ${NEWS_ENABLED:false}
+    refresh-interval-ms: ${NEWS_REFRESH_INTERVAL_MS:300000}
+    rss-urls: []

@@ -6,6 +6,8 @@ import {
   AiAnalysisResult,
   MarketContext,
   MarketMicrostructure,
+  NewsArticle,
+  NewsSentimentSummary,
   OrderBookSnapshot,
   TechnicalIndicators,
   TickerSnapshot
@@ -35,6 +37,18 @@ export class MarketApiService {
   ): Observable<Candlestick[]> {
     return this.http.get<Candlestick[]>(
       `${this.baseUrl}/history/${symbol}/${interval}?limit=${limit}`
+    );
+  }
+
+  getNews(symbol: string, limit = 10): Observable<NewsArticle[]> {
+    return this.http.get<NewsArticle[]>(
+      `/api/v1/news/${symbol}?limit=${limit}`
+    );
+  }
+
+  getNewsSentiment(symbol: string): Observable<NewsSentimentSummary> {
+    return this.http.get<NewsSentimentSummary>(
+      `/api/v1/news/${symbol}/sentiment?hours=6&limit=20`
     );
   }
 

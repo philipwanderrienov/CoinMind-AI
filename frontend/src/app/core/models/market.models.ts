@@ -112,6 +112,14 @@ export interface MarketContext {
     sellVolume: number;
     buySellRatio: number;
   };
+  news: {
+    articleCount: number;
+    averageSentiment: number;
+    positiveCount: number;
+    neutralCount: number;
+    negativeCount: number;
+    recentHeadlines: string[];
+  };
 }
 
 export interface AiAnalysisResult {
@@ -124,4 +132,27 @@ export interface AiAnalysisResult {
   riskFactors: string[];
   model: string;
   analyzedAt: string;
+}
+
+
+export interface NewsArticle {
+  id: string;
+  title: string;
+  source: string;
+  url: string;
+  summary: string;
+  publishedAt: string;
+  symbols: string[];
+  sentimentScore: number;
+}
+
+export interface NewsSentimentSummary {
+  symbol: string;
+  articleCount: number;
+  averageSentiment: number;
+  positiveCount: number;
+  neutralCount: number;
+  negativeCount: number;
+  recentArticles: NewsArticle[];
+  calculatedAt: string;
 }

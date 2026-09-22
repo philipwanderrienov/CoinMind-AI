@@ -2,6 +2,7 @@ package com.coinmind.ai.model;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 public record MarketContext(
         String symbol,
@@ -9,7 +10,8 @@ public record MarketContext(
         Instant generatedAt,
         PriceContext price,
         TechnicalContext technical,
-        MicrostructureContext microstructure
+        MicrostructureContext microstructure,
+        NewsContext news
 ) {
 
     public record PriceContext(
@@ -49,6 +51,16 @@ public record MarketContext(
             BigDecimal buyVolume,
             BigDecimal sellVolume,
             BigDecimal buySellRatio
+    ) {
+    }
+
+    public record NewsContext(
+            int articleCount,
+            BigDecimal averageSentiment,
+            int positiveCount,
+            int neutralCount,
+            int negativeCount,
+            List<String> recentHeadlines
     ) {
     }
 }

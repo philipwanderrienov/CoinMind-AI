@@ -19,7 +19,7 @@ coinmind:
   persistence:
     enabled: ${PERSISTENCE_ENABLED:false}
   market:
-    binance-websocket-base-url: ${BINANCE_WS_URL:wss://stream.binance.com:9443}
+    binance-websocket-base-url: ${BINANCE_WS_URL:wss://stream.binance.com:443}
     binance-rest-base-url: ${BINANCE_REST_URL:https://api.binance.com}
     historical-candle-limit: ${HISTORICAL_CANDLE_LIMIT:500}
     symbols:

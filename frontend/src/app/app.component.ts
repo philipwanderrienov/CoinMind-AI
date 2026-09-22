@@ -7,6 +7,8 @@ import {
   ConnectionState,
   MarketContext,
   MarketMicrostructure,
+  NewsArticle,
+  NewsSentimentSummary,
   OrderBookSnapshot,
   TechnicalIndicators,
   TickerSnapshot
@@ -41,6 +43,8 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly indicators = signal<TechnicalIndicators | null>(null);
   readonly marketContext = signal<MarketContext | null>(null);
   readonly aiAnalysis = signal<AiAnalysisResult | null>(null);
+  readonly news = signal<NewsArticle[]>([]);
+  readonly newsSentiment = signal<NewsSentimentSummary | null>(null);
 
   readonly selectedTicker = computed(() => this.tickers()[this.selectedSymbol()] ?? null);
 
@@ -76,8 +80,10 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadMicrostructure();
     this.loadIndicators();
     this.loadMarketContext();
+    this.loadNews();
     this.loadIndicators();
     this.loadMarketContext();
+    this.loadNews();
     this.connectRealtime();
   }
 
@@ -144,6 +150,22 @@ export class AppComponent implements OnInit, OnDestroy {
         error: () => {
           this.historyLoading.set(false);
         }
+      })
+    );
+  }
+
+  private loadNews(): void {
+    this.subscriptions.add(
+      this.marketApi.getNews(this.selectedSymbol(), 8).subscribe({
+        next: articles => this.news.set(articles),
+        error: () => this.news.set([])
+      })
+    );
+
+    this.subscriptions.add(
+      this.marketApi.getNewsSentiment(this.selectedSymbol()).subscribe({
+        next: sentiment => this.newsSentiment.set(sentiment),
+        error: () => this.newsSentiment.set(null)
       })
     );
   }

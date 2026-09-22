@@ -205,6 +205,45 @@
           </div>
         </article>
 
+        <article class="panel news-panel">
+          <div class="panel-header compact">
+            <div>
+              <p class="eyebrow">NEWS SENTIMENT</p>
+              <h3>{{ symbolLabel(selectedSymbol()) }} news pulse</h3>
+            </div>
+            @if (newsSentiment()) {
+              <span class="sentiment-badge"
+                    [class.positive]="(newsSentiment()?.averageSentiment ?? 0) > 0.15"
+                    [class.negative]="(newsSentiment()?.averageSentiment ?? 0) < -0.15">
+                {{ newsSentiment()?.averageSentiment | number:'1.2-2' }}
+              </span>
+            }
+          </div>
+
+          <div class="news-summary">
+            <div><span>Articles</span><strong>{{ newsSentiment()?.articleCount ?? 0 }}</strong></div>
+            <div><span>Positive</span><strong class="positive">{{ newsSentiment()?.positiveCount ?? 0 }}</strong></div>
+            <div><span>Neutral</span><strong>{{ newsSentiment()?.neutralCount ?? 0 }}</strong></div>
+            <div><span>Negative</span><strong class="negative">{{ newsSentiment()?.negativeCount ?? 0 }}</strong></div>
+          </div>
+
+          <div class="headline-list">
+            @for (article of news().slice(0, 5); track article.id) {
+              <div class="headline">
+                <div>
+                  <strong>{{ article.title }}</strong>
+                  <span>{{ article.source }} · {{ article.publishedAt | date:'HH:mm' }}</span>
+                </div>
+                <span [class]="article.sentimentScore > 0.15 ? 'positive' : article.sentimentScore < -0.15 ? 'negative' : 'neutral'">
+                  {{ article.sentimentScore | number:'1.2-2' }}
+                </span>
+              </div>
+            } @empty {
+              <div class="empty-news">No configured news feed has produced articles yet.</div>
+            }
+          </div>
+        </article>
+
         <article class="panel ai-panel">
           <div class="ai-orb">AI</div>
           <p class="eyebrow">COINMIND INTELLIGENCE</p>

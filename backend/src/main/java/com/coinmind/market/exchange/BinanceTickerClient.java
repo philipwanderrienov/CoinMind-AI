@@ -53,8 +53,7 @@ public class BinanceTickerClient {
                 .retryWhen(Retry.backoff(Long.MAX_VALUE, Duration.ofSeconds(2))
                         .maxBackoff(Duration.ofSeconds(30))
                         .doBeforeRetry(signal ->
-                                log.warn("Binance WebSocket disconnected. Reconnecting. attempt={}",
-                                        signal.totalRetries() + 1)))
+                                log.warn("Binance WebSocket disconnected. Reconnecting. attempt={}, cause={}", signal.totalRetries() + 1, signal.failure().toString())))
                 .subscribe(
                         ignored -> { },
                         error -> log.error("Binance WebSocket terminated unexpectedly", error)

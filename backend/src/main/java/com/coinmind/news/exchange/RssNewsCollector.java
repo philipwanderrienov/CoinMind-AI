@@ -38,7 +38,7 @@ public class RssNewsCollector {
         this.webClient = webClientBuilder.build();
     }
 
-    @Scheduled(fixedDelayString = "#{@newsProperties.refreshInterval().toMillis()}")
+    @Scheduled(fixedDelayString = "${coinmind.news.refresh-interval-ms:300000}")
     public void refresh() {
         if (!properties.enabled() || properties.rssUrls() == null) {
             return;

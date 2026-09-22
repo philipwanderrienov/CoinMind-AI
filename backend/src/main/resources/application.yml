@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: coinmind-backend
+  r2dbc:
+    url: ${DATABASE_URL:r2dbc:postgresql://localhost:5432/coinmind}
+    username: ${POSTGRES_USER:coinmind}
+    password: ${POSTGRES_PASSWORD:change_me}
+
+server:
+  port: ${BACKEND_PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+coinmind:
+  persistence:
+    enabled: ${PERSISTENCE_ENABLED:false}
+  market:
+    binance-websocket-base-url: ${BINANCE_WS_URL:wss://stream.binance.com:9443}
+    binance-rest-base-url: ${BINANCE_REST_URL:https://api.binance.com}
+    historical-candle-limit: ${HISTORICAL_CANDLE_LIMIT:500}
+    symbols:
+      - BTCUSDT
+      - ETHUSDT
+      - SOLUSDT
+    intervals:
+      - 1m
+      - 5m
+      - 15m
+      - 1h
+      - 4h
+      - 1d
+
+  news:
+    enabled: ${NEWS_ENABLED:false}
+    refresh-interval-ms: ${NEWS_REFRESH_INTERVAL_MS:300000}
+    rss-urls: []

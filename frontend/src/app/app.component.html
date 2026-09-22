@@ -1,0 +1,297 @@
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">CM</div>
+      <div>
+        <div class="brand-name">CoinMind <span>AI</span></div>
+        <div class="brand-tagline">Crypto market intelligence</div>
+      </div>
+    </div>
+
+    <div class="connection" [class.live]="connectionState() === 'live'">
+      <span class="status-dot"></span>
+      <div>
+        <strong>{{ connectionState() === 'live' ? 'Market live' : 'Connecting' }}</strong>
+        <small>
+          @if (lastMarketEventAt()) {
+            Updated {{ lastMarketEventAt() | date:'HH:mm:ss' }}
+          } @else {
+            Waiting for backend
+          }
+        </small>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero-row">
+      <div>
+        <p class="eyebrow">MARKET OVERVIEW</p>
+        <h1>Read the market.<br><span>Reason with AI.</span></h1>
+        <p class="hero-copy">
+          Realtime BTC, ETH and SOL market data—built as the data foundation for
+          CoinMind's technical and AI analysis engine.
+        </p>
+      </div>
+
+      <div class="hero-status">
+        <span>Phase 1</span>
+        <strong>Market Data Foundation</strong>
+        <small>Binance realtime feed</small>
+      </div>
+    </section>
+
+    <section class="ticker-grid">
+      @for (symbol of symbols; track symbol) {
+        @let ticker = tickers()[symbol];
+        <button
+          type="button"
+          class="ticker-card"
+          [class.active]="selectedSymbol() === symbol"
+          (click)="selectSymbol(symbol)">
+          <div class="ticker-head">
+            <div class="asset-icon">{{ symbolLabel(symbol).slice(0, 1) }}</div>
+            <div>
+              <strong>{{ symbolLabel(symbol) }}</strong>
+              <small>/ USDT</small>
+            </div>
+            <span class="live-pill">LIVE</span>
+          </div>
+
+          <div class="ticker-price">{{ formatPrice(ticker?.closePrice) }}</div>
+
+          @if (ticker) {
+            @let change = ((ticker.closePrice - ticker.openPrice) / ticker.openPrice) * 100;
+            <div class="ticker-meta">
+              <span [class]="changeClass(change)">
+                {{ change >= 0 ? '+' : '' }}{{ change | number:'1.2-2' }}%
+              </span>
+              <span>Vol {{ formatCompact(ticker.quoteVolume) }}</span>
+            </div>
+          } @else {
+            <div class="ticker-meta muted">Waiting for market data</div>
+          }
+        </button>
+      }
+    </section>
+
+    <section class="workspace-grid">
+      <article class="panel chart-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">LIVE MARKET</p>
+            <div class="market-title">
+              <h2>{{ symbolLabel(selectedSymbol()) }} / USDT</h2>
+              @if (selectedTicker()) {
+                <span class="selected-price">
+                  {{ formatPrice(selectedTicker()?.closePrice) }}
+                </span>
+                <span [class]="changeClass(dailyChange())">
+                  {{ (dailyChange() ?? 0) >= 0 ? '+' : '' }}
+                  {{ dailyChange() | number:'1.2-2' }}%
+                </span>
+              }
+            </div>
+          </div>
+
+          <div class="timeframes">
+            @for (interval of intervals; track interval) {
+              <button
+                type="button"
+                [class.active]="selectedInterval() === interval"
+                (click)="selectInterval(interval)">
+                {{ interval }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="chart-wrap">
+          @if (selectedCandles().length) {
+            <app-market-chart [candles]="selectedCandles()"></app-market-chart>
+          } @else {
+            <div class="empty-chart">
+              <div class="pulse-ring"></div>
+              <strong>Waiting for {{ selectedSymbol() }} {{ selectedInterval() }} candles</strong>
+              <span>The chart will begin updating as soon as the backend receives Binance data.</span>
+            </div>
+          }
+        </div>
+
+        <div class="chart-footer">
+          <span>
+            Session candles
+            <strong>{{ selectedCandles().length }}</strong>
+          </span>
+          <span class="footer-note">
+            Historical preload will be added in the next backend milestone.
+          </span>
+        </div>
+      </article>
+
+      <aside class="side-stack">
+        <article class="panel market-stats">
+          <div class="panel-header compact">
+            <div>
+              <p class="eyebrow">CURRENT CANDLE</p>
+              <h3>{{ selectedInterval() }} snapshot</h3>
+            </div>
+            @if (currentCandle()) {
+              <span class="state-pill" [class.closed]="currentCandle()?.closed">
+                {{ currentCandle()?.closed ? 'CLOSED' : 'FORMING' }}
+              </span>
+            }
+          </div>
+
+          <div class="stat-list">
+            <div><span>Open</span><strong>{{ formatPrice(currentCandle()?.open) }}</strong></div>
+            <div><span>High</span><strong>{{ formatPrice(currentCandle()?.high) }}</strong></div>
+            <div><span>Low</span><strong>{{ formatPrice(currentCandle()?.low) }}</strong></div>
+            <div><span>Close</span><strong>{{ formatPrice(currentCandle()?.close) }}</strong></div>
+            <div><span>Volume</span><strong>{{ formatCompact(currentCandle()?.quoteVolume) }}</strong></div>
+            <div><span>Trades</span><strong>{{ formatCompact(currentCandle()?.tradeCount) }}</strong></div>
+          </div>
+        </article>
+
+        <article class="panel market-stats">
+          <div class="panel-header compact">
+            <div>
+              <p class="eyebrow">MARKET MICROSTRUCTURE</p>
+              <h3>Liquidity & pressure</h3>
+            </div>
+          </div>
+
+          <div class="stat-list">
+            <div><span>Best bid</span><strong>{{ formatPrice(selectedOrderBook()?.bestBidPrice) }}</strong></div>
+            <div><span>Best ask</span><strong>{{ formatPrice(selectedOrderBook()?.bestAskPrice) }}</strong></div>
+            <div><span>Spread</span><strong>{{ microstructure()?.spreadBps | number:'1.2-2' }} bps</strong></div>
+            <div><span>Buy volume</span><strong>{{ formatCompact(microstructure()?.buyVolume) }}</strong></div>
+            <div><span>Sell volume</span><strong>{{ formatCompact(microstructure()?.sellVolume) }}</strong></div>
+            <div><span>Buy/Sell ratio</span><strong>{{ microstructure()?.buySellRatio | number:'1.2-2' }}</strong></div>
+          </div>
+        </article>
+
+        <article class="panel market-stats">
+          <div class="panel-header compact">
+            <div>
+              <p class="eyebrow">TECHNICAL INDICATORS</p>
+              <h3>{{ selectedInterval() }} market structure</h3>
+            </div>
+          </div>
+
+          <div class="stat-list">
+            <div><span>EMA 20</span><strong>{{ formatPrice(indicators()?.ema20) }}</strong></div>
+            <div><span>EMA 50</span><strong>{{ formatPrice(indicators()?.ema50) }}</strong></div>
+            <div><span>EMA 200</span><strong>{{ formatPrice(indicators()?.ema200) }}</strong></div>
+            <div><span>RSI 14</span><strong>{{ indicators()?.rsi14 | number:'1.1-2' }}</strong></div>
+            <div><span>MACD</span><strong>{{ indicators()?.macdHistogram | number:'1.2-4' }}</strong></div>
+            <div><span>ATR 14</span><strong>{{ indicators()?.atr14 | number:'1.2-4' }}</strong></div>
+            <div><span>Volume ratio</span><strong>{{ indicators()?.volumeRatio | number:'1.2-2' }}</strong></div>
+          </div>
+
+          <div class="score-grid">
+            <div>
+              <span>Trend</span>
+              <strong>{{ indicators()?.trendScore | number:'1.0-0' }}</strong>
+            </div>
+            <div>
+              <span>Momentum</span>
+              <strong>{{ indicators()?.momentumScore | number:'1.0-0' }}</strong>
+            </div>
+            <div>
+              <span>Volatility</span>
+              <strong>{{ indicators()?.volatilityScore | number:'1.0-0' }}</strong>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel news-panel">
+          <div class="panel-header compact">
+            <div>
+              <p class="eyebrow">NEWS SENTIMENT</p>
+              <h3>{{ symbolLabel(selectedSymbol()) }} news pulse</h3>
+            </div>
+            @if (newsSentiment()) {
+              <span class="sentiment-badge"
+                    [class.positive]="(newsSentiment()?.averageSentiment ?? 0) > 0.15"
+                    [class.negative]="(newsSentiment()?.averageSentiment ?? 0) < -0.15">
+                {{ newsSentiment()?.averageSentiment | number:'1.2-2' }}
+              </span>
+            }
+          </div>
+
+          <div class="news-summary">
+            <div><span>Articles</span><strong>{{ newsSentiment()?.articleCount ?? 0 }}</strong></div>
+            <div><span>Positive</span><strong class="positive">{{ newsSentiment()?.positiveCount ?? 0 }}</strong></div>
+            <div><span>Neutral</span><strong>{{ newsSentiment()?.neutralCount ?? 0 }}</strong></div>
+            <div><span>Negative</span><strong class="negative">{{ newsSentiment()?.negativeCount ?? 0 }}</strong></div>
+          </div>
+
+          <div class="headline-list">
+            @for (article of news().slice(0, 5); track article.id) {
+              <div class="headline">
+                <div>
+                  <strong>{{ article.title }}</strong>
+                  <span>{{ article.source }} · {{ article.publishedAt | date:'HH:mm' }}</span>
+                </div>
+                <span [class]="article.sentimentScore > 0.15 ? 'positive' : article.sentimentScore < -0.15 ? 'negative' : 'neutral'">
+                  {{ article.sentimentScore | number:'1.2-2' }}
+                </span>
+              </div>
+            } @empty {
+              <div class="empty-news">No configured news feed has produced articles yet.</div>
+            }
+          </div>
+        </article>
+
+        <article class="panel ai-panel">
+          <div class="ai-orb">AI</div>
+          <p class="eyebrow">COINMIND INTELLIGENCE</p>
+          <h3>Structured market context is ready.</h3>
+
+          @if (marketContext()) {
+            <p>
+              CoinMind is now combining price, technical structure and realtime
+              microstructure into one compact AI-ready payload.
+            </p>
+
+            <div class="ai-context-grid">
+              <div>
+                <span>Trend</span>
+                <strong>{{ marketContext()?.technical?.trendScore | number:'1.0-0' }}</strong>
+              </div>
+              <div>
+                <span>Momentum</span>
+                <strong>{{ marketContext()?.technical?.momentumScore | number:'1.0-0' }}</strong>
+              </div>
+              <div>
+                <span>Buy/Sell</span>
+                <strong>{{ marketContext()?.microstructure?.buySellRatio | number:'1.2-2' }}</strong>
+              </div>
+              <div>
+                <span>RSI</span>
+                <strong>{{ marketContext()?.technical?.rsi14 | number:'1.1-1' }}</strong>
+              </div>
+            </div>
+          } @else {
+            <p>
+              Waiting for enough live market data to assemble the AI context.
+            </p>
+          }
+
+          <div class="pipeline">
+            <div class="done"><span>01</span> Market feed</div>
+            <div class="done"><span>02</span> Historical candles</div>
+            <div class="done"><span>03</span> Indicators</div>
+            <div class="active"><span>04</span> AI provider</div>
+          </div>
+
+          <div class="provider-status">
+            <span>Provider</span>
+            <strong>{{ aiAnalysis()?.model ?? 'none' }}</strong>
+          </div>
+        </article>
+      </aside>
+    </section>
+  </main>
+</div>

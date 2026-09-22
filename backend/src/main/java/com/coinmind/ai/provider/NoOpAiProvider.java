@@ -2,7 +2,6 @@ package com.coinmind.ai.provider;
 
 import com.coinmind.ai.model.AiAnalysisResult;
 import com.coinmind.ai.model.MarketContext;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -10,7 +9,6 @@ import java.time.Instant;
 import java.util.List;
 
 @Component
-@ConditionalOnMissingBean(AiProvider.class)
 public class NoOpAiProvider implements AiProvider {
 
     @Override

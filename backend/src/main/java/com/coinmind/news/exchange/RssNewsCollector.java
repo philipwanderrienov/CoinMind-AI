@@ -30,12 +30,11 @@ public class RssNewsCollector {
 
     public RssNewsCollector(
             NewsProperties properties,
-            NewsService newsService,
-            WebClient.Builder webClientBuilder
+            NewsService newsService
     ) {
         this.properties = properties;
         this.newsService = newsService;
-        this.webClient = webClientBuilder.build();
+        this.webClient = WebClient.create();
     }
 
     @Scheduled(fixedDelayString = "${coinmind.news.refresh-interval-ms:300000}")

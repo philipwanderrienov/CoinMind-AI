@@ -9,9 +9,10 @@ import com.coinmind.market.service.MarketHistoryService;
 import com.coinmind.market.service.MarketTickerService;
 import com.coinmind.market.service.OrderBookService;
 import com.coinmind.market.service.TradeService;
+import com.coinmind.news.service.NewsService;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.Instant;
 
 @Service
@@ -22,19 +23,22 @@ public class MarketContextBuilder {
     private final OrderBookService orderBookService;
     private final TradeService tradeService;
     private final TechnicalIndicatorService indicatorService;
+    private final NewsService newsService;
 
     public MarketContextBuilder(
             MarketTickerService tickerService,
             MarketHistoryService historyService,
             OrderBookService orderBookService,
             TradeService tradeService,
-            TechnicalIndicatorService indicatorService
+            TechnicalIndicatorService indicatorService,
+            NewsService newsService
     ) {
         this.tickerService = tickerService;
         this.historyService = historyService;
         this.orderBookService = orderBookService;
         this.tradeService = tradeService;
         this.indicatorService = indicatorService;
+        this.newsService = newsService;
     }
 
     public MarketContext build(String symbol, String interval) {
@@ -62,6 +66,12 @@ public class MarketContextBuilder {
                 normalizedSymbol,
                 orderBook.spread(),
                 orderBook.midPrice()
+        );
+
+        var news = newsService.summarize(
+                normalizedSymbol,
+                Duration.ofHours(6),
+                10
         );
 
         return new MarketContext(
@@ -101,6 +111,17 @@ public class MarketContextBuilder {
                         micro.buyVolume(),
                         micro.sellVolume(),
                         micro.buySellRatio()
+                ),
+                new MarketContext.NewsContext(
+                        news.articleCount(),
+                        news.averageSentiment(),
+                        news.positiveCount(),
+                        news.neutralCount(),
+                        news.negativeCount(),
+                        news.recentArticles().stream()
+                                .limit(5)
+                                .map(article -> article.title())
+                                .toList()
                 )
         );
     }

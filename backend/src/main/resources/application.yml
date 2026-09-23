@@ -20,7 +20,7 @@ coinmind:
     enabled: ${PERSISTENCE_ENABLED:false}
   market:
     binance-websocket-base-url: ${BINANCE_WS_URL:wss://data-stream.binance.vision}
-    binance-rest-base-url: ${BINANCE_REST_URL:https://api.binance.com}
+    binance-rest-base-url: ${BINANCE_REST_URL:https://data-api.binance.vision}
     historical-candle-limit: ${HISTORICAL_CANDLE_LIMIT:500}
     symbols:
       - BTCUSDT

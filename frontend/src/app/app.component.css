@@ -730,20 +730,52 @@ h1 span {
 }
 
 @media (max-width: 760px) {
-  .system-status {
-    gap: 10px;
+  .topbar {
+    height: auto;
+    min-height: 78px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 12px;
   }
 
-  .backend-status {
-    padding-right: 10px;
+  .brand {
+    min-width: 0;
+  }
+
+  .system-status {
+    width: 100%;
+    gap: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
   }
 
   .connection {
-    min-width: auto;
+    min-width: 0;
+    gap: 8px;
+  }
+
+  .connection strong {
+    font-size: 10px;
+    white-space: nowrap;
+  }
+
+  .backend-status {
+    padding-right: 12px;
+    border-right: 1px solid var(--border);
   }
 
   .market-status {
-    display: none;
+    display: flex;
+    padding-left: 12px;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    flex: 0 0 auto;
   }
 }
 

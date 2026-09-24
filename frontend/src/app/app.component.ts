@@ -27,6 +27,11 @@ import { formatCompact, formatPrice } from './shared/price-format';
 export class AppComponent implements OnInit, OnDestroy {
   private readonly marketApi = inject(MarketApiService);
   private readonly subscriptions = new Subscription();
+  private realtimeSubscriptions = new Subscription();
+  private readonly realtimeStartedAt = Date.now();
+  private lastRealtimeReconnectAt = 0;
+  private readonly staleThresholdMs = 20_000;
+  private readonly reconnectCooldownMs = 15_000;
 
   readonly symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT'];
   readonly intervals = ['1m', '5m', '15m', '1h', '4h', '1d'];
@@ -41,6 +46,8 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly tickers = signal<Record<string, TickerSnapshot>>({});
   readonly candles = signal<Candlestick[]>([]);
   readonly lastMarketEventAt = signal<Date | null>(null);
+  readonly marketStreamAgeSeconds = signal<number | null>(null);
+  readonly marketReconnectCount = signal(0);
   readonly historyLoading = signal(false);
   readonly orderBooks = signal<Record<string, OrderBookSnapshot>>({});
   readonly microstructure = signal<MarketMicrostructure | null>(null);
@@ -87,9 +94,11 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadMarketContext();
     this.loadNews();
     this.connectRealtime();
+    this.startRealtimeWatchdog();
   }
 
   ngOnDestroy(): void {
+    this.realtimeSubscriptions.unsubscribe();
     this.subscriptions.unsubscribe();
   }
 
@@ -260,10 +269,50 @@ export class AppComponent implements OnInit, OnDestroy {
     );
   }
 
-  private connectRealtime(): void {
+  private startRealtimeWatchdog(): void {
+    this.subscriptions.add(
+      timer(5000, 5000).subscribe(() => {
+        const now = Date.now();
+        const lastEvent = this.lastMarketEventAt();
+        const referenceTime = lastEvent?.getTime() ?? this.realtimeStartedAt;
+        const ageMs = now - referenceTime;
+
+        this.marketStreamAgeSeconds.set(Math.floor(ageMs / 1000));
+
+        if (this.backendState() === 'down') {
+          this.connectionState.set('offline');
+          return;
+        }
+
+        if (ageMs <= this.staleThresholdMs) {
+          return;
+        }
+
+        this.connectionState.set('stale');
+
+        if (
+          this.backendState() === 'up' &&
+          now - this.lastRealtimeReconnectAt >= this.reconnectCooldownMs
+        ) {
+          this.marketReconnectCount.update(count => count + 1);
+          this.connectRealtime(true);
+        }
+      })
+    );
+  }
+
+  private connectRealtime(forceReconnect = false): void {
+    if (forceReconnect) {
+      this.realtimeSubscriptions.unsubscribe();
+      this.realtimeSubscriptions = new Subscription();
+    }
+
+    this.lastRealtimeReconnectAt = Date.now();
+    this.connectionState.set('connecting');
+
     const retryDelay = () => timer(3000);
 
-    this.subscriptions.add(
+    this.realtimeSubscriptions.add(
       this.marketApi.tickerStream()
         .pipe(retry({ delay: retryDelay }))
         .subscribe({
@@ -279,7 +328,7 @@ export class AppComponent implements OnInit, OnDestroy {
         })
     );
 
-    this.subscriptions.add(
+    this.realtimeSubscriptions.add(
       this.marketApi.orderBookStream()
         .pipe(retry({ delay: retryDelay }))
         .subscribe({
@@ -298,7 +347,7 @@ export class AppComponent implements OnInit, OnDestroy {
         })
     );
 
-    this.subscriptions.add(
+    this.realtimeSubscriptions.add(
       this.marketApi.candleStream()
         .pipe(retry({ delay: retryDelay }))
         .subscribe({

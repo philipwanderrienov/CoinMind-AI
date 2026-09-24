@@ -25,7 +25,7 @@ export interface Candlestick {
   eventTime: string;
 }
 
-export type ConnectionState = 'connecting' | 'live' | 'offline';
+export type ConnectionState = 'connecting' | 'live' | 'stale' | 'offline';
 
 
 export interface OrderBookSnapshot {

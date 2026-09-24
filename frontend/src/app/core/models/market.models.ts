@@ -156,3 +156,21 @@ export interface NewsSentimentSummary {
   recentArticles: NewsArticle[];
   calculatedAt: string;
 }
+
+
+export interface MarketFeedStreamHealth {
+  status: 'UP' | 'STALE' | 'STARTING';
+  lastEventAt: string | null;
+  ageSeconds: number | null;
+}
+
+export interface MarketFeedHealth {
+  status: 'UP' | 'DEGRADED' | 'STARTING';
+  checkedAt: string;
+  streams: {
+    ticker: MarketFeedStreamHealth;
+    kline: MarketFeedStreamHealth;
+    orderBook: MarketFeedStreamHealth;
+    trade: MarketFeedStreamHealth;
+  };
+}

@@ -6,6 +6,7 @@ import {
   AiAnalysisResult,
   MarketContext,
   MarketMicrostructure,
+  MarketFeedHealth,
   NewsArticle,
   NewsSentimentSummary,
   OrderBookSnapshot,
@@ -20,6 +21,10 @@ export class MarketApiService {
 
   getBackendHealth(): Observable<{ status: string }> {
     return this.http.get<{ status: string }>('/actuator/health');
+  }
+
+  getMarketFeedHealth(): Observable<MarketFeedHealth> {
+    return this.http.get<MarketFeedHealth>(`${this.baseUrl}/feed-health`);
   }
 
   getTickers(): Observable<TickerSnapshot[]> {

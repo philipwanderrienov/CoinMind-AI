@@ -40,21 +40,30 @@
 
       <div class="connection market-status"
            [class.live]="connectionState() === 'live'"
+           [class.stale]="connectionState() === 'stale'"
            [class.offline]="connectionState() === 'offline'">
         <span class="status-dot"></span>
         <div>
           <strong>
-            {{ connectionState() === 'live'
-              ? 'Market stream LIVE'
-              : connectionState() === 'offline'
-                ? 'Market stream OFFLINE'
-                : 'Market stream connecting' }}
+            @switch (connectionState()) {
+              @case ('live') { Market stream LIVE }
+              @case ('stale') { Market stream STALE }
+              @case ('offline') { Market stream OFFLINE }
+              @default { Market stream connecting }
+            }
           </strong>
           <small>
-            @if (lastMarketEventAt()) {
+            @if (connectionState() === 'stale') {
+              No event for {{ marketStreamAgeSeconds() ?? 0 }}s · reconnect #{{ marketReconnectCount() }}
+            } @else if (lastMarketEventAt()) {
               Last event {{ lastMarketEventAt() | date:'HH:mm:ss' }}
+              @if (marketStreamAgeSeconds() !== null) {
+                · {{ marketStreamAgeSeconds() }}s ago
+              }
+            } @else if (marketReconnectCount() > 0) {
+              Waiting for event · reconnect #{{ marketReconnectCount() }}
             } @else {
-              No market event received yet
+              Waiting for first market event
             }
           </small>
         </div>

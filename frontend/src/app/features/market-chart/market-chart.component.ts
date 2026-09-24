@@ -40,6 +40,7 @@ import { Candlestick } from '../../core/models/market.models';
 })
 export class MarketChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input({ required: true }) candles: Candlestick[] = [];
+  @Input({ required: true }) seriesKey = '';
 
   @ViewChild('chart', { static: true })
   private chartElement!: ElementRef<HTMLDivElement>;
@@ -47,6 +48,10 @@ export class MarketChartComponent implements AfterViewInit, OnChanges, OnDestroy
   private chart?: IChartApi;
   private series?: ISeriesApi<'Candlestick'>;
   private resizeObserver?: ResizeObserver;
+  private appliedSeriesKey = '';
+  private appliedCount = 0;
+  private appliedFirstTime?: number;
+  private appliedLastTime?: number;
 
   ngAfterViewInit(): void {
     this.chart = createChart(this.chartElement.nativeElement, {
@@ -92,12 +97,21 @@ export class MarketChartComponent implements AfterViewInit, OnChanges, OnDestroy
     });
 
     this.resizeObserver.observe(this.chartElement.nativeElement);
-    this.applyCandles(true);
+    this.resetSeries(true);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['candles'] && this.series) {
-      this.applyCandles(false);
+    if (!this.series) {
+      return;
+    }
+
+    if (changes['seriesKey'] && !changes['seriesKey'].firstChange) {
+      this.resetSeries(true);
+      return;
+    }
+
+    if (changes['candles']) {
+      this.applyIncrementalUpdate();
     }
   }
 
@@ -106,20 +120,64 @@ export class MarketChartComponent implements AfterViewInit, OnChanges, OnDestroy
     this.chart?.remove();
   }
 
-  private applyCandles(fitContent: boolean): void {
+  private resetSeries(fitContent: boolean): void {
     if (!this.series) {
       return;
     }
 
-    const data = this.candles
-      .map(candle => this.toChartData(candle))
-      .sort((a, b) => Number(a.time) - Number(b.time));
+    const data = this.sortedChartData();
 
     this.series.setData(data);
+    this.captureAppliedState(data);
 
     if (fitContent || data.length <= 2) {
       this.chart?.timeScale().fitContent();
     }
+  }
+
+  private applyIncrementalUpdate(): void {
+    if (!this.series) {
+      return;
+    }
+
+    const data = this.sortedChartData();
+
+    if (!data.length) {
+      this.resetSeries(false);
+      return;
+    }
+
+    const firstTime = Number(data[0].time);
+    const lastTime = Number(data[data.length - 1].time);
+
+    const requiresFullReload =
+      this.appliedSeriesKey !== this.seriesKey ||
+      this.appliedCount === 0 ||
+      this.appliedFirstTime !== firstTime ||
+      data.length < this.appliedCount ||
+      data.length > this.appliedCount + 1 ||
+      (this.appliedLastTime != null && lastTime < this.appliedLastTime);
+
+    if (requiresFullReload) {
+      this.resetSeries(this.appliedSeriesKey !== this.seriesKey);
+      return;
+    }
+
+    this.series.update(data[data.length - 1]);
+    this.captureAppliedState(data);
+  }
+
+  private sortedChartData(): CandlestickData<Time>[] {
+    return this.candles
+      .map(candle => this.toChartData(candle))
+      .sort((a, b) => Number(a.time) - Number(b.time));
+  }
+
+  private captureAppliedState(data: CandlestickData<Time>[]): void {
+    this.appliedSeriesKey = this.seriesKey;
+    this.appliedCount = data.length;
+    this.appliedFirstTime = data.length ? Number(data[0].time) : undefined;
+    this.appliedLastTime = data.length ? Number(data[data.length - 1].time) : undefined;
   }
 
   private toChartData(candle: Candlestick): CandlestickData<Time> {

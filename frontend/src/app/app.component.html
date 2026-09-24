@@ -159,7 +159,10 @@
 
         <div class="chart-wrap">
           @if (selectedCandles().length) {
-            <app-market-chart [candles]="selectedCandles()"></app-market-chart>
+            <app-market-chart
+              [candles]="selectedCandles()"
+              [seriesKey]="selectedSymbol() + ':' + selectedInterval()">
+            </app-market-chart>
           } @else {
             <div class="empty-chart">
               <div class="pulse-ring"></div>
@@ -175,7 +178,7 @@
             <strong>{{ selectedCandles().length }}</strong>
           </span>
           <span class="footer-note">
-            Historical preload will be added in the next backend milestone.
+            Historical preload + realtime incremental updates
           </span>
         </div>
       </article>

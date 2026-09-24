@@ -77,6 +77,24 @@ export class AppComponent implements OnInit, OnDestroy {
     return values.length ? values[values.length - 1] : null;
   });
 
+  readonly marketUiStatus = computed(() => {
+    const state = this.connectionState();
+
+    if (state === 'live') {
+      return 'LIVE';
+    }
+
+    if (state === 'stale') {
+      return this.marketReconnectCount() > 0 ? 'RECONNECTING' : 'DEGRADED';
+    }
+
+    if (state === 'offline') {
+      return 'OFFLINE';
+    }
+
+    return this.marketReconnectCount() > 0 ? 'RECONNECTING' : 'DEGRADED';
+  });
+
   readonly dailyChange = computed(() => {
     const ticker = this.selectedTicker();
     if (!ticker || ticker.openPrice === 0) {

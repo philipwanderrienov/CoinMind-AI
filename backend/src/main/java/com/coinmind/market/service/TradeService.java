@@ -23,7 +23,7 @@ public class TradeService {
 
     private final Map<String, Deque<TradeSnapshot>> recentTrades = new ConcurrentHashMap<>();
     private final Sinks.Many<TradeSnapshot> updates =
-            Sinks.many().multicast().onBackpressureBuffer();
+            Sinks.many().multicast().onBackpressureBuffer(256, false);
 
     public synchronized void publish(TradeSnapshot trade) {
         Deque<TradeSnapshot> trades = recentTrades.computeIfAbsent(

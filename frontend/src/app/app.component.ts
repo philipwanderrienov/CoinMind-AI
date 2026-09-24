@@ -7,6 +7,7 @@ import {
   ConnectionState,
   MarketContext,
   MarketMicrostructure,
+  MarketFeedHealth,
   NewsArticle,
   NewsSentimentSummary,
   OrderBookSnapshot,
@@ -43,6 +44,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly backendLatencyMs = signal<number | null>(null);
   readonly backendLastCheckedAt = signal<Date | null>(null);
   readonly backendError = signal<string | null>(null);
+  readonly marketFeedHealth = signal<MarketFeedHealth | null>(null);
   readonly tickers = signal<Record<string, TickerSnapshot>>({});
   readonly candles = signal<Candlestick[]>([]);
   readonly lastMarketEventAt = signal<Date | null>(null);
@@ -105,6 +107,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.startBackendHealthCheck();
+    this.startMarketFeedHealthCheck();
     this.loadSnapshots();
     this.loadHistory();
     this.loadMicrostructure();
@@ -153,6 +156,28 @@ export class AppComponent implements OnInit, OnDestroy {
       return 'neutral';
     }
     return value > 0 ? 'positive' : 'negative';
+  }
+
+  private startMarketFeedHealthCheck(): void {
+    this.subscriptions.add(
+      timer(0, 5000)
+        .pipe(
+          switchMap(() => this.marketApi.getMarketFeedHealth().pipe(
+            catchError(() => of(null))
+          ))
+        )
+        .subscribe(health => {
+          this.marketFeedHealth.set(health);
+
+          if (!health) {
+            return;
+          }
+
+          if (health.status === 'DEGRADED' && this.connectionState() === 'live') {
+            this.connectionState.set('stale');
+          }
+        })
+    );
   }
 
   private startBackendHealthCheck(): void {

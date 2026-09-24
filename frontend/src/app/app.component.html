@@ -45,23 +45,20 @@
         <span class="status-dot"></span>
         <div>
           <strong>
-            @switch (connectionState()) {
-              @case ('live') { Market stream LIVE }
-              @case ('stale') { Market stream STALE }
-              @case ('offline') { Market stream OFFLINE }
-              @default { Market stream connecting }
-            }
+            Market Data {{ marketUiStatus() }}
           </strong>
           <small>
-            @if (connectionState() === 'stale') {
-              No event for {{ marketStreamAgeSeconds() ?? 0 }}s · reconnect #{{ marketReconnectCount() }}
+            @if (marketUiStatus() === 'RECONNECTING') {
+              Last event {{ marketStreamAgeSeconds() ?? 0 }}s ago · attempt #{{ marketReconnectCount() }}
+            } @else if (marketUiStatus() === 'DEGRADED') {
+              No fresh market data for {{ marketStreamAgeSeconds() ?? 0 }}s
+            } @else if (marketUiStatus() === 'OFFLINE') {
+              Market data unavailable
             } @else if (lastMarketEventAt()) {
               Last event {{ lastMarketEventAt() | date:'HH:mm:ss' }}
               @if (marketStreamAgeSeconds() !== null) {
                 · {{ marketStreamAgeSeconds() }}s ago
               }
-            } @else if (marketReconnectCount() > 0) {
-              Waiting for event · reconnect #{{ marketReconnectCount() }}
             } @else {
               Waiting for first market event
             }

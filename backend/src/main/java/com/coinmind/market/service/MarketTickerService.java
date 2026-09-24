@@ -16,7 +16,7 @@ public class MarketTickerService {
 
     private final Map<String, TickerSnapshot> latestBySymbol = new ConcurrentHashMap<>();
     private final Sinks.Many<TickerSnapshot> updates =
-            Sinks.many().multicast().onBackpressureBuffer();
+            Sinks.many().multicast().onBackpressureBuffer(256, false);
 
     public void publish(TickerSnapshot snapshot) {
         latestBySymbol.put(snapshot.symbol(), snapshot);

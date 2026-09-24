@@ -90,9 +90,16 @@ export class MarketChartComponent implements AfterViewInit, OnChanges, OnDestroy
         return;
       }
 
+      const width = Math.floor(entry.contentRect.width);
+      const height = Math.floor(entry.contentRect.height);
+
+      if (width <= 0 || height <= 0) {
+        return;
+      }
+
       this.chart.applyOptions({
-        width: entry.contentRect.width,
-        height: entry.contentRect.height
+        width,
+        height
       });
     });
 
@@ -106,7 +113,7 @@ export class MarketChartComponent implements AfterViewInit, OnChanges, OnDestroy
     }
 
     if (changes['seriesKey'] && !changes['seriesKey'].firstChange) {
-      this.resetSeries(true);
+      this.resetSeriesForSelection();
       return;
     }
 
@@ -131,8 +138,44 @@ export class MarketChartComponent implements AfterViewInit, OnChanges, OnDestroy
     this.captureAppliedState(data);
 
     if (fitContent || data.length <= 2) {
-      this.chart?.timeScale().fitContent();
+      this.fitChartToData();
     }
+  }
+
+  private resetSeriesForSelection(): void {
+    if (!this.series || !this.chart) {
+      return;
+    }
+
+    // Clear the previous symbol/timeframe first so Lightweight Charts cannot
+    // retain the old price range while Angular switches inputs.
+    this.series.setData([]);
+    this.appliedSeriesKey = '';
+    this.appliedCount = 0;
+    this.appliedFirstTime = undefined;
+    this.appliedLastTime = undefined;
+
+    this.chart.priceScale('right').applyOptions({
+      autoScale: true
+    });
+
+    const data = this.sortedChartData();
+    this.series.setData(data);
+    this.captureAppliedState(data);
+    this.fitChartToData();
+  }
+
+  private fitChartToData(): void {
+    requestAnimationFrame(() => {
+      if (!this.chart) {
+        return;
+      }
+
+      this.chart.priceScale('right').applyOptions({
+        autoScale: true
+      });
+      this.chart.timeScale().fitContent();
+    });
   }
 
   private applyIncrementalUpdate(): void {

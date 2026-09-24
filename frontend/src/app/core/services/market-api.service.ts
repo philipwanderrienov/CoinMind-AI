@@ -18,6 +18,10 @@ export class MarketApiService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = '/api/v1/market';
 
+  getBackendHealth(): Observable<{ status: string }> {
+    return this.http.get<{ status: string }>('/actuator/health');
+  }
+
   getTickers(): Observable<TickerSnapshot[]> {
     return this.http.get<TickerSnapshot[]>(`${this.baseUrl}/tickers`);
   }

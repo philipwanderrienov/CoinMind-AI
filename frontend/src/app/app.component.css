@@ -746,3 +746,9 @@ h1 span {
     display: none;
   }
 }
+
+
+.connection.stale .status-dot {
+  background: #f2b84b;
+  box-shadow: 0 0 0 5px rgba(242, 184, 75, .08), 0 0 18px rgba(242, 184, 75, .22);
+}

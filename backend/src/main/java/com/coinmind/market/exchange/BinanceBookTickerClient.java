@@ -49,11 +49,14 @@ public class BinanceBookTickerClient {
 
         webSocketClient.execute(uri, session ->
                         session.receive()
+                                .timeout(Duration.ofSeconds(30))
                                 .doOnNext(message -> handlePayload(message.getPayloadAsText()))
                                 .then()
                 )
                 .retryWhen(Retry.backoff(Long.MAX_VALUE, Duration.ofSeconds(2))
-                        .maxBackoff(Duration.ofSeconds(30)))
+                        .maxBackoff(Duration.ofSeconds(30))
+                        .doBeforeRetry(signal ->
+                                log.warn("Binance bookTicker WebSocket stale/disconnected. Reconnecting. attempt={}, cause={}", signal.totalRetries() + 1, signal.failure().toString())))
                 .subscribe(
                         ignored -> { },
                         error -> log.error("Binance bookTicker WebSocket terminated unexpectedly", error)

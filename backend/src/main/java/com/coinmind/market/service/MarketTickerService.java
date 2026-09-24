@@ -5,21 +5,25 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class MarketTickerService {
 
     private final Map<String, TickerSnapshot> latestBySymbol = new ConcurrentHashMap<>();
+    private final AtomicReference<Instant> lastEventAt = new AtomicReference<>();
     private final Sinks.Many<TickerSnapshot> updates =
             Sinks.many().multicast().onBackpressureBuffer(256, false);
 
     public void publish(TickerSnapshot snapshot) {
         latestBySymbol.put(snapshot.symbol(), snapshot);
+        lastEventAt.set(Instant.now());
         updates.tryEmitNext(snapshot);
     }
 
@@ -31,6 +35,10 @@ public class MarketTickerService {
         return latestBySymbol.values().stream()
                 .sorted(Comparator.comparing(TickerSnapshot::symbol))
                 .toList();
+    }
+
+    public Instant lastEventAt() {
+        return lastEventAt.get();
     }
 
     public Flux<TickerSnapshot> stream() {

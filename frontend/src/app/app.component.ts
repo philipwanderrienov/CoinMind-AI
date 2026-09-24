@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
-import { Subscription, retry, timer } from 'rxjs';
+import { Subscription, catchError, map, of, retry, switchMap, timer } from 'rxjs';
 import {
   AiAnalysisResult,
   Candlestick,
@@ -34,6 +34,10 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly selectedSymbol = signal('BTCUSDT');
   readonly selectedInterval = signal('1m');
   readonly connectionState = signal<ConnectionState>('connecting');
+  readonly backendState = signal<'checking' | 'up' | 'down'>('checking');
+  readonly backendLatencyMs = signal<number | null>(null);
+  readonly backendLastCheckedAt = signal<Date | null>(null);
+  readonly backendError = signal<string | null>(null);
   readonly tickers = signal<Record<string, TickerSnapshot>>({});
   readonly candles = signal<Candlestick[]>([]);
   readonly lastMarketEventAt = signal<Date | null>(null);
@@ -75,6 +79,7 @@ export class AppComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
+    this.startBackendHealthCheck();
     this.loadSnapshots();
     this.loadHistory();
     this.loadMicrostructure();
@@ -121,6 +126,48 @@ export class AppComponent implements OnInit, OnDestroy {
       return 'neutral';
     }
     return value > 0 ? 'positive' : 'negative';
+  }
+
+  private startBackendHealthCheck(): void {
+    this.subscriptions.add(
+      timer(0, 5000)
+        .pipe(
+          switchMap(() => {
+            const startedAt = performance.now();
+
+            return this.marketApi.getBackendHealth().pipe(
+              map(response => ({
+                ok: response.status?.toUpperCase() === 'UP',
+                latency: Math.round(performance.now() - startedAt),
+                error: null as string | null
+              })),
+              catchError(error => of({
+                ok: false,
+                latency: Math.round(performance.now() - startedAt),
+                error: this.describeBackendError(error)
+              }))
+            );
+          })
+        )
+        .subscribe(result => {
+          this.backendState.set(result.ok ? 'up' : 'down');
+          this.backendLatencyMs.set(result.latency);
+          this.backendLastCheckedAt.set(new Date());
+          this.backendError.set(result.error);
+        })
+    );
+  }
+
+  private describeBackendError(error: any): string {
+    if (error?.status === 0) {
+      return 'Backend unreachable / connection refused';
+    }
+
+    if (error?.status) {
+      return `HTTP ${error.status} ${error.statusText ?? ''}`.trim();
+    }
+
+    return error?.message ?? 'Unknown backend error';
   }
 
   private loadSnapshots(): void {

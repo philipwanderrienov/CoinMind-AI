@@ -5,21 +5,25 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class MarketCandlestickService {
 
     private final Map<String, Candlestick> latestBySymbolAndInterval = new ConcurrentHashMap<>();
+    private final AtomicReference<Instant> lastEventAt = new AtomicReference<>();
     private final Sinks.Many<Candlestick> updates =
             Sinks.many().multicast().onBackpressureBuffer(256, false);
 
     public void publish(Candlestick candlestick) {
         latestBySymbolAndInterval.put(candlestick.key(), candlestick);
+        lastEventAt.set(Instant.now());
         updates.tryEmitNext(candlestick);
     }
 
@@ -42,6 +46,10 @@ public class MarketCandlestickService {
                 .sorted(Comparator.comparing(Candlestick::symbol)
                         .thenComparing(Candlestick::interval))
                 .toList();
+    }
+
+    public Instant lastEventAt() {
+        return lastEventAt.get();
     }
 
     public Flux<Candlestick> stream() {

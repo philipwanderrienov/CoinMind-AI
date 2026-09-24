@@ -16,7 +16,7 @@ public class MarketCandlestickService {
 
     private final Map<String, Candlestick> latestBySymbolAndInterval = new ConcurrentHashMap<>();
     private final Sinks.Many<Candlestick> updates =
-            Sinks.many().multicast().onBackpressureBuffer();
+            Sinks.many().multicast().onBackpressureBuffer(256, false);
 
     public void publish(Candlestick candlestick) {
         latestBySymbolAndInterval.put(candlestick.key(), candlestick);

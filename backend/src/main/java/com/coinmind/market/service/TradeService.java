@@ -14,6 +14,7 @@ import java.util.Deque;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class TradeService {
@@ -22,6 +23,7 @@ public class TradeService {
     private static final MathContext MC = MathContext.DECIMAL64;
 
     private final Map<String, Deque<TradeSnapshot>> recentTrades = new ConcurrentHashMap<>();
+    private final AtomicReference<Instant> lastEventAt = new AtomicReference<>();
     private final Sinks.Many<TradeSnapshot> updates =
             Sinks.many().multicast().onBackpressureBuffer(256, false);
 
@@ -36,6 +38,7 @@ public class TradeService {
             trades.removeFirst();
         }
 
+        lastEventAt.set(Instant.now());
         updates.tryEmitNext(trade);
     }
 
@@ -83,6 +86,10 @@ public class TradeService {
                 ratio,
                 Instant.now()
         );
+    }
+
+    public Instant lastEventAt() {
+        return lastEventAt.get();
     }
 
     public Flux<TradeSnapshot> stream() {

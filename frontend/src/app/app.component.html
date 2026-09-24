@@ -48,7 +48,13 @@
             Market Data {{ marketUiStatus() }}
           </strong>
           <small>
-            @if (marketUiStatus() === 'RECONNECTING') {
+            @if (marketFeedHealth()?.status === 'DEGRADED') {
+              Backend feed degraded ·
+              T {{ marketFeedHealth()?.streams?.ticker?.ageSeconds ?? '-' }}s ·
+              K {{ marketFeedHealth()?.streams?.kline?.ageSeconds ?? '-' }}s ·
+              O {{ marketFeedHealth()?.streams?.orderBook?.ageSeconds ?? '-' }}s ·
+              R {{ marketFeedHealth()?.streams?.trade?.ageSeconds ?? '-' }}s
+            } @else if (marketUiStatus() === 'RECONNECTING') {
               Last event {{ marketStreamAgeSeconds() ?? 0 }}s ago · attempt #{{ marketReconnectCount() }}
             } @else if (marketUiStatus() === 'DEGRADED') {
               No fresh market data for {{ marketStreamAgeSeconds() ?? 0 }}s

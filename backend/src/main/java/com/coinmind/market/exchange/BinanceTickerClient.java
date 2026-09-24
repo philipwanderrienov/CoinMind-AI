@@ -47,6 +47,7 @@ public class BinanceTickerClient {
 
         webSocketClient.execute(uri, session ->
                         session.receive()
+                                .timeout(Duration.ofSeconds(30))
                                 .doOnNext(message -> handlePayload(message.getPayloadAsText()))
                                 .then()
                 )

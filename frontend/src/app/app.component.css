@@ -707,3 +707,42 @@ h1 span {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+
+.system-status {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.connection {
+  min-width: 150px;
+}
+
+.connection.offline .status-dot {
+  background: var(--negative);
+  box-shadow: 0 0 0 5px rgba(255, 93, 122, .08), 0 0 18px rgba(255, 93, 122, .24);
+}
+
+.backend-status {
+  padding-right: 18px;
+  border-right: 1px solid var(--border);
+}
+
+@media (max-width: 760px) {
+  .system-status {
+    gap: 10px;
+  }
+
+  .backend-status {
+    padding-right: 10px;
+  }
+
+  .connection {
+    min-width: auto;
+  }
+
+  .market-status {
+    display: none;
+  }
+}

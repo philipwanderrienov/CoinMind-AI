@@ -8,17 +8,56 @@
       </div>
     </div>
 
-    <div class="connection" [class.live]="connectionState() === 'live'">
-      <span class="status-dot"></span>
-      <div>
-        <strong>{{ connectionState() === 'live' ? 'Market live' : 'Connecting' }}</strong>
-        <small>
-          @if (lastMarketEventAt()) {
-            Updated {{ lastMarketEventAt() | date:'HH:mm:ss' }}
-          } @else {
-            Waiting for backend
-          }
-        </small>
+    <div class="system-status">
+      <div class="connection backend-status"
+           [class.live]="backendState() === 'up'"
+           [class.offline]="backendState() === 'down'">
+        <span class="status-dot"></span>
+        <div>
+          <strong>
+            @if (backendState() === 'up') {
+              Backend UP
+            } @else if (backendState() === 'down') {
+              Backend DOWN
+            } @else {
+              Checking backend
+            }
+          </strong>
+          <small>
+            @if (backendState() === 'up') {
+              Ping {{ backendLatencyMs() }} ms
+              @if (backendLastCheckedAt()) {
+                · checked {{ backendLastCheckedAt() | date:'HH:mm:ss' }}
+              }
+            } @else if (backendError()) {
+              {{ backendError() }}
+            } @else {
+              Health check in progress
+            }
+          </small>
+        </div>
+      </div>
+
+      <div class="connection market-status"
+           [class.live]="connectionState() === 'live'"
+           [class.offline]="connectionState() === 'offline'">
+        <span class="status-dot"></span>
+        <div>
+          <strong>
+            {{ connectionState() === 'live'
+              ? 'Market stream LIVE'
+              : connectionState() === 'offline'
+                ? 'Market stream OFFLINE'
+                : 'Market stream connecting' }}
+          </strong>
+          <small>
+            @if (lastMarketEventAt()) {
+              Last event {{ lastMarketEventAt() | date:'HH:mm:ss' }}
+            } @else {
+              No market event received yet
+            }
+          </small>
+        </div>
       </div>
     </div>
   </header>

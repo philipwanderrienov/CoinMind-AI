@@ -16,7 +16,7 @@ public class OrderBookService {
 
     private final Map<String, OrderBookSnapshot> latestBySymbol = new ConcurrentHashMap<>();
     private final Sinks.Many<OrderBookSnapshot> updates =
-            Sinks.many().multicast().onBackpressureBuffer();
+            Sinks.many().multicast().onBackpressureBuffer(256, false);
 
     public void publish(OrderBookSnapshot snapshot) {
         latestBySymbol.put(snapshot.symbol(), snapshot);

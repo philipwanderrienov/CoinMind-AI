@@ -8,6 +8,9 @@ import java.util.List;
 public record NewsProperties(
         boolean enabled,
         long refreshIntervalMs,
-        List<String> rssUrls
+        List<String> rssUrls,
+        boolean retentionEnabled,
+        int hotRetentionDays,
+        int archiveRetentionDays
 ) {
 }

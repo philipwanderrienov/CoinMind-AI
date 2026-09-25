@@ -314,9 +314,14 @@
                   <strong>{{ article.title }}</strong>
                   <span>{{ article.source }} · {{ article.publishedAt | date:'HH:mm' }}</span>
                 </div>
-                <span [class]="article.sentimentScore > 0.15 ? 'positive' : article.sentimentScore < -0.15 ? 'negative' : 'neutral'">
-                  {{ article.sentimentScore | number:'1.2-2' }}
-                </span>
+                <div class="headline-scores">
+                  <span class="relevance-score">
+                    R {{ (article.relevanceScore * 100) | number:'1.0-0' }}%
+                  </span>
+                  <span [class]="article.sentimentScore > 0.15 ? 'positive' : article.sentimentScore < -0.15 ? 'negative' : 'neutral'">
+                    S {{ article.sentimentScore | number:'1.2-2' }}
+                  </span>
+                </div>
               </div>
             } @empty {
               <div class="empty-news">No configured news feed has produced articles yet.</div>

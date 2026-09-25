@@ -12,6 +12,7 @@ public record NewsArticle(
         String summary,
         Instant publishedAt,
         List<String> symbols,
-        BigDecimal sentimentScore
+        BigDecimal sentimentScore,
+        BigDecimal relevanceScore
 ) {
 }

@@ -58,6 +58,9 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly aiAnalysis = signal<AiAnalysisResult | null>(null);
   readonly news = signal<NewsArticle[]>([]);
   readonly newsSentiment = signal<NewsSentimentSummary | null>(null);
+  readonly showEma = signal(false);
+  readonly showRsi = signal(false);
+  readonly showMacd = signal(false);
 
   readonly selectedTicker = computed(() => this.tickers()[this.selectedSymbol()] ?? null);
 
@@ -137,6 +140,18 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadHistory();
     this.loadIndicators();
     this.loadMarketContext();
+  }
+
+  toggleEma(): void {
+    this.showEma.update(value => !value);
+  }
+
+  toggleRsi(): void {
+    this.showRsi.update(value => !value);
+  }
+
+  toggleMacd(): void {
+    this.showMacd.update(value => !value);
   }
 
   formatPrice(value: number | null | undefined): string {

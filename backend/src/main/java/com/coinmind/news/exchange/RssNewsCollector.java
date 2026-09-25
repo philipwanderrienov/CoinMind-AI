@@ -4,9 +4,13 @@ import com.coinmind.news.config.NewsProperties;
 import com.coinmind.news.service.NewsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import reactor.netty.http.client.HttpClient;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -34,7 +38,21 @@ public class RssNewsCollector {
     ) {
         this.properties = properties;
         this.newsService = newsService;
-        this.webClient = WebClient.create();
+
+        HttpClient httpClient = HttpClient.create()
+                .followRedirect(true);
+
+        this.webClient = WebClient.builder()
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .defaultHeader(
+                        HttpHeaders.USER_AGENT,
+                        "Mozilla/5.0 (compatible; CoinMindAI/0.1; +https://github.com/philipwanderrienov/CoinMind-AI)"
+                )
+                .defaultHeader(
+                        HttpHeaders.ACCEPT,
+                        "application/rss+xml, application/atom+xml, application/xml, text/xml;q=0.9, */*;q=0.8"
+                )
+                .build();
     }
 
     @Scheduled(fixedDelayString = "${coinmind.news.refresh-interval-ms:300000}")
@@ -52,12 +70,68 @@ public class RssNewsCollector {
     private void fetch(String url) {
         webClient.get()
                 .uri(URI.create(url))
-                .retrieve()
-                .bodyToMono(String.class)
+                .exchangeToMono(response ->
+                        response.bodyToMono(String.class)
+                                .defaultIfEmpty("")
+                                .map(body -> new FeedResponse(
+                                        response.statusCode().value(),
+                                        response.headers()
+                                                .contentType()
+                                                .map(MediaType::toString)
+                                                .orElse("unknown"),
+                                        body
+                                ))
+                )
                 .subscribe(
-                        xml -> parse(url, xml),
+                        response -> {
+                            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                                log.warn(
+                                        "RSS fetch returned non-success status. url={}, status={}",
+                                        url,
+                                        response.statusCode()
+                                );
+                                return;
+                            }
+
+                            if (!looksLikeXml(response.body())) {
+                                log.warn(
+                                        "RSS response is not XML. url={}, contentType={}, bodyPrefix={}",
+                                        url,
+                                        response.contentType(),
+                                        bodyPrefix(response.body())
+                                );
+                                return;
+                            }
+
+                            parse(url, response.body());
+                        },
                         error -> log.warn("RSS fetch failed. url={}", url, error)
                 );
+    }
+
+    private boolean looksLikeXml(String body) {
+        if (body == null || body.isBlank()) {
+            return false;
+        }
+
+        String normalized = body.stripLeading();
+
+        return normalized.startsWith("<?xml")
+                || normalized.startsWith("<rss")
+                || normalized.startsWith("<feed")
+                || normalized.startsWith("<rdf:RDF");
+    }
+
+    private String bodyPrefix(String body) {
+        if (body == null) {
+            return "";
+        }
+
+        String normalized = body
+                .replaceAll("\\s+", " ")
+                .trim();
+
+        return normalized.substring(0, Math.min(normalized.length(), 160));
     }
 
     private void parse(String sourceUrl, String xml) {
@@ -115,6 +189,13 @@ public class RssNewsCollector {
         } catch (Exception ignored) {
             return Instant.now();
         }
+    }
+
+    private record FeedResponse(
+            int statusCode,
+            String contentType,
+            String body
+    ) {
     }
 
     private String host(String url) {

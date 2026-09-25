@@ -157,11 +157,37 @@
           </div>
         </div>
 
-        <div class="chart-wrap">
+        <div class="indicator-toolbar">
+          <span>Indicators</span>
+          <button type="button" [class.active]="showEma()" (click)="toggleEma()">
+            EMA
+          </button>
+          <button type="button" [class.active]="showRsi()" (click)="toggleRsi()">
+            RSI
+          </button>
+          <button type="button" [class.active]="showMacd()" (click)="toggleMacd()">
+            MACD
+          </button>
+
+          @if (showEma()) {
+            <div class="indicator-legend">
+              <span class="ema20">EMA 20</span>
+              <span class="ema50">EMA 50</span>
+              <span class="ema200">EMA 200</span>
+            </div>
+          }
+        </div>
+
+        <div class="chart-wrap"
+             [class.with-one-indicator]="showRsi() !== showMacd()"
+             [class.with-two-indicators]="showRsi() && showMacd()">
           @if (selectedCandles().length) {
             <app-market-chart
               [candles]="selectedCandles()"
-              [seriesKey]="selectedSymbol() + ':' + selectedInterval()">
+              [seriesKey]="selectedSymbol() + ':' + selectedInterval()"
+              [showEma]="showEma()"
+              [showRsi]="showRsi()"
+              [showMacd]="showMacd()">
             </app-market-chart>
           } @else {
             <div class="empty-chart">

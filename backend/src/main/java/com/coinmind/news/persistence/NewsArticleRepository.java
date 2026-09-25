@@ -37,7 +37,8 @@ public class NewsArticleRepository {
                     summary,
                     published_at,
                     symbols,
-                    sentiment_score
+                    sentiment_score,
+                    relevance_score
                 ) VALUES (
                     :id,
                     :title,
@@ -46,7 +47,8 @@ public class NewsArticleRepository {
                     :summary,
                     :publishedAt,
                     :symbols,
-                    :sentimentScore
+                    :sentimentScore,
+                    :relevanceScore
                 )
                 ON CONFLICT (id)
                 DO UPDATE SET
@@ -56,7 +58,8 @@ public class NewsArticleRepository {
                     summary = EXCLUDED.summary,
                     published_at = EXCLUDED.published_at,
                     symbols = EXCLUDED.symbols,
-                    sentiment_score = EXCLUDED.sentiment_score
+                    sentiment_score = EXCLUDED.sentiment_score,
+                    relevance_score = EXCLUDED.relevance_score
                 """)
                 .bind("id", article.id())
                 .bind("title", article.title())
@@ -66,6 +69,7 @@ public class NewsArticleRepository {
                 .bind("publishedAt", article.publishedAt())
                 .bind("symbols", String.join(",", article.symbols()))
                 .bind("sentimentScore", article.sentimentScore())
+                .bind("relevanceScore", article.relevanceScore())
                 .then();
     }
 
@@ -80,6 +84,7 @@ public class NewsArticleRepository {
                     published_at,
                     symbols,
                     sentiment_score,
+                    relevance_score,
                     ingested_at,
                     archived_at
                 )
@@ -92,6 +97,7 @@ public class NewsArticleRepository {
                     published_at,
                     symbols,
                     sentiment_score,
+                    relevance_score,
                     ingested_at,
                     NOW()
                 FROM news_articles
@@ -105,6 +111,7 @@ public class NewsArticleRepository {
                     published_at = EXCLUDED.published_at,
                     symbols = EXCLUDED.symbols,
                     sentiment_score = EXCLUDED.sentiment_score,
+                    relevance_score = EXCLUDED.relevance_score,
                     ingested_at = EXCLUDED.ingested_at,
                     archived_at = NOW()
                 """)
@@ -144,7 +151,8 @@ public class NewsArticleRepository {
                     summary,
                     published_at,
                     symbols,
-                    sentiment_score
+                    sentiment_score,
+                    relevance_score
                 FROM news_articles
                 ORDER BY published_at DESC
                 LIMIT :limit
@@ -163,7 +171,8 @@ public class NewsArticleRepository {
                 row.get("summary", String.class),
                 row.get("published_at", Instant.class),
                 parseSymbols(row.get("symbols", String.class)),
-                value(row.get("sentiment_score", BigDecimal.class))
+                value(row.get("sentiment_score", BigDecimal.class)),
+                value(row.get("relevance_score", BigDecimal.class))
         );
     }
 

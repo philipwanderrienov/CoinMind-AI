@@ -784,3 +784,101 @@ h1 span {
   background: #f2b84b;
   box-shadow: 0 0 0 5px rgba(242, 184, 75, .08), 0 0 18px rgba(242, 184, 75, .22);
 }
+
+
+.indicator-toolbar {
+  min-height: 42px;
+  padding: 8px 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid var(--border);
+  background: #09111d;
+  flex-wrap: wrap;
+}
+
+.indicator-toolbar > span:first-child {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-right: 4px;
+}
+
+.indicator-toolbar button {
+  border: 1px solid var(--border);
+  background: #0b1220;
+  color: var(--muted);
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.indicator-toolbar button.active {
+  color: #d9d3ff;
+  border-color: rgba(125, 99, 255, .45);
+  background: rgba(125, 99, 255, .12);
+}
+
+.indicator-legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  font-size: 8px;
+}
+
+.indicator-legend span::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 2px;
+  margin-right: 4px;
+  vertical-align: middle;
+  border-radius: 2px;
+}
+
+.indicator-legend .ema20::before {
+  background: #f2b84b;
+}
+
+.indicator-legend .ema50::before {
+  background: #5aa9ff;
+}
+
+.indicator-legend .ema200::before {
+  background: #b38cff;
+}
+
+.chart-wrap.with-one-indicator {
+  height: 570px;
+}
+
+.chart-wrap.with-two-indicators {
+  height: 690px;
+}
+
+@media (max-width: 760px) {
+  .indicator-toolbar {
+    padding: 8px 12px;
+  }
+
+  .indicator-legend {
+    width: 100%;
+    margin-left: 0;
+    padding-top: 2px;
+  }
+
+  .chart-wrap.with-one-indicator {
+    height: 520px;
+  }
+
+  .chart-wrap.with-two-indicators {
+    height: 650px;
+  }
+}

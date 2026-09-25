@@ -45,6 +45,7 @@ public class RssNewsCollector {
 
         properties.rssUrls().stream()
                 .filter(url -> url != null && !url.isBlank())
+                .distinct()
                 .forEach(this::fetch);
     }
 

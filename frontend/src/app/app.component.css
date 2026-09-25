@@ -882,3 +882,16 @@ h1 span {
     height: 650px;
   }
 }
+
+
+.headline-scores {
+  display: grid;
+  gap: 4px;
+  justify-items: end;
+  white-space: nowrap;
+}
+
+.headline-scores .relevance-score {
+  color: #b9afff;
+  font-weight: 700;
+}

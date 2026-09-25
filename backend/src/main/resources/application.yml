@@ -41,4 +41,6 @@ coinmind:
     hot-retention-days: ${NEWS_HOT_RETENTION_DAYS:30}
     archive-retention-days: ${NEWS_ARCHIVE_RETENTION_DAYS:365}
     retention-cron: ${NEWS_RETENTION_CRON:0 15 3 * * *}
-    rss-urls: []
+    rss-urls:
+      - ${NEWS_RSS_COINDESK:https://www.coindesk.com/arc/outboundfeeds/rss/}
+      - ${NEWS_RSS_COINTELEGRAPH:https://cointelegraph.com/rss}

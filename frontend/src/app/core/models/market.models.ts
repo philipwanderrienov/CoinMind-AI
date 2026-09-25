@@ -144,6 +144,7 @@ export interface NewsArticle {
   publishedAt: string;
   symbols: string[];
   sentimentScore: number;
+  relevanceScore: number;
 }
 
 export interface NewsSentimentSummary {

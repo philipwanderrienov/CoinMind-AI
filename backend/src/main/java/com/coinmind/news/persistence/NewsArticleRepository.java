@@ -69,6 +69,69 @@ public class NewsArticleRepository {
                 .then();
     }
 
+    public Mono<Long> archiveOlderThan(Instant cutoff) {
+        return databaseClient.sql("""
+                INSERT INTO news_articles_archive (
+                    id,
+                    title,
+                    source,
+                    url,
+                    summary,
+                    published_at,
+                    symbols,
+                    sentiment_score,
+                    ingested_at,
+                    archived_at
+                )
+                SELECT
+                    id,
+                    title,
+                    source,
+                    url,
+                    summary,
+                    published_at,
+                    symbols,
+                    sentiment_score,
+                    ingested_at,
+                    NOW()
+                FROM news_articles
+                WHERE published_at < :cutoff
+                ON CONFLICT (id)
+                DO UPDATE SET
+                    title = EXCLUDED.title,
+                    source = EXCLUDED.source,
+                    url = EXCLUDED.url,
+                    summary = EXCLUDED.summary,
+                    published_at = EXCLUDED.published_at,
+                    symbols = EXCLUDED.symbols,
+                    sentiment_score = EXCLUDED.sentiment_score,
+                    ingested_at = EXCLUDED.ingested_at,
+                    archived_at = NOW()
+                """)
+                .bind("cutoff", cutoff)
+                .fetch()
+                .rowsUpdated()
+                .then(
+                        databaseClient.sql("""
+                                DELETE FROM news_articles
+                                WHERE published_at < :cutoff
+                                """)
+                                .bind("cutoff", cutoff)
+                                .fetch()
+                                .rowsUpdated()
+                );
+    }
+
+    public Mono<Long> deleteArchiveOlderThan(Instant cutoff) {
+        return databaseClient.sql("""
+                DELETE FROM news_articles_archive
+                WHERE published_at < :cutoff
+                """)
+                .bind("cutoff", cutoff)
+                .fetch()
+                .rowsUpdated();
+    }
+
     public Flux<NewsArticle> findRecent(int limit) {
         int safeLimit = Math.max(1, Math.min(limit, 1000));
 

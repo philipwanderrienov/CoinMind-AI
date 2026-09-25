@@ -1,15 +1,25 @@
 package com.coinmind.news.service;
 
+import com.coinmind.news.persistence.NewsArticleRepository;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.ObjectProvider;
 
 import java.time.Duration;
 import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 class NewsServiceTest {
 
-    private final NewsService service = new NewsService(new NewsSentimentService());
+    @SuppressWarnings("unchecked")
+    private final ObjectProvider<NewsArticleRepository> repositoryProvider =
+            mock(ObjectProvider.class);
+
+    private final NewsService service = new NewsService(
+            new NewsSentimentService(),
+            repositoryProvider
+    );
 
     @Test
     void tagsBitcoinAndCalculatesPositiveSentiment() {

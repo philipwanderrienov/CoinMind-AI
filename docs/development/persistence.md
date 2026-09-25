@@ -16,6 +16,7 @@ Apply database migrations in order:
 ```text
 infrastructure/database/init/001_market_candles.sql
 infrastructure/database/init/002_news_articles.sql
+infrastructure/database/init/003_news_archive.sql
 ```
 
 ## Candle persistence
@@ -59,6 +60,29 @@ sentiment endpoints while preventing news history from disappearing after a rest
 
 News writes also use an upsert keyed by article ID, so repeated RSS polling does not
 create duplicate rows.
+
+### News retention
+
+Recommended defaults:
+
+```text
+NEWS_HOT_RETENTION_DAYS=30
+NEWS_ARCHIVE_RETENTION_DAYS=365
+```
+
+Articles older than the hot-retention period are copied to
+`news_articles_archive` and removed from `news_articles`.
+
+Archived articles older than the archive-retention period are permanently deleted.
+
+The retention job runs daily at 03:15 by default:
+
+```text
+NEWS_RETENTION_CRON=0 15 3 * * *
+```
+
+This keeps realtime news queries focused on recent data while preserving one year
+of history for research and backtesting.
 
 ## Current storage policy
 

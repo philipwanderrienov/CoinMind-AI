@@ -17,6 +17,7 @@ Apply database migrations in order:
 infrastructure/database/init/001_market_candles.sql
 infrastructure/database/init/002_news_articles.sql
 infrastructure/database/init/003_news_archive.sql
+infrastructure/database/init/004_news_relevance.sql
 ```
 
 ## Candle persistence
@@ -52,7 +53,7 @@ news_articles
 ```
 
 Stored fields include the article ID, title, source, URL, summary, publish time,
-detected symbols, and deterministic sentiment score.
+detected symbols, deterministic sentiment score, and relevance score.
 
 At application startup, the most recent persisted articles are restored into the
 in-memory news cache. This preserves the existing low-latency synchronous news and

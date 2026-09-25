@@ -37,4 +37,8 @@ coinmind:
   news:
     enabled: ${NEWS_ENABLED:false}
     refresh-interval-ms: ${NEWS_REFRESH_INTERVAL_MS:300000}
+    retention-enabled: ${NEWS_RETENTION_ENABLED:true}
+    hot-retention-days: ${NEWS_HOT_RETENTION_DAYS:30}
+    archive-retention-days: ${NEWS_ARCHIVE_RETENTION_DAYS:365}
+    retention-cron: ${NEWS_RETENTION_CRON:0 15 3 * * *}
     rss-urls: []

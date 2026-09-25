@@ -81,7 +81,8 @@ public class NewsService {
                 summary,
                 publishedAt == null ? Instant.now() : publishedAt,
                 detectSymbols(title + " " + (summary == null ? "" : summary)),
-                sentimentService.score(title, summary)
+                sentimentService.score(title, summary),
+                calculateRelevance(title, summary, source)
         );
 
         articles.put(id, article);
@@ -112,7 +113,11 @@ public class NewsService {
 
         return articles.values().stream()
                 .filter(article -> article.symbols().contains(normalized))
-                .sorted(Comparator.comparing(NewsArticle::publishedAt).reversed())
+                .sorted(
+                        Comparator.comparing(NewsArticle::relevanceScore)
+                                .reversed()
+                                .thenComparing(NewsArticle::publishedAt, Comparator.reverseOrder())
+                )
                 .limit(Math.max(1, Math.min(limit, 100)))
                 .toList();
     }
@@ -128,7 +133,11 @@ public class NewsService {
         List<NewsArticle> relevant = articles.values().stream()
                 .filter(article -> article.symbols().contains(normalized))
                 .filter(article -> !article.publishedAt().isBefore(cutoff))
-                .sorted(Comparator.comparing(NewsArticle::publishedAt).reversed())
+                .sorted(
+                        Comparator.comparing(NewsArticle::relevanceScore)
+                                .reversed()
+                                .thenComparing(NewsArticle::publishedAt, Comparator.reverseOrder())
+                )
                 .limit(Math.max(1, Math.min(articleLimit, 100)))
                 .toList();
 
@@ -188,17 +197,59 @@ public class NewsService {
         String normalized = text.toLowerCase(Locale.ROOT);
         List<String> symbols = new ArrayList<>();
 
-        if (containsAny(normalized, Set.of("bitcoin", " btc ", "btcusdt"))) {
+        if (containsAny(normalized, Set.of(
+                "bitcoin", " btc ", "btcusdt", "btc/usdt", "btc-usdt", "satoshi", "lightning network"
+        ))) {
             symbols.add("BTC");
         }
-        if (containsAny(normalized, Set.of("ethereum", " ether ", " eth ", "ethusdt"))) {
+        if (containsAny(normalized, Set.of(
+                "ethereum", " ether ", " eth ", "ethusdt", "eth/usdt", "eth-usdt", "erc-20", "erc20"
+        ))) {
             symbols.add("ETH");
         }
-        if (containsAny(normalized, Set.of("solana", " sol ", "solusdt"))) {
+        if (containsAny(normalized, Set.of(
+                "solana", " sol ", "solusdt", "sol/usdt", "sol-usdt", "spl token", "solana network"
+        ))) {
             symbols.add("SOL");
         }
 
         return List.copyOf(symbols);
+    }
+
+    private BigDecimal calculateRelevance(String title, String summary, String source) {
+        String normalized = ((title == null ? "" : title) + " " + (summary == null ? "" : summary))
+                .toLowerCase(Locale.ROOT);
+
+        BigDecimal score = BigDecimal.ZERO;
+
+        List<String> detected = detectSymbols(normalized);
+        score = score.add(BigDecimal.valueOf(Math.min(0.45, detected.size() * 0.30)));
+
+        if (containsAny(normalized, Set.of(
+                "bitcoin", "ethereum", "solana", "crypto", "blockchain",
+                "etf", "stablecoin", "exchange", "defi", "regulation", "fed"
+        ))) {
+            score = score.add(BigDecimal.valueOf(0.25));
+        }
+
+        if (containsAny(normalized, Set.of(
+                "hack", "hacked", "breach", "exploit", "lawsuit", "approval",
+                "approved", "ban", "liquidation", "record high", "all time high",
+                "inflow", "outflow", "rate cut", "interest rate"
+        ))) {
+            score = score.add(BigDecimal.valueOf(0.20));
+        }
+
+        String normalizedSource = source == null ? "" : source.toLowerCase(Locale.ROOT);
+        if (normalizedSource.contains("coindesk") || normalizedSource.contains("cointelegraph")) {
+            score = score.add(BigDecimal.valueOf(0.10));
+        }
+
+        if (score.compareTo(BigDecimal.ONE) > 0) {
+            score = BigDecimal.ONE;
+        }
+
+        return score.setScale(4, RoundingMode.HALF_UP);
     }
 
     private boolean containsAny(String text, Set<String> terms) {

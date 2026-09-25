@@ -2,6 +2,12 @@ package com.coinmind.news.service;
 
 import com.coinmind.news.model.NewsArticle;
 import com.coinmind.news.model.NewsSentimentSummary;
+import com.coinmind.news.persistence.NewsArticleRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -19,13 +25,40 @@ import java.util.Set;
 @Service
 public class NewsService {
 
+    private static final Logger log = LoggerFactory.getLogger(NewsService.class);
     private static final int MAX_ARTICLES = 1000;
 
     private final NewsSentimentService sentimentService;
+    private final ObjectProvider<NewsArticleRepository> repositoryProvider;
     private final Map<String, NewsArticle> articles = new LinkedHashMap<>();
 
-    public NewsService(NewsSentimentService sentimentService) {
+    public NewsService(
+            NewsSentimentService sentimentService,
+            ObjectProvider<NewsArticleRepository> repositoryProvider
+    ) {
         this.sentimentService = sentimentService;
+        this.repositoryProvider = repositoryProvider;
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void restorePersistedNews() {
+        repositoryProvider.ifAvailable(repository ->
+                repository.findRecent(MAX_ARTICLES)
+                        .collectList()
+                        .subscribe(
+                                persisted -> {
+                                    synchronized (this) {
+                                        persisted.stream()
+                                                .sorted(Comparator.comparing(NewsArticle::publishedAt))
+                                                .forEach(article -> articles.put(article.id(), article));
+                                        trimToLimit();
+                                    }
+
+                                    log.info("Persisted news restored. count={}", persisted.size());
+                                },
+                                error -> log.warn("Unable to restore persisted news", error)
+                        )
+        );
     }
 
     public synchronized void ingest(
@@ -52,17 +85,19 @@ public class NewsService {
         );
 
         articles.put(id, article);
+        trimToLimit();
 
-        if (articles.size() > MAX_ARTICLES) {
-            String oldest = articles.values().stream()
-                    .min(Comparator.comparing(NewsArticle::publishedAt))
-                    .map(NewsArticle::id)
-                    .orElse(null);
-
-            if (oldest != null) {
-                articles.remove(oldest);
-            }
-        }
+        repositoryProvider.ifAvailable(repository ->
+                repository.upsert(article)
+                        .subscribe(
+                                ignored -> { },
+                                error -> log.warn(
+                                        "Unable to persist news article. id={}",
+                                        article.id(),
+                                        error
+                                )
+                        )
+        );
     }
 
     public synchronized List<NewsArticle> recent(int limit) {
@@ -132,6 +167,21 @@ public class NewsService {
                 relevant,
                 Instant.now()
         );
+    }
+
+    private void trimToLimit() {
+        while (articles.size() > MAX_ARTICLES) {
+            String oldest = articles.values().stream()
+                    .min(Comparator.comparing(NewsArticle::publishedAt))
+                    .map(NewsArticle::id)
+                    .orElse(null);
+
+            if (oldest == null) {
+                break;
+            }
+
+            articles.remove(oldest);
+        }
     }
 
     private List<String> detectSymbols(String text) {

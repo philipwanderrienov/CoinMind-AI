@@ -208,3 +208,13 @@ export interface PushPublicKeyResponse {
   enabled: boolean;
   publicKey: string;
 }
+
+
+export interface BillingStatus {
+  enabled: boolean;
+  provider: string;
+  nextPaymentDate: string;
+  daysUntilPayment: number;
+  reminderDaysBefore: number;
+  pushConfigured: boolean;
+}

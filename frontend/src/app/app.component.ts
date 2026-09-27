@@ -4,6 +4,7 @@ import { Subscription, catchError, map, of, retry, switchMap, timer } from 'rxjs
 import {
   AiAnalysisResult,
   AiUsageSummary,
+  BillingStatus,
   Candlestick,
   ConnectionState,
   MarketContext,
@@ -62,6 +63,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly news = signal<NewsArticle[]>([]);
   readonly newsSentiment = signal<NewsSentimentSummary | null>(null);
   readonly aiUsage = signal<AiUsageSummary | null>(null);
+  readonly billingStatus = signal<BillingStatus | null>(null);
   readonly aiRunning = signal(false);
   readonly pushStatus = signal<'idle' | 'enabling' | 'enabled' | 'unsupported' | 'disabled' | 'denied' | 'error'>('idle');
   readonly showEma = signal(false);
@@ -125,6 +127,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadLatestAiAnalysis();
     this.loadNews();
     this.startAiUsageMonitoring();
+    this.loadBillingStatus();
     this.connectRealtime();
     this.startRealtimeWatchdog();
   }
@@ -194,6 +197,7 @@ export class AppComponent implements OnInit, OnDestroy {
     try {
       const status = await this.pushNotifications.enable();
       this.pushStatus.set(status);
+      this.loadBillingStatus();
     } catch {
       this.pushStatus.set('error');
     }
@@ -363,6 +367,12 @@ export class AppComponent implements OnInit, OnDestroy {
   private loadAiUsage(): void {
     this.marketApi.getAiUsageSummary(14).subscribe({
       next: summary => this.aiUsage.set(summary)
+    });
+  }
+
+  private loadBillingStatus(): void {
+    this.marketApi.getBillingStatus().subscribe({
+      next: status => this.billingStatus.set(status)
     });
   }
 

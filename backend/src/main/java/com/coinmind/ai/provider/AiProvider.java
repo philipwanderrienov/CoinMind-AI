@@ -8,5 +8,9 @@ public interface AiProvider {
 
     String name();
 
-    Mono<AiAnalysisResult> analyze(MarketContext context);
+    Mono<AiAnalysisResult> analyze(MarketContext context, String triggerType);
+
+    default Mono<AiAnalysisResult> analyze(MarketContext context) {
+        return analyze(context, "MANUAL");
+    }
 }

@@ -4,6 +4,7 @@ import com.coinmind.ai.config.AiProperties;
 import com.coinmind.ai.model.AiAnalysisResult;
 import com.coinmind.ai.model.MarketContext;
 import com.coinmind.ai.usage.AiUsageService;
+import com.coinmind.ai.status.AiStatusService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -35,16 +37,19 @@ public class OpenAiLunaProvider implements AiProvider {
     private final AiProperties properties;
     private final AiUsageService usageService;
     private final ObjectMapper objectMapper;
+    private final AiStatusService statusService;
     private final WebClient webClient;
 
     public OpenAiLunaProvider(
             AiProperties properties,
             AiUsageService usageService,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            AiStatusService statusService
     ) {
         this.properties = properties;
         this.usageService = usageService;
         this.objectMapper = objectMapper;
+        this.statusService = statusService;
         this.webClient = WebClient.builder()
                 .baseUrl(properties.baseUrl())
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + properties.apiKey())
@@ -62,6 +67,20 @@ public class OpenAiLunaProvider implements AiProvider {
             MarketContext context,
             String triggerType
     ) {
+        if (properties.apiKey() == null || properties.apiKey().isBlank()) {
+            return Mono.just(new AiAnalysisResult(
+                    context.symbol(),
+                    context.interval(),
+                    "UNAVAILABLE",
+                    0,
+                    "AI engine is not configured yet.",
+                    List.of(),
+                    List.of("OpenAI API key is missing"),
+                    properties.model(),
+                    Instant.now()
+            ));
+        }
+
         return Mono.fromCallable(() -> buildRequest(context))
                 .flatMap(request ->
                         webClient.post()
@@ -71,13 +90,42 @@ public class OpenAiLunaProvider implements AiProvider {
                                 .bodyToMono(String.class)
                 )
                 .map(body -> parseResponse(body, context, triggerType))
-                .doOnError(error -> log.warn(
-                        "Luna analysis failed. symbol={}, interval={}, trigger={}",
-                        context.symbol(),
-                        context.interval(),
-                        triggerType,
-                        error
-                ));
+                .doOnNext(ignored -> statusService.markReady())
+                .doOnError(error -> {
+                    if (error instanceof WebClientResponseException responseError) {
+                        int status = responseError.getStatusCode().value();
+
+                        if (status == 401 || status == 403) {
+                            statusService.markAuthError(
+                                    status,
+                                    "OpenAI authentication failed. Check the API key."
+                            );
+                        } else if (status == 429) {
+                            statusService.markRateLimited(
+                                    status,
+                                    "OpenAI rate limit or billing limit reached."
+                            );
+                        } else {
+                            statusService.markError(
+                                    status,
+                                    "OpenAI request failed with HTTP " + status + "."
+                            );
+                        }
+                    } else {
+                        statusService.markError(
+                                null,
+                                "AI provider request failed."
+                        );
+                    }
+
+                    log.warn(
+                            "Luna analysis failed. symbol={}, interval={}, trigger={}",
+                            context.symbol(),
+                            context.interval(),
+                            triggerType,
+                            error
+                    );
+                });
     }
 
     private Map<String, Object> buildRequest(MarketContext context) throws Exception {

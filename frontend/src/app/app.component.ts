@@ -3,6 +3,7 @@ import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular
 import { Subscription, catchError, map, of, retry, switchMap, timer } from 'rxjs';
 import {
   AiAnalysisResult,
+  AiUsageSummary,
   Candlestick,
   ConnectionState,
   MarketContext,
@@ -15,6 +16,7 @@ import {
   TickerSnapshot
 } from './core/models/market.models';
 import { MarketApiService } from './core/services/market-api.service';
+import { PushNotificationService } from './core/services/push-notification.service';
 import { MarketChartComponent } from './features/market-chart/market-chart.component';
 import { formatCompact, formatPrice } from './shared/price-format';
 
@@ -27,6 +29,7 @@ import { formatCompact, formatPrice } from './shared/price-format';
 })
 export class AppComponent implements OnInit, OnDestroy {
   private readonly marketApi = inject(MarketApiService);
+  private readonly pushNotifications = inject(PushNotificationService);
   private readonly subscriptions = new Subscription();
   private realtimeSubscriptions = new Subscription();
   private readonly realtimeStartedAt = Date.now();
@@ -58,6 +61,9 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly aiAnalysis = signal<AiAnalysisResult | null>(null);
   readonly news = signal<NewsArticle[]>([]);
   readonly newsSentiment = signal<NewsSentimentSummary | null>(null);
+  readonly aiUsage = signal<AiUsageSummary | null>(null);
+  readonly aiRunning = signal(false);
+  readonly pushStatus = signal<'idle' | 'enabling' | 'enabled' | 'unsupported' | 'disabled' | 'denied' | 'error'>('idle');
   readonly showEma = signal(false);
   readonly showRsi = signal(false);
   readonly showMacd = signal(false);
@@ -116,7 +122,9 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadMicrostructure();
     this.loadIndicators();
     this.loadMarketContext();
+    this.loadLatestAiAnalysis();
     this.loadNews();
+    this.startAiUsageMonitoring();
     this.connectRealtime();
     this.startRealtimeWatchdog();
   }
@@ -132,6 +140,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadMicrostructure();
     this.loadIndicators();
     this.loadMarketContext();
+    this.loadLatestAiAnalysis();
     this.loadNews();
   }
 
@@ -140,6 +149,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadHistory();
     this.loadIndicators();
     this.loadMarketContext();
+    this.loadLatestAiAnalysis();
   }
 
   toggleEma(): void {
@@ -152,6 +162,41 @@ export class AppComponent implements OnInit, OnDestroy {
 
   toggleMacd(): void {
     this.showMacd.update(value => !value);
+  }
+
+  runAiAnalysis(): void {
+    if (this.aiRunning()) {
+      return;
+    }
+
+    this.aiRunning.set(true);
+
+    this.subscriptions.add(
+      this.marketApi.triggerAiAnalysis(
+        this.selectedSymbol(),
+        this.selectedInterval()
+      ).subscribe({
+        next: result => {
+          this.aiAnalysis.set(result);
+          this.aiRunning.set(false);
+          this.loadAiUsage();
+        },
+        error: () => {
+          this.aiRunning.set(false);
+        }
+      })
+    );
+  }
+
+  async enablePushNotifications(): Promise<void> {
+    this.pushStatus.set('enabling');
+
+    try {
+      const status = await this.pushNotifications.enable();
+      this.pushStatus.set(status);
+    } catch {
+      this.pushStatus.set('error');
+    }
   }
 
   formatPrice(value: number | null | undefined): string {
@@ -295,8 +340,11 @@ export class AppComponent implements OnInit, OnDestroy {
       })
     );
 
+  }
+
+  private loadLatestAiAnalysis(): void {
     this.subscriptions.add(
-      this.marketApi.getAiAnalysis(
+      this.marketApi.getLatestAiAnalysis(
         this.selectedSymbol(),
         this.selectedInterval()
       ).subscribe({
@@ -304,6 +352,18 @@ export class AppComponent implements OnInit, OnDestroy {
         error: () => this.aiAnalysis.set(null)
       })
     );
+  }
+
+  private startAiUsageMonitoring(): void {
+    this.subscriptions.add(
+      timer(0, 60_000).subscribe(() => this.loadAiUsage())
+    );
+  }
+
+  private loadAiUsage(): void {
+    this.marketApi.getAiUsageSummary(14).subscribe({
+      next: summary => this.aiUsage.set(summary)
+    });
   }
 
   private loadIndicators(): void {
@@ -421,6 +481,10 @@ export class AppComponent implements OnInit, OnDestroy {
             ) {
               this.loadIndicators();
               this.loadMarketContext();
+
+              if (['15m', '1h', '4h', '1d'].includes(candle.interval)) {
+                setTimeout(() => this.loadLatestAiAnalysis(), 2500);
+              }
             }
           },
           error: () => this.connectionState.set('offline')

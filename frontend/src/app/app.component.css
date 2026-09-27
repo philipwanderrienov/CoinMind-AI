@@ -1057,3 +1057,61 @@ h1 span {
     grid-template-columns: 1fr;
   }
 }
+
+
+.analysis-result {
+  margin: 0 0 16px;
+  padding: 12px;
+  border: 1px solid rgba(125, 99, 255, .18);
+  border-radius: 10px;
+  background: rgba(125, 99, 255, .035);
+}
+
+.analysis-result-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.analysis-result-head span {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.analysis-result-head strong {
+  font-size: 16px;
+  color: #d9d3ff;
+}
+
+.analysis-result > p {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+  margin: 9px 0 12px;
+}
+
+.analysis-factors {
+  display: grid;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.analysis-factors > span {
+  color: #b9afff;
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.analysis-factors small {
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.analysis-factors.risks > span {
+  color: var(--negative);
+}

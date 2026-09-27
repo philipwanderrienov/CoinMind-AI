@@ -455,6 +455,7 @@
               @for (day of aiUsage()!.daily.slice(-7); track day.date) {
                 <div>
                   <span>{{ day.date | date:'MMM d' }}</span>
+                  <span>I {{ formatCompact(day.inputTokens) }} / O {{ formatCompact(day.outputTokens) }}</span>
                   <span>{{ day.calls }} calls</span>
                   <strong>${{ day.estimatedCostUsd | number:'1.4-6' }}</strong>
                 </div>

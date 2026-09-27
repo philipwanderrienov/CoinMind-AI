@@ -17,7 +17,9 @@
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "assets": [
-              "src/favicon.svg"
+              "src/favicon.svg",
+              "src/service-worker.js",
+              "src/manifest.webmanifest"
             ],
             "styles": [
               "src/styles.css"

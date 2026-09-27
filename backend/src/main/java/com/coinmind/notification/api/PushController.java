@@ -60,6 +60,7 @@ public class PushController {
 
     public record PushSubscriptionRequest(
             String endpoint,
+            Object expirationTime,
             Keys keys
     ) {
         public record Keys(

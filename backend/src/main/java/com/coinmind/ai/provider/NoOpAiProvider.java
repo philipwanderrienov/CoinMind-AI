@@ -17,7 +17,7 @@ public class NoOpAiProvider implements AiProvider {
     }
 
     @Override
-    public Mono<AiAnalysisResult> analyze(MarketContext context) {
+    public Mono<AiAnalysisResult> analyze(MarketContext context, String triggerType) {
         return Mono.just(new AiAnalysisResult(
                 context.symbol(),
                 context.interval(),

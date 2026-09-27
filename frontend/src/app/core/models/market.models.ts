@@ -118,7 +118,11 @@ export interface MarketContext {
     positiveCount: number;
     neutralCount: number;
     negativeCount: number;
-    recentHeadlines: string[];
+    topArticles: Array<{
+      title: string;
+      sentimentScore: number;
+      relevanceScore: number;
+    }>;
   };
 }
 

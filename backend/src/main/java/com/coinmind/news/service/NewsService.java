@@ -1,5 +1,6 @@
 package com.coinmind.news.service;
 
+import com.coinmind.ai.event.HighRelevanceNewsEvent;
 import com.coinmind.news.model.NewsArticle;
 import com.coinmind.news.model.NewsSentimentSummary;
 import com.coinmind.news.persistence.NewsArticleRepository;
@@ -7,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
@@ -30,14 +32,17 @@ public class NewsService {
 
     private final NewsSentimentService sentimentService;
     private final ObjectProvider<NewsArticleRepository> repositoryProvider;
+    private final ApplicationEventPublisher eventPublisher;
     private final Map<String, NewsArticle> articles = new LinkedHashMap<>();
 
     public NewsService(
             NewsSentimentService sentimentService,
-            ObjectProvider<NewsArticleRepository> repositoryProvider
+            ObjectProvider<NewsArticleRepository> repositoryProvider,
+            ApplicationEventPublisher eventPublisher
     ) {
         this.sentimentService = sentimentService;
         this.repositoryProvider = repositoryProvider;
+        this.eventPublisher = eventPublisher;
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -73,6 +78,8 @@ public class NewsService {
             return;
         }
 
+        boolean firstSeen = !articles.containsKey(id);
+
         NewsArticle article = new NewsArticle(
                 id,
                 title,
@@ -99,6 +106,18 @@ public class NewsService {
                                 )
                         )
         );
+
+        boolean fresh = article.publishedAt()
+                .isAfter(Instant.now().minus(Duration.ofMinutes(15)));
+
+        if (
+                firstSeen
+                        && fresh
+                        && !article.symbols().isEmpty()
+                        && article.relevanceScore().compareTo(BigDecimal.valueOf(0.70)) >= 0
+        ) {
+            eventPublisher.publishEvent(new HighRelevanceNewsEvent(article));
+        }
     }
 
     public synchronized List<NewsArticle> recent(int limit) {

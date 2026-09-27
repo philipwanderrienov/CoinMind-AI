@@ -16,6 +16,7 @@ public record AiProperties(
         long inputPriceMicrosPerMillion,
         long cachedInputPriceMicrosPerMillion,
         long outputPriceMicrosPerMillion,
+        String usageTimezone,
         List<String> triggerIntervals
 ) {
 }

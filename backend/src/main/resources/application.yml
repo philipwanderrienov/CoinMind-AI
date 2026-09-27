@@ -30,6 +30,7 @@ coinmind:
     input-price-micros-per-million: ${AI_INPUT_PRICE_MICROS_PER_MILLION:200000}
     cached-input-price-micros-per-million: ${AI_CACHED_INPUT_PRICE_MICROS_PER_MILLION:20000}
     output-price-micros-per-million: ${AI_OUTPUT_PRICE_MICROS_PER_MILLION:1200000}
+    usage-timezone: ${AI_USAGE_TIMEZONE:Asia/Jakarta}
     trigger-intervals:
       - 15m
       - 1h

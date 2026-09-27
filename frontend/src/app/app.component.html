@@ -398,6 +398,37 @@
             <div class="push-note">Unable to enable push notifications.</div>
           }
 
+          @if (aiAnalysis()) {
+            <div class="analysis-result">
+              <div class="analysis-result-head">
+                <span [class]="aiAnalysis()!.marketBias === 'BULLISH' ? 'positive' : aiAnalysis()!.marketBias === 'BEARISH' ? 'negative' : 'neutral'">
+                  {{ aiAnalysis()!.marketBias }}
+                </span>
+                <strong>{{ aiAnalysis()!.confidence }}%</strong>
+              </div>
+
+              <p>{{ aiAnalysis()!.summary }}</p>
+
+              @if (aiAnalysis()!.supportingFactors.length) {
+                <div class="analysis-factors">
+                  <span>Supporting</span>
+                  @for (factor of aiAnalysis()!.supportingFactors; track factor) {
+                    <small>+ {{ factor }}</small>
+                  }
+                </div>
+              }
+
+              @if (aiAnalysis()!.riskFactors.length) {
+                <div class="analysis-factors risks">
+                  <span>Risks</span>
+                  @for (risk of aiAnalysis()!.riskFactors; track risk) {
+                    <small>− {{ risk }}</small>
+                  }
+                </div>
+              }
+            </div>
+          }
+
           <div class="pipeline">
             <div class="done"><span>01</span> Market feed</div>
             <div class="done"><span>02</span> Historical candles</div>

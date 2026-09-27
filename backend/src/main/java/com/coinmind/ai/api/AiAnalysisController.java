@@ -35,6 +35,14 @@ public class AiAnalysisController {
         return ResponseEntity.ok(contextBuilder.build(symbol, interval));
     }
 
+    @GetMapping("/analysis/latest/{symbol}/{interval}")
+    public Mono<AiAnalysisResult> latest(
+            @PathVariable String symbol,
+            @PathVariable String interval
+    ) {
+        return aiAnalysisService.latest(symbol, interval);
+    }
+
     @PostMapping("/analysis/{symbol}/{interval}")
     public Mono<AiAnalysisResult> analyze(
             @PathVariable String symbol,

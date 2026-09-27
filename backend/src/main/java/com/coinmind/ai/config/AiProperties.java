@@ -2,6 +2,8 @@ package com.coinmind.ai.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.List;
+
 @ConfigurationProperties(prefix = "coinmind.ai")
 public record AiProperties(
         boolean enabled,
@@ -13,6 +15,7 @@ public record AiProperties(
         int maxOutputTokens,
         long inputPriceMicrosPerMillion,
         long cachedInputPriceMicrosPerMillion,
-        long outputPriceMicrosPerMillion
+        long outputPriceMicrosPerMillion,
+        List<String> triggerIntervals
 ) {
 }

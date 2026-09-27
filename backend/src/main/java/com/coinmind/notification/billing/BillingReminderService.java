@@ -38,6 +38,21 @@ public class BillingReminderService {
         this.repositoryProvider = repositoryProvider;
     }
 
+    public BillingStatus status() {
+        LocalDate today = LocalDate.now(ZoneId.of(properties.timezone()));
+        LocalDate dueDate = resolveNextDueDate(today);
+        long daysUntilDue = ChronoUnit.DAYS.between(today, dueDate);
+
+        return new BillingStatus(
+                properties.enabled(),
+                properties.provider(),
+                dueDate,
+                daysUntilDue,
+                properties.reminderDaysBefore(),
+                webPushService.isConfigured()
+        );
+    }
+
     @Scheduled(
             cron = "${coinmind.billing.cron:0 0 9 * * *}",
             zone = "${coinmind.billing.timezone:Asia/Jakarta}"

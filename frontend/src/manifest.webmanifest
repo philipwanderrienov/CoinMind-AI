@@ -1,0 +1,17 @@
+{
+  "name": "CoinMind AI",
+  "short_name": "CoinMind",
+  "description": "Crypto market intelligence powered by realtime data and AI.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09111f",
+  "theme_color": "#09111f",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

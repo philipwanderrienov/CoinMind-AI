@@ -60,7 +60,14 @@ public record MarketContext(
             int positiveCount,
             int neutralCount,
             int negativeCount,
-            List<String> recentHeadlines
+            List<NewsItem> topArticles
+    ) {
+    }
+
+    public record NewsItem(
+            String title,
+            BigDecimal sentimentScore,
+            BigDecimal relevanceScore
     ) {
     }
 }

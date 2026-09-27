@@ -5,6 +5,7 @@ import {
   Candlestick,
   AiAnalysisResult,
   AiUsageSummary,
+  BillingStatus,
   MarketContext,
   MarketMicrostructure,
   MarketFeedHealth,
@@ -85,6 +86,10 @@ export class MarketApiService {
     return this.http.get<AiUsageSummary>(
       `/api/v1/ai/usage/summary?days=${days}`
     );
+  }
+
+  getBillingStatus(): Observable<BillingStatus> {
+    return this.http.get<BillingStatus>('/api/v1/billing/status');
   }
 
   getIndicators(symbol: string, interval: string): Observable<TechnicalIndicators> {

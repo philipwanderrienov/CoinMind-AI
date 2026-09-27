@@ -218,3 +218,15 @@ export interface BillingStatus {
   reminderDaysBefore: number;
   pushConfigured: boolean;
 }
+
+
+export interface AiEngineStatus {
+  state: 'DISABLED' | 'MISSING_API_KEY' | 'READY' | 'AUTH_ERROR' | 'RATE_LIMITED' | 'ERROR';
+  provider: string;
+  model: string;
+  enabled: boolean;
+  apiKeyConfigured: boolean;
+  message: string;
+  lastHttpStatus: number | null;
+  lastCheckedAt: string | null;
+}

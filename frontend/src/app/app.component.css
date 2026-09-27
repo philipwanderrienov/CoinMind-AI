@@ -1115,3 +1115,65 @@ h1 span {
 .analysis-factors.risks > span {
   color: var(--negative);
 }
+
+
+.ai-admin-status {
+  margin: 0 0 14px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #09111d;
+}
+
+.ai-admin-status > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ai-admin-status span,
+.ai-admin-status small {
+  color: var(--muted);
+  font-size: 8px;
+  letter-spacing: .08em;
+}
+
+.ai-admin-status strong {
+  font-size: 10px;
+  letter-spacing: .06em;
+}
+
+.ai-admin-status p {
+  margin: 8px 0 5px;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.ai-admin-status.ready {
+  border-color: rgba(33, 212, 167, .24);
+  background: rgba(33, 212, 167, .035);
+}
+
+.ai-admin-status.ready strong {
+  color: var(--positive);
+}
+
+.ai-admin-status.warn {
+  border-color: rgba(242, 184, 75, .28);
+  background: rgba(242, 184, 75, .04);
+}
+
+.ai-admin-status.warn strong {
+  color: #f2b84b;
+}
+
+.ai-admin-status.error {
+  border-color: rgba(255, 93, 122, .28);
+  background: rgba(255, 93, 122, .04);
+}
+
+.ai-admin-status.error strong {
+  color: var(--negative);
+}

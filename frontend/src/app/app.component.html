@@ -451,6 +451,31 @@
               </div>
             </div>
 
+            @if (billingStatus()) {
+              <div class="billing-status-card">
+                <div>
+                  <span>Next AI billing</span>
+                  <strong>{{ billingStatus()!.nextPaymentDate | date:'MMM d, y' }}</strong>
+                </div>
+                <div>
+                  <span>Countdown</span>
+                  <strong>
+                    @if (billingStatus()!.daysUntilPayment === 0) {
+                      Due today
+                    } @else {
+                      H-{{ billingStatus()!.daysUntilPayment }}
+                    }
+                  </strong>
+                </div>
+                <div>
+                  <span>Push reminder</span>
+                  <strong>
+                    {{ billingStatus()!.pushConfigured ? 'Ready' : 'Not configured' }}
+                  </strong>
+                </div>
+              </div>
+            }
+
             <div class="usage-days">
               @for (day of aiUsage()!.daily.slice(-7); track day.date) {
                 <div>

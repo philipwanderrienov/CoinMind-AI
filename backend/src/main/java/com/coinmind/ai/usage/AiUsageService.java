@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.UUID;
 
 @Service
@@ -88,19 +88,21 @@ public class AiUsageService {
             ));
         }
 
-        Instant todayStart = LocalDate.now(ZoneOffset.UTC)
-                .atStartOfDay()
-                .toInstant(ZoneOffset.UTC);
+        ZoneId zoneId = ZoneId.of(properties.usageTimezone());
 
-        Instant monthStart = LocalDate.now(ZoneOffset.UTC)
+        Instant todayStart = LocalDate.now(zoneId)
+                .atStartOfDay(zoneId)
+                .toInstant();
+
+        Instant monthStart = LocalDate.now(zoneId)
                 .withDayOfMonth(1)
-                .atStartOfDay()
-                .toInstant(ZoneOffset.UTC);
+                .atStartOfDay(zoneId)
+                .toInstant();
 
         return Mono.zip(
                 repository.aggregate(todayStart),
                 repository.aggregate(monthStart),
-                repository.daily(days).collectList()
+                repository.daily(days, properties.usageTimezone()).collectList()
         ).map(tuple -> {
             var today = tuple.getT1();
             var month = tuple.getT2();

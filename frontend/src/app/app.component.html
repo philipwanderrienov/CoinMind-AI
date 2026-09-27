@@ -364,13 +364,44 @@
             </p>
           }
 
+          @if (aiStatus()) {
+            <div class="ai-admin-status"
+                 [class.ready]="aiStatus()!.state === 'READY'"
+                 [class.warn]="aiStatus()!.state === 'MISSING_API_KEY' || aiStatus()!.state === 'RATE_LIMITED'"
+                 [class.error]="aiStatus()!.state === 'AUTH_ERROR' || aiStatus()!.state === 'ERROR'">
+              <div>
+                <span>AI ENGINE</span>
+                <strong>{{ aiStatus()!.state }}</strong>
+              </div>
+              <p>{{ aiStatus()!.message }}</p>
+              <small>
+                {{ aiStatus()!.model }}
+                @if (aiStatus()!.lastHttpStatus) {
+                  · HTTP {{ aiStatus()!.lastHttpStatus }}
+                }
+              </small>
+            </div>
+          }
+
           <div class="ai-actions">
             <button
               type="button"
               class="analyze-button"
-              [disabled]="aiRunning()"
+              [disabled]="aiRunning() || aiStatus()?.state !== 'READY'"
               (click)="runAiAnalysis()">
-              {{ aiRunning() ? 'Analyzing…' : 'Analyze now' }}
+              @if (aiRunning()) {
+                Analyzing…
+              } @else if (aiStatus()?.state === 'MISSING_API_KEY') {
+                API key required
+              } @else if (aiStatus()?.state === 'AUTH_ERROR') {
+                Fix API key
+              } @else if (aiStatus()?.state === 'RATE_LIMITED') {
+                AI rate limited
+              } @else if (aiStatus()?.state === 'DISABLED') {
+                AI disabled
+              } @else {
+                Analyze now
+              }
             </button>
 
             <button

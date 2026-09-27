@@ -69,7 +69,6 @@ public class AiUsageRepository {
                 FROM ai_usage_log
                 WHERE created_at >= :from
                 """)
-                .bind("timezone", timezone)
                 .bind("from", from)
                 .map((row, metadata) -> new Aggregate(
                         number(row.get("calls", Long.class)),
@@ -103,6 +102,7 @@ public class AiUsageRepository {
                 GROUP BY usage_date
                 ORDER BY usage_date ASC
                 """)
+                .bind("timezone", timezone)
                 .bind("from", from)
                 .map((row, metadata) -> new AiUsageSummary.DailyUsage(
                         row.get("usage_date", LocalDate.class),

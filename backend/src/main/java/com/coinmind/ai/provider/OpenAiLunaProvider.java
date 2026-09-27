@@ -187,8 +187,8 @@ public class OpenAiLunaProvider implements AiProvider {
         String value = text == null ? "" : text.trim();
 
         if (value.startsWith("```")) {
-            value = value.replaceFirst("^\`\`\`(?:json)?\\s*", "");
-            value = value.replaceFirst("\\s*\`\`\`$", "");
+            value = value.replaceFirst("^```(?:json)?\\s*", "");
+            value = value.replaceFirst("\\s*```$", "");
         }
 
         return value;

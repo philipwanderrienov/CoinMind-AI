@@ -120,7 +120,11 @@ public class MarketContextBuilder {
                         news.negativeCount(),
                         news.recentArticles().stream()
                                 .limit(5)
-                                .map(article -> article.title())
+                                .map(article -> new MarketContext.NewsItem(
+                                        article.title(),
+                                        article.sentimentScore(),
+                                        article.relevanceScore()
+                                ))
                                 .toList()
                 )
         );

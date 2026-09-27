@@ -3,6 +3,7 @@ import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular
 import { Subscription, catchError, map, of, retry, switchMap, timer } from 'rxjs';
 import {
   AiAnalysisResult,
+  AiEngineStatus,
   AiUsageSummary,
   BillingStatus,
   Candlestick,
@@ -60,6 +61,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly indicators = signal<TechnicalIndicators | null>(null);
   readonly marketContext = signal<MarketContext | null>(null);
   readonly aiAnalysis = signal<AiAnalysisResult | null>(null);
+  readonly aiStatus = signal<AiEngineStatus | null>(null);
   readonly news = signal<NewsArticle[]>([]);
   readonly newsSentiment = signal<NewsSentimentSummary | null>(null);
   readonly aiUsage = signal<AiUsageSummary | null>(null);
@@ -125,6 +127,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadIndicators();
     this.loadMarketContext();
     this.loadLatestAiAnalysis();
+    this.startAiStatusMonitoring();
     this.loadNews();
     this.startAiUsageMonitoring();
     this.loadBillingStatus();
@@ -168,7 +171,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   runAiAnalysis(): void {
-    if (this.aiRunning()) {
+    if (this.aiRunning() || this.aiStatus()?.state !== 'READY') {
       return;
     }
 
@@ -183,9 +186,11 @@ export class AppComponent implements OnInit, OnDestroy {
           this.aiAnalysis.set(result);
           this.aiRunning.set(false);
           this.loadAiUsage();
+          this.loadAiStatus();
         },
         error: () => {
           this.aiRunning.set(false);
+          this.loadAiStatus();
         }
       })
     );
@@ -356,6 +361,19 @@ export class AppComponent implements OnInit, OnDestroy {
         error: () => this.aiAnalysis.set(null)
       })
     );
+  }
+
+  private startAiStatusMonitoring(): void {
+    this.subscriptions.add(
+      timer(0, 30_000).subscribe(() => this.loadAiStatus())
+    );
+  }
+
+  private loadAiStatus(): void {
+    this.marketApi.getAiStatus().subscribe({
+      next: status => this.aiStatus.set(status),
+      error: () => this.aiStatus.set(null)
+    });
   }
 
   private startAiUsageMonitoring(): void {

@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 
 @Repository
 @ConditionalOnProperty(
@@ -69,29 +69,31 @@ public class AiUsageRepository {
                 FROM ai_usage_log
                 WHERE created_at >= :from
                 """)
+                .bind("timezone", timezone)
                 .bind("from", from)
                 .map((row, metadata) -> new Aggregate(
                         number(row.get("calls", Long.class)),
-                        number(row.get("input_tokens", Long.class)),
-                        number(row.get("cached_input_tokens", Long.class)),
-                        number(row.get("output_tokens", Long.class)),
-                        number(row.get("reasoning_tokens", Long.class)),
-                        number(row.get("total_tokens", Long.class)),
+                        number(row.get("input_tokens", BigDecimal.class)),
+                        number(row.get("cached_input_tokens", BigDecimal.class)),
+                        number(row.get("output_tokens", BigDecimal.class)),
+                        number(row.get("reasoning_tokens", BigDecimal.class)),
+                        number(row.get("total_tokens", BigDecimal.class)),
                         decimal(row.get("cost", BigDecimal.class))
                 ))
                 .one();
     }
 
-    public Flux<AiUsageSummary.DailyUsage> daily(int days) {
+    public Flux<AiUsageSummary.DailyUsage> daily(int days, String timezone) {
         int safeDays = Math.max(1, Math.min(days, 90));
-        Instant from = LocalDate.now(ZoneOffset.UTC)
+        ZoneId zoneId = ZoneId.of(timezone);
+        Instant from = LocalDate.now(zoneId)
                 .minusDays(safeDays - 1L)
-                .atStartOfDay()
-                .toInstant(ZoneOffset.UTC);
+                .atStartOfDay(zoneId)
+                .toInstant();
 
         return databaseClient.sql("""
                 SELECT
-                    (created_at AT TIME ZONE 'UTC')::date AS usage_date,
+                    (created_at AT TIME ZONE :timezone)::date AS usage_date,
                     COUNT(*) AS calls,
                     COALESCE(SUM(input_tokens), 0) AS input_tokens,
                     COALESCE(SUM(output_tokens), 0) AS output_tokens,
@@ -105,8 +107,8 @@ public class AiUsageRepository {
                 .map((row, metadata) -> new AiUsageSummary.DailyUsage(
                         row.get("usage_date", LocalDate.class),
                         number(row.get("calls", Long.class)),
-                        number(row.get("input_tokens", Long.class)),
-                        number(row.get("output_tokens", Long.class)),
+                        number(row.get("input_tokens", BigDecimal.class)),
+                        number(row.get("output_tokens", BigDecimal.class)),
                         decimal(row.get("cost", BigDecimal.class))
                 ))
                 .all();
@@ -114,6 +116,10 @@ public class AiUsageRepository {
 
     private long number(Long value) {
         return value == null ? 0L : value;
+    }
+
+    private long number(BigDecimal value) {
+        return value == null ? 0L : value.longValue();
     }
 
     private BigDecimal decimal(BigDecimal value) {

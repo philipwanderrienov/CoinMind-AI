@@ -28,6 +28,16 @@ public class AiAnalysisService {
         return analyze(symbol, interval, "MANUAL");
     }
 
+    public Mono<AiAnalysisResult> latest(String symbol, String interval) {
+        AiAnalysisRepository repository = repositoryProvider.getIfAvailable();
+
+        if (repository == null) {
+            return Mono.empty();
+        }
+
+        return repository.findLatest(symbol, interval);
+    }
+
     public Mono<AiAnalysisResult> analyze(
             String symbol,
             String interval,

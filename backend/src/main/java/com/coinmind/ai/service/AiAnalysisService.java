@@ -1,7 +1,9 @@
 package com.coinmind.ai.service;
 
 import com.coinmind.ai.model.AiAnalysisResult;
+import com.coinmind.ai.persistence.AiAnalysisRepository;
 import com.coinmind.ai.provider.AiProvider;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -10,17 +12,33 @@ public class AiAnalysisService {
 
     private final MarketContextBuilder contextBuilder;
     private final AiProvider aiProvider;
+    private final ObjectProvider<AiAnalysisRepository> repositoryProvider;
 
     public AiAnalysisService(
             MarketContextBuilder contextBuilder,
-            AiProvider aiProvider
+            AiProvider aiProvider,
+            ObjectProvider<AiAnalysisRepository> repositoryProvider
     ) {
         this.contextBuilder = contextBuilder;
         this.aiProvider = aiProvider;
+        this.repositoryProvider = repositoryProvider;
     }
 
     public Mono<AiAnalysisResult> analyze(String symbol, String interval) {
+        return analyze(symbol, interval, "MANUAL");
+    }
+
+    public Mono<AiAnalysisResult> analyze(
+            String symbol,
+            String interval,
+            String triggerType
+    ) {
         return Mono.fromSupplier(() -> contextBuilder.build(symbol, interval))
-                .flatMap(aiProvider::analyze);
+                .flatMap(context -> aiProvider.analyze(context, triggerType))
+                .doOnNext(result ->
+                        repositoryProvider.ifAvailable(repository ->
+                                repository.insert(result, triggerType).subscribe()
+                        )
+                );
     }
 }

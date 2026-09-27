@@ -1003,7 +1003,7 @@ h1 span {
 .usage-days > div:not(.empty-usage) {
   min-height: 29px;
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
+  grid-template-columns: .8fr 1.5fr .7fr auto;
   align-items: center;
   gap: 8px;
   border-top: 1px solid var(--border);

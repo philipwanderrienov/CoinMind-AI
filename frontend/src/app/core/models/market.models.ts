@@ -175,3 +175,32 @@ export interface MarketFeedHealth {
     trade: MarketFeedStreamHealth;
   };
 }
+
+
+export interface AiUsageDaily {
+  date: string;
+  calls: number;
+  inputTokens: number;
+  outputTokens: number;
+  estimatedCostUsd: number;
+}
+
+export interface AiUsageSummary {
+  todayCalls: number;
+  todayInputTokens: number;
+  todayCachedInputTokens: number;
+  todayOutputTokens: number;
+  todayReasoningTokens: number;
+  todayTotalTokens: number;
+  todayEstimatedCostUsd: number;
+  monthCalls: number;
+  monthInputTokens: number;
+  monthOutputTokens: number;
+  monthEstimatedCostUsd: number;
+  daily: AiUsageDaily[];
+}
+
+export interface PushPublicKeyResponse {
+  enabled: boolean;
+  publicKey: string;
+}

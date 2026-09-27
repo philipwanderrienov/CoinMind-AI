@@ -18,6 +18,36 @@ management:
 coinmind:
   persistence:
     enabled: ${PERSISTENCE_ENABLED:false}
+
+  ai:
+    enabled: ${AI_ENABLED:false}
+    provider: ${AI_PROVIDER:openai}
+    model: ${AI_MODEL:gpt-5.6-luna}
+    api-key: ${AI_API_KEY:}
+    base-url: ${AI_BASE_URL:https://api.openai.com}
+    reasoning-effort: ${AI_REASONING_EFFORT:low}
+    max-output-tokens: ${AI_MAX_OUTPUT_TOKENS:400}
+    input-price-micros-per-million: ${AI_INPUT_PRICE_MICROS_PER_MILLION:200000}
+    cached-input-price-micros-per-million: ${AI_CACHED_INPUT_PRICE_MICROS_PER_MILLION:20000}
+    output-price-micros-per-million: ${AI_OUTPUT_PRICE_MICROS_PER_MILLION:1200000}
+    trigger-intervals:
+      - 15m
+      - 1h
+      - 4h
+      - 1d
+
+  billing:
+    enabled: ${AI_BILLING_REMINDER_ENABLED:false}
+    due-day: ${AI_BILLING_DUE_DAY:1}
+    reminder-days-before: ${AI_BILLING_REMINDER_DAYS:2}
+    timezone: ${AI_BILLING_TIMEZONE:Asia/Jakarta}
+    provider: ${AI_BILLING_PROVIDER:OPENAI}
+
+  push:
+    enabled: ${WEB_PUSH_ENABLED:false}
+    public-key: ${WEB_PUSH_PUBLIC_KEY:}
+    private-key: ${WEB_PUSH_PRIVATE_KEY:}
+    subject: ${WEB_PUSH_SUBJECT:mailto:admin@example.com}
   market:
     binance-websocket-base-url: ${BINANCE_WS_URL:wss://data-stream.binance.vision}
     binance-rest-base-url: ${BINANCE_REST_URL:https://data-api.binance.vision}

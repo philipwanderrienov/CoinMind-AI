@@ -85,19 +85,45 @@ public class OpenAiLunaProvider implements AiProvider {
 
         String prompt = """
                 Analyze this cryptocurrency market context for market intelligence.
-                Do not give financial advice and do not invent missing data.
-                Return ONLY valid compact JSON with this exact shape:
-                {
-                  "marketBias":"BULLISH|BEARISH|NEUTRAL",
-                  "confidence":0,
-                  "summary":"maximum 2 concise sentences",
-                  "supportingFactors":["maximum 4 short factors"],
-                  "riskFactors":["maximum 4 short risks"]
-                }
-                confidence must be an integer from 0 to 100.
+                Do not give financial advice. Do not invent missing data.
+                Keep the summary concise and base the conclusion only on the supplied context.
 
                 MarketContext:
                 """ + compactContext;
+
+        Map<String, Object> schema = Map.of(
+                "type", "object",
+                "properties", Map.of(
+                        "marketBias", Map.of(
+                                "type", "string",
+                                "enum", List.of("BULLISH", "BEARISH", "NEUTRAL")
+                        ),
+                        "confidence", Map.of(
+                                "type", "integer",
+                                "minimum", 0,
+                                "maximum", 100
+                        ),
+                        "summary", Map.of("type", "string"),
+                        "supportingFactors", Map.of(
+                                "type", "array",
+                                "items", Map.of("type", "string"),
+                                "maxItems", 4
+                        ),
+                        "riskFactors", Map.of(
+                                "type", "array",
+                                "items", Map.of("type", "string"),
+                                "maxItems", 4
+                        )
+                ),
+                "required", List.of(
+                        "marketBias",
+                        "confidence",
+                        "summary",
+                        "supportingFactors",
+                        "riskFactors"
+                ),
+                "additionalProperties", false
+        );
 
         return Map.of(
                 "model", properties.model(),
@@ -105,7 +131,15 @@ public class OpenAiLunaProvider implements AiProvider {
                 "reasoning", Map.of(
                         "effort", properties.reasoningEffort()
                 ),
-                "max_output_tokens", properties.maxOutputTokens()
+                "max_output_tokens", properties.maxOutputTokens(),
+                "text", Map.of(
+                        "format", Map.of(
+                                "type", "json_schema",
+                                "name", "coinmind_market_analysis",
+                                "strict", true,
+                                "schema", schema
+                        )
+                )
         );
     }
 

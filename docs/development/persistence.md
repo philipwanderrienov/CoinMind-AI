@@ -18,6 +18,7 @@ infrastructure/database/init/001_market_candles.sql
 infrastructure/database/init/002_news_articles.sql
 infrastructure/database/init/003_news_archive.sql
 infrastructure/database/init/004_news_relevance.sql
+infrastructure/database/init/005_ai_usage_billing_push.sql
 ```
 
 ## Candle persistence

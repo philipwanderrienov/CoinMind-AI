@@ -364,6 +364,40 @@
             </p>
           }
 
+          <div class="ai-actions">
+            <button
+              type="button"
+              class="analyze-button"
+              [disabled]="aiRunning()"
+              (click)="runAiAnalysis()">
+              {{ aiRunning() ? 'Analyzing…' : 'Analyze now' }}
+            </button>
+
+            <button
+              type="button"
+              class="push-button"
+              [disabled]="pushStatus() === 'enabling' || pushStatus() === 'enabled'"
+              (click)="enablePushNotifications()">
+              @if (pushStatus() === 'enabled') {
+                Notifications enabled
+              } @else if (pushStatus() === 'enabling') {
+                Enabling…
+              } @else {
+                Enable billing push
+              }
+            </button>
+          </div>
+
+          @if (pushStatus() === 'unsupported') {
+            <div class="push-note">Push notifications are not supported by this browser.</div>
+          } @else if (pushStatus() === 'disabled') {
+            <div class="push-note">Web Push is not configured on the server yet.</div>
+          } @else if (pushStatus() === 'denied') {
+            <div class="push-note">Notification permission was denied.</div>
+          } @else if (pushStatus() === 'error') {
+            <div class="push-note">Unable to enable push notifications.</div>
+          }
+
           <div class="pipeline">
             <div class="done"><span>01</span> Market feed</div>
             <div class="done"><span>02</span> Historical candles</div>
@@ -375,6 +409,62 @@
             <span>Provider</span>
             <strong>{{ aiAnalysis()?.model ?? 'none' }}</strong>
           </div>
+        </article>
+
+        <article class="panel usage-panel">
+          <div class="panel-header compact">
+            <div>
+              <p class="eyebrow">AI USAGE</p>
+              <h3>GPT-5.6 Luna</h3>
+            </div>
+            <span class="usage-live">LIVE</span>
+          </div>
+
+          @if (aiUsage()) {
+            <div class="usage-grid">
+              <div>
+                <span>Input today</span>
+                <strong>{{ formatCompact(aiUsage()!.todayInputTokens) }}</strong>
+              </div>
+              <div>
+                <span>Output today</span>
+                <strong>{{ formatCompact(aiUsage()!.todayOutputTokens) }}</strong>
+              </div>
+              <div>
+                <span>Cached input</span>
+                <strong>{{ formatCompact(aiUsage()!.todayCachedInputTokens) }}</strong>
+              </div>
+              <div>
+                <span>AI calls</span>
+                <strong>{{ aiUsage()!.todayCalls }}</strong>
+              </div>
+            </div>
+
+            <div class="usage-cost">
+              <div>
+                <span>Estimated today</span>
+                <strong>${{ aiUsage()!.todayEstimatedCostUsd | number:'1.4-6' }}</strong>
+              </div>
+              <div>
+                <span>Estimated this month</span>
+                <strong>${{ aiUsage()!.monthEstimatedCostUsd | number:'1.4-6' }}</strong>
+              </div>
+            </div>
+
+            <div class="usage-days">
+              @for (day of aiUsage()!.daily.slice(-7); track day.date) {
+                <div>
+                  <span>{{ day.date | date:'MMM d' }}</span>
+                  <span>{{ day.calls }} calls</span>
+                  <strong>${{ day.estimatedCostUsd | number:'1.4-6' }}</strong>
+                </div>
+              } @empty {
+                <div class="empty-usage">No Luna usage recorded yet.</div>
+              }
+            </div>
+          } @else {
+            <div class="empty-usage">Loading AI usage…</div>
+          }
         </article>
       </aside>
     </section>

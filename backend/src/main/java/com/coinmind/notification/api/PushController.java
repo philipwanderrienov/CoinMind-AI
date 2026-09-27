@@ -4,6 +4,7 @@ import com.coinmind.notification.config.PushProperties;
 import com.coinmind.notification.push.PushSubscriptionRepository;
 import com.coinmind.notification.push.WebPushService;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,7 +48,9 @@ public class PushController {
         PushSubscriptionRepository repository = repositoryProvider.getIfAvailable();
 
         if (repository == null) {
-            return Mono.just(ResponseEntity.serviceUnavailable().build());
+            return Mono.just(
+                    ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build()
+            );
         }
 
         if (!valid(request)) {
@@ -65,9 +68,14 @@ public class PushController {
     @PostMapping("/test")
     public Mono<ResponseEntity<TestPushResponse>> testPush() {
         if (!webPushService.isConfigured()) {
-            return Mono.just(ResponseEntity
-                    .serviceUnavailable()
-                    .body(new TestPushResponse(0, "Web Push is not configured")));
+            return Mono.just(
+                    ResponseEntity
+                            .status(HttpStatus.SERVICE_UNAVAILABLE)
+                            .body(new TestPushResponse(
+                                    0,
+                                    "Web Push is not configured"
+                            ))
+            );
         }
 
         return webPushService.sendToAll(

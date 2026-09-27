@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import {
   Candlestick,
   AiAnalysisResult,
+  AiUsageSummary,
   MarketContext,
   MarketMicrostructure,
   MarketFeedHealth,
@@ -67,9 +68,22 @@ export class MarketApiService {
     );
   }
 
-  getAiAnalysis(symbol: string, interval: string): Observable<AiAnalysisResult> {
+  getLatestAiAnalysis(symbol: string, interval: string): Observable<AiAnalysisResult> {
     return this.http.get<AiAnalysisResult>(
-      `/api/v1/ai/analysis/${symbol}/${interval}`
+      `/api/v1/ai/analysis/latest/${symbol}/${interval}`
+    );
+  }
+
+  triggerAiAnalysis(symbol: string, interval: string): Observable<AiAnalysisResult> {
+    return this.http.post<AiAnalysisResult>(
+      `/api/v1/ai/analysis/${symbol}/${interval}`,
+      {}
+    );
+  }
+
+  getAiUsageSummary(days = 14): Observable<AiUsageSummary> {
+    return this.http.get<AiUsageSummary>(
+      `/api/v1/ai/usage/summary?days=${days}`
     );
   }
 

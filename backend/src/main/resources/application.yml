@@ -43,6 +43,7 @@ coinmind:
     reminder-days-before: ${AI_BILLING_REMINDER_DAYS:2}
     timezone: ${AI_BILLING_TIMEZONE:Asia/Jakarta}
     provider: ${AI_BILLING_PROVIDER:OPENAI}
+    cron: ${AI_BILLING_CRON:0 0 9 * * *}
 
   push:
     enabled: ${WEB_PUSH_ENABLED:false}

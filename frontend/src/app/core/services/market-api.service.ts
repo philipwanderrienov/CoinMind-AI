@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import {
   Candlestick,
   AiAnalysisResult,
+  AiEngineStatus,
   AiUsageSummary,
   BillingStatus,
   MarketContext,
@@ -80,6 +81,10 @@ export class MarketApiService {
       `/api/v1/ai/analysis/${symbol}/${interval}`,
       {}
     );
+  }
+
+  getAiStatus(): Observable<AiEngineStatus> {
+    return this.http.get<AiEngineStatus>('/api/v1/ai/status');
   }
 
   getAiUsageSummary(days = 14): Observable<AiUsageSummary> {

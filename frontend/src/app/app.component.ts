@@ -195,6 +195,7 @@ export class AppComponent implements OnInit, OnDestroy {
           this.aiRunning.set(false);
           this.loadAiUsage();
           this.loadAiStatus();
+          this.loadAiGuardrails();
         },
         error: () => {
           this.aiRunning.set(false);
@@ -373,7 +374,10 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private startAiStatusMonitoring(): void {
     this.subscriptions.add(
-      timer(0, 30_000).subscribe(() => this.loadAiStatus())
+      timer(0, 30_000).subscribe(() => {
+        this.loadAiStatus();
+        this.loadAiGuardrails();
+      })
     );
   }
 

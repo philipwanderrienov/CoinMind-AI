@@ -27,6 +27,8 @@ public class AiTriggerService {
 
     private final MarketCandlestickService candlestickService;
     private final AiAnalysisService analysisService;
+    private final MarketContextBuilder contextBuilder;
+    private final AiExecutionPolicyService executionPolicy;
     private final AiProperties properties;
     private final Map<String, Instant> lastAnalyzedClose = new ConcurrentHashMap<>();
 
@@ -35,10 +37,14 @@ public class AiTriggerService {
     public AiTriggerService(
             MarketCandlestickService candlestickService,
             AiAnalysisService analysisService,
+            MarketContextBuilder contextBuilder,
+            AiExecutionPolicyService executionPolicy,
             AiProperties properties
     ) {
         this.candlestickService = candlestickService;
         this.analysisService = analysisService;
+        this.contextBuilder = contextBuilder;
+        this.executionPolicy = executionPolicy;
         this.properties = properties;
     }
 
@@ -48,29 +54,40 @@ public class AiTriggerService {
                 .filter(Candlestick::closed)
                 .filter(this::isTriggerInterval)
                 .filter(this::isNewClose)
-                .flatMap(candle ->
-                        analysisService.analyze(
+                .flatMap(candle -> {
+                    if (!executionPolicy.providerReadyForAutomaticCalls()) {
+                        return reactor.core.publisher.Mono.empty();
+                    }
+
+                    return reactor.core.publisher.Mono
+                            .fromSupplier(() -> contextBuilder.build(
+                                    candle.symbol(),
+                                    candle.interval()
+                            ))
+                            .filter(executionPolicy::allowSignalTriggered)
+                            .flatMap(context ->
+                                    analysisService.analyze(
+                                            context,
+                                            "CANDLE_CLOSE_SIGNAL"
+                                    )
+                            )
+                            .doOnNext(result -> log.info(
+                                    "AI signal analysis completed. symbol={}, interval={}, bias={}, confidence={}",
+                                    result.symbol(),
+                                    result.interval(),
+                                    result.marketBias(),
+                                    result.confidence()
+                            ))
+                            .onErrorResume(error -> {
+                                log.warn(
+                                        "AI candle-close analysis failed. symbol={}, interval={}",
                                         candle.symbol(),
                                         candle.interval(),
-                                        "CANDLE_CLOSE"
-                                )
-                                .doOnNext(result -> log.info(
-                                        "AI analysis completed. symbol={}, interval={}, bias={}, confidence={}",
-                                        result.symbol(),
-                                        result.interval(),
-                                        result.marketBias(),
-                                        result.confidence()
-                                ))
-                                .onErrorResume(error -> {
-                                    log.warn(
-                                            "AI candle-close analysis failed. symbol={}, interval={}",
-                                            candle.symbol(),
-                                            candle.interval(),
-                                            error
-                                    );
-                                    return reactor.core.publisher.Mono.empty();
-                                })
-                )
+                                        error
+                                );
+                                return reactor.core.publisher.Mono.empty();
+                            });
+                })
                 .subscribe();
     }
 

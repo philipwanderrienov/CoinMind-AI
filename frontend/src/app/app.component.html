@@ -357,6 +357,13 @@
                 <span>RSI</span>
                 <strong>{{ marketContext()?.technical?.rsi14 | number:'1.1-1' }}</strong>
               </div>
+              <div class="signal-score-card">
+                <span>Signal score</span>
+                <strong [class]="marketContext()!.signal.bias === 'BULLISH' ? 'positive' : marketContext()!.signal.bias === 'BEARISH' ? 'negative' : 'neutral'">
+                  {{ marketContext()!.signal.score | number:'1.0-0' }}
+                </strong>
+                <small>{{ marketContext()!.signal.bias }} · {{ marketContext()!.signal.riskLevel }} risk</small>
+              </div>
             </div>
           } @else {
             <p>
@@ -366,7 +373,7 @@
 
           @if (aiStatus()) {
             <div class="ai-admin-status"
-                 [class.ready]="aiStatus()!.state === 'READY'"
+                 [class.ready]="aiStatus()!.state === 'READY' || aiStatus()!.state === 'MOCK'"
                  [class.warn]="aiStatus()!.state === 'MISSING_API_KEY' || aiStatus()!.state === 'RATE_LIMITED' || aiStatus()!.state === 'CONFIGURED_UNVERIFIED'"
                  [class.error]="aiStatus()!.state === 'AUTH_ERROR' || aiStatus()!.state === 'ERROR'">
               <div>
@@ -387,10 +394,12 @@
             <button
               type="button"
               class="analyze-button"
-              [disabled]="aiRunning() || (aiStatus()?.state !== 'READY' && aiStatus()?.state !== 'CONFIGURED_UNVERIFIED')"
+              [disabled]="aiRunning() || (aiStatus()?.state !== 'READY' && aiStatus()?.state !== 'CONFIGURED_UNVERIFIED' && aiStatus()?.state !== 'MOCK')"
               (click)="runAiAnalysis()">
               @if (aiRunning()) {
                 Analyzing…
+              } @else if (aiStatus()?.state === 'MOCK') {
+                Run mock analysis
               } @else if (aiStatus()?.state === 'MISSING_API_KEY') {
                 API key required
               } @else if (aiStatus()?.state === 'CONFIGURED_UNVERIFIED') {
@@ -471,7 +480,7 @@
 
           <div class="provider-status">
             <span>Provider</span>
-            <strong>{{ aiAnalysis()?.model ?? 'none' }}</strong>
+            <strong>{{ aiAnalysis()?.model ?? aiStatus()?.model ?? 'none' }}</strong>
           </div>
         </article>
 
@@ -479,17 +488,19 @@
           <div class="panel-header compact">
             <div>
               <p class="eyebrow">AI USAGE</p>
-              <h3>GPT-5.6 Luna</h3>
+              <h3>{{ aiStatus()?.state === 'MOCK' ? 'Mock AI Engine' : 'GPT-5.6 Luna' }}</h3>
             </div>
             <span
               class="usage-live"
-              [class.warn]="aiStatus()?.state === 'MISSING_API_KEY' || aiStatus()?.state === 'CONFIGURED_UNVERIFIED' || aiStatus()?.state === 'RATE_LIMITED'"
+              [class.warn]="aiStatus()?.state === 'MISSING_API_KEY' || aiStatus()?.state === 'CONFIGURED_UNVERIFIED' || aiStatus()?.state === 'RATE_LIMITED' || aiStatus()?.state === 'MOCK'"
               [class.error]="aiStatus()?.state === 'AUTH_ERROR' || aiStatus()?.state === 'ERROR'"
               [class.disabled]="aiStatus()?.state === 'DISABLED'">
               @if (!aiStatus()) {
                 CHECKING
               } @else if (aiStatus()!.state === 'READY') {
                 LIVE
+              } @else if (aiStatus()!.state === 'MOCK') {
+                MOCK MODE
               } @else if (aiStatus()!.state === 'MISSING_API_KEY') {
                 API KEY EMPTY
               } @else if (aiStatus()!.state === 'CONFIGURED_UNVERIFIED') {

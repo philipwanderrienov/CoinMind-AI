@@ -247,3 +247,27 @@ export interface AiGuardrailStatus {
   maxAutomaticCallsPerHour: number;
   maxAutomaticCallsPerDay: number;
 }
+
+
+export interface AiAnalysisEvaluation {
+  horizon: string;
+  exitPrice: number;
+  returnPct: number;
+  directionCorrect: boolean;
+  evaluatedAt: string;
+}
+
+export interface AiAnalysisHistoryItem {
+  id: string;
+  symbol: string;
+  interval: string;
+  triggerType: string;
+  marketBias: string;
+  confidence: number;
+  summary: string;
+  model: string;
+  entryPrice: number | null;
+  signalScore: number | null;
+  analyzedAt: string;
+  evaluations: AiAnalysisEvaluation[];
+}

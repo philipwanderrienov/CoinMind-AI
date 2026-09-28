@@ -54,7 +54,12 @@ public class AiAnalysisService {
         return aiProvider.analyze(context, triggerType)
                 .doOnNext(result ->
                         repositoryProvider.ifAvailable(repository ->
-                                repository.insert(result, triggerType).subscribe()
+                                repository.insert(
+                                        result,
+                                        triggerType,
+                                        context.price().lastPrice(),
+                                        context.signal().score()
+                                ).subscribe()
                         )
                 );
     }

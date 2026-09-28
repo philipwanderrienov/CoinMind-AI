@@ -24,20 +24,29 @@ public class AiNewsTriggerService {
     private static final Duration COOLDOWN = Duration.ofMinutes(15);
 
     private final AiAnalysisService analysisService;
+    private final AiExecutionPolicyService executionPolicy;
     private final Map<String, Instant> lastTriggerBySymbol = new ConcurrentHashMap<>();
 
-    public AiNewsTriggerService(AiAnalysisService analysisService) {
+    public AiNewsTriggerService(
+            AiAnalysisService analysisService,
+            AiExecutionPolicyService executionPolicy
+    ) {
         this.analysisService = analysisService;
+        this.executionPolicy = executionPolicy;
     }
 
     @EventListener
     public void onHighRelevanceNews(HighRelevanceNewsEvent event) {
+        if (!executionPolicy.providerReadyForAutomaticCalls()) {
+            return;
+        }
+
         var article = event.article();
 
         for (String baseSymbol : article.symbols()) {
             String symbol = baseSymbol + "USDT";
 
-            if (!shouldTrigger(symbol)) {
+            if (!shouldTrigger(symbol) || !executionPolicy.allowHighRelevanceNews()) {
                 continue;
             }
 

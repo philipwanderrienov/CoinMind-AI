@@ -6,6 +6,7 @@ import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -51,14 +52,21 @@ public class AiAnalysisRepository {
                 .one();
     }
 
-    public Mono<Void> insert(AiAnalysisResult result, String triggerType) {
+    public Mono<Void> insert(
+            AiAnalysisResult result,
+            String triggerType,
+            BigDecimal entryPrice,
+            BigDecimal signalScore
+    ) {
         return databaseClient.sql("""
                 INSERT INTO ai_analysis_history (
                     id, symbol, interval, trigger_type, market_bias, confidence,
-                    summary, supporting_factors, risk_factors, model, analyzed_at
+                    summary, supporting_factors, risk_factors, model, analyzed_at,
+                    entry_price, signal_score
                 ) VALUES (
                     :id, :symbol, :interval, :triggerType, :marketBias, :confidence,
-                    :summary, :supportingFactors, :riskFactors, :model, :analyzedAt
+                    :summary, :supportingFactors, :riskFactors, :model, :analyzedAt,
+                    :entryPrice, :signalScore
                 )
                 """)
                 .bind("id", UUID.randomUUID().toString())
@@ -72,6 +80,8 @@ public class AiAnalysisRepository {
                 .bind("riskFactors", String.join(" | ", result.riskFactors()))
                 .bind("model", result.model())
                 .bind("analyzedAt", result.analyzedAt())
+                .bind("entryPrice", entryPrice)
+                .bind("signalScore", signalScore)
                 .then();
     }
 

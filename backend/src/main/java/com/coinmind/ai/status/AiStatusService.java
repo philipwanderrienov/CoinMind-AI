@@ -53,9 +53,9 @@ public class AiStatusService {
         }
 
         return status(
-                "READY",
+                "CONFIGURED_UNVERIFIED",
                 true,
-                "AI engine is configured and ready."
+                "API key is configured, but the AI provider has not been verified since startup."
         );
     }
 

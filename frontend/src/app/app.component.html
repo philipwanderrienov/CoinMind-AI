@@ -511,6 +511,64 @@
           </div>
         </article>
 
+        <article class="panel history-panel">
+          <div class="panel-header compact">
+            <div>
+              <p class="eyebrow">AI ANALYSIS HISTORY</p>
+              <h3>{{ symbolLabel(selectedSymbol()) }} {{ selectedInterval() }} evaluations</h3>
+            </div>
+            <span class="history-count">{{ aiHistory().length }} records</span>
+          </div>
+
+          <div class="history-list">
+            @for (item of aiHistory(); track item.id) {
+              <div class="history-item">
+                <div class="history-main">
+                  <div class="history-title">
+                    <strong [class]="item.marketBias === 'BULLISH' ? 'positive' : item.marketBias === 'BEARISH' ? 'negative' : 'neutral'">
+                      {{ item.marketBias }}
+                    </strong>
+                    <span>{{ item.confidence }}%</span>
+                    <small>{{ item.triggerType }}</small>
+                  </div>
+
+                  <p>{{ item.summary }}</p>
+
+                  <div class="history-meta">
+                    <span>{{ item.model }}</span>
+                    <span>Entry {{ formatPrice(item.entryPrice) }}</span>
+                    @if (item.signalScore !== null) {
+                      <span>Signal {{ item.signalScore | number:'1.0-0' }}</span>
+                    }
+                    <span>{{ item.analyzedAt | date:'MMM d, HH:mm' }}</span>
+                  </div>
+                </div>
+
+                <div class="evaluation-list">
+                  @for (evaluation of item.evaluations; track evaluation.horizon) {
+                    <div [class.correct]="evaluation.directionCorrect"
+                         [class.wrong]="!evaluation.directionCorrect">
+                      <span>{{ evaluation.horizon }}</span>
+                      <strong>
+                        {{ evaluation.returnPct >= 0 ? '+' : '' }}{{ evaluation.returnPct | number:'1.2-2' }}%
+                      </strong>
+                      <small>{{ evaluation.directionCorrect ? 'CORRECT' : 'MISS' }}</small>
+                    </div>
+                  } @empty {
+                    <div class="evaluation-pending">
+                      Waiting for 1h evaluation
+                    </div>
+                  }
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-usage">
+                No AI analysis history yet. Run a mock analysis to create the first evaluation baseline.
+              </div>
+            }
+          </div>
+        </article>
+
         <article class="panel usage-panel">
           <div class="panel-header compact">
             <div>

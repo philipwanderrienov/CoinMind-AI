@@ -171,7 +171,12 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   runAiAnalysis(): void {
-    if (this.aiRunning() || this.aiStatus()?.state !== 'READY') {
+    const state = this.aiStatus()?.state;
+
+    if (
+      this.aiRunning()
+      || (state !== 'READY' && state !== 'CONFIGURED_UNVERIFIED')
+    ) {
       return;
     }
 

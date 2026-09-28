@@ -1,5 +1,6 @@
 package com.coinmind.ai.service;
 
+import com.coinmind.ai.config.AiProperties;
 import com.coinmind.ai.model.MarketContext;
 import com.coinmind.indicator.model.TechnicalIndicators;
 import com.coinmind.indicator.service.TechnicalIndicatorService;
@@ -24,6 +25,8 @@ public class MarketContextBuilder {
     private final TradeService tradeService;
     private final TechnicalIndicatorService indicatorService;
     private final NewsService newsService;
+    private final MarketSignalScoringService signalScoringService;
+    private final AiProperties aiProperties;
 
     public MarketContextBuilder(
             MarketTickerService tickerService,
@@ -31,7 +34,9 @@ public class MarketContextBuilder {
             OrderBookService orderBookService,
             TradeService tradeService,
             TechnicalIndicatorService indicatorService,
-            NewsService newsService
+            NewsService newsService,
+            MarketSignalScoringService signalScoringService,
+            AiProperties aiProperties
     ) {
         this.tickerService = tickerService;
         this.historyService = historyService;
@@ -39,6 +44,8 @@ public class MarketContextBuilder {
         this.tradeService = tradeService;
         this.indicatorService = indicatorService;
         this.newsService = newsService;
+        this.signalScoringService = signalScoringService;
+        this.aiProperties = aiProperties;
     }
 
     public MarketContext build(String symbol, String interval) {
@@ -74,6 +81,58 @@ public class MarketContextBuilder {
                 10
         );
 
+        var technicalContext = new MarketContext.TechnicalContext(
+                indicators.ema20(),
+                indicators.ema50(),
+                indicators.ema200(),
+                indicators.rsi14(),
+                indicators.macd(),
+                indicators.macdSignal(),
+                indicators.macdHistogram(),
+                indicators.atr14(),
+                indicators.bollingerMiddle(),
+                indicators.bollingerUpper(),
+                indicators.bollingerLower(),
+                indicators.volumeRatio(),
+                indicators.trendScore(),
+                indicators.momentumScore(),
+                indicators.volatilityScore()
+        );
+
+        var microstructureContext = new MarketContext.MicrostructureContext(
+                orderBook.bestBidPrice(),
+                orderBook.bestAskPrice(),
+                orderBook.spread(),
+                micro.spreadBps(),
+                orderBook.midPrice(),
+                micro.buyVolume(),
+                micro.sellVolume(),
+                micro.buySellRatio()
+        );
+
+        var newsContext = new MarketContext.NewsContext(
+                news.articleCount(),
+                news.averageSentiment(),
+                news.positiveCount(),
+                news.neutralCount(),
+                news.negativeCount(),
+                news.recentArticles().stream()
+                        .limit(5)
+                        .map(article -> new MarketContext.NewsItem(
+                                article.title(),
+                                article.sentimentScore(),
+                                article.relevanceScore()
+                        ))
+                        .toList()
+        );
+
+        var signalContext = signalScoringService.score(
+                technicalContext,
+                microstructureContext,
+                newsContext,
+                aiProperties.minimumAutomaticSignalScore()
+        );
+
         return new MarketContext(
                 normalizedSymbol,
                 normalizedInterval,
@@ -85,48 +144,10 @@ public class MarketContextBuilder {
                         ticker.lowPrice(),
                         ticker.quoteVolume()
                 ),
-                new MarketContext.TechnicalContext(
-                        indicators.ema20(),
-                        indicators.ema50(),
-                        indicators.ema200(),
-                        indicators.rsi14(),
-                        indicators.macd(),
-                        indicators.macdSignal(),
-                        indicators.macdHistogram(),
-                        indicators.atr14(),
-                        indicators.bollingerMiddle(),
-                        indicators.bollingerUpper(),
-                        indicators.bollingerLower(),
-                        indicators.volumeRatio(),
-                        indicators.trendScore(),
-                        indicators.momentumScore(),
-                        indicators.volatilityScore()
-                ),
-                new MarketContext.MicrostructureContext(
-                        orderBook.bestBidPrice(),
-                        orderBook.bestAskPrice(),
-                        orderBook.spread(),
-                        micro.spreadBps(),
-                        orderBook.midPrice(),
-                        micro.buyVolume(),
-                        micro.sellVolume(),
-                        micro.buySellRatio()
-                ),
-                new MarketContext.NewsContext(
-                        news.articleCount(),
-                        news.averageSentiment(),
-                        news.positiveCount(),
-                        news.neutralCount(),
-                        news.negativeCount(),
-                        news.recentArticles().stream()
-                                .limit(5)
-                                .map(article -> new MarketContext.NewsItem(
-                                        article.title(),
-                                        article.sentimentScore(),
-                                        article.relevanceScore()
-                                ))
-                                .toList()
-                )
+                technicalContext,
+                microstructureContext,
+                newsContext,
+                signalContext
         );
     }
 }

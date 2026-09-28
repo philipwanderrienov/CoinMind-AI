@@ -221,7 +221,7 @@ export interface BillingStatus {
 
 
 export interface AiEngineStatus {
-  state: 'DISABLED' | 'MISSING_API_KEY' | 'READY' | 'AUTH_ERROR' | 'RATE_LIMITED' | 'ERROR';
+  state: 'DISABLED' | 'MISSING_API_KEY' | 'CONFIGURED_UNVERIFIED' | 'READY' | 'AUTH_ERROR' | 'RATE_LIMITED' | 'ERROR';
   provider: string;
   model: string;
   enabled: boolean;

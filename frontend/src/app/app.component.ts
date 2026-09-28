@@ -5,6 +5,7 @@ import {
   AiAnalysisResult,
   AiAnalysisHistoryItem,
   AiEngineStatus,
+  AiEvaluationSummary,
   AiGuardrailStatus,
   AiUsageSummary,
   BillingStatus,
@@ -64,6 +65,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly marketContext = signal<MarketContext | null>(null);
   readonly aiAnalysis = signal<AiAnalysisResult | null>(null);
   readonly aiHistory = signal<AiAnalysisHistoryItem[]>([]);
+  readonly aiEvaluationSummary = signal<AiEvaluationSummary | null>(null);
   readonly aiStatus = signal<AiEngineStatus | null>(null);
   readonly aiGuardrails = signal<AiGuardrailStatus | null>(null);
   readonly news = signal<NewsArticle[]>([]);
@@ -132,6 +134,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadMarketContext();
     this.loadLatestAiAnalysis();
     this.loadAiHistory();
+    this.loadAiEvaluationSummary();
     this.startAiStatusMonitoring();
     this.loadAiGuardrails();
     this.loadNews();
@@ -154,6 +157,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadMarketContext();
     this.loadLatestAiAnalysis();
     this.loadAiHistory();
+    this.loadAiEvaluationSummary();
     this.loadNews();
   }
 
@@ -164,6 +168,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadMarketContext();
     this.loadLatestAiAnalysis();
     this.loadAiHistory();
+    this.loadAiEvaluationSummary();
   }
 
   toggleEma(): void {
@@ -202,6 +207,7 @@ export class AppComponent implements OnInit, OnDestroy {
           this.loadAiStatus();
           this.loadAiGuardrails();
           this.loadAiHistory();
+          this.loadAiEvaluationSummary();
         },
         error: () => {
           this.aiRunning.set(false);
@@ -376,6 +382,16 @@ export class AppComponent implements OnInit, OnDestroy {
         error: () => this.aiAnalysis.set(null)
       })
     );
+  }
+
+  private loadAiEvaluationSummary(): void {
+    this.marketApi.getAiEvaluationSummary(
+      this.selectedSymbol(),
+      this.selectedInterval()
+    ).subscribe({
+      next: summary => this.aiEvaluationSummary.set(summary),
+      error: () => this.aiEvaluationSummary.set(null)
+    });
   }
 
   private loadAiHistory(): void {

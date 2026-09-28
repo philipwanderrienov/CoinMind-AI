@@ -24,6 +24,110 @@ public class AiAnalysisEvaluationRepository {
         this.databaseClient = databaseClient;
     }
 
+    public Mono<Integer> countAnalyses(
+            String symbol,
+            String interval
+    ) {
+        return databaseClient.sql("""
+                SELECT COUNT(*) AS total
+                FROM ai_analysis_history
+                WHERE symbol = :symbol
+                  AND interval = :interval
+                """)
+                .bind("symbol", symbol.toUpperCase())
+                .bind("interval", interval.toLowerCase())
+                .map((row, metadata) -> {
+                    Long total = row.get("total", Long.class);
+                    return total == null ? 0 : total.intValue();
+                })
+                .one()
+                .defaultIfEmpty(0);
+    }
+
+    public Flux<HorizonAggregate> aggregateByHorizon(
+            String symbol,
+            String interval
+    ) {
+        return databaseClient.sql("""
+                SELECT e.horizon,
+                       COUNT(*) AS evaluated,
+                       SUM(CASE WHEN e.direction_correct THEN 1 ELSE 0 END) AS correct,
+                       AVG(e.return_pct) AS avg_return
+                FROM ai_analysis_evaluations e
+                JOIN ai_analysis_history a ON a.id = e.analysis_id
+                WHERE a.symbol = :symbol
+                  AND a.interval = :interval
+                GROUP BY e.horizon
+                ORDER BY CASE e.horizon
+                    WHEN '1h' THEN 1
+                    WHEN '4h' THEN 2
+                    WHEN '24h' THEN 3
+                    ELSE 99
+                END
+                """)
+                .bind("symbol", symbol.toUpperCase())
+                .bind("interval", interval.toLowerCase())
+                .map((row, metadata) -> new HorizonAggregate(
+                        row.get("horizon", String.class),
+                        longValue(row.get("evaluated", Long.class)),
+                        longValue(row.get("correct", Long.class)),
+                        row.get("avg_return", BigDecimal.class)
+                ))
+                .all();
+    }
+
+    public Flux<BiasAggregate> aggregateByBias(
+            String symbol,
+            String interval
+    ) {
+        return databaseClient.sql("""
+                SELECT a.market_bias,
+                       COUNT(*) AS evaluated,
+                       SUM(CASE WHEN e.direction_correct THEN 1 ELSE 0 END) AS correct
+                FROM ai_analysis_evaluations e
+                JOIN ai_analysis_history a ON a.id = e.analysis_id
+                WHERE a.symbol = :symbol
+                  AND a.interval = :interval
+                GROUP BY a.market_bias
+                ORDER BY a.market_bias
+                """)
+                .bind("symbol", symbol.toUpperCase())
+                .bind("interval", interval.toLowerCase())
+                .map((row, metadata) -> new BiasAggregate(
+                        row.get("market_bias", String.class),
+                        longValue(row.get("evaluated", Long.class)),
+                        longValue(row.get("correct", Long.class))
+                ))
+                .all();
+    }
+
+    public Flux<ModelAggregate> aggregateByModel(
+            String symbol,
+            String interval
+    ) {
+        return databaseClient.sql("""
+                SELECT a.model,
+                       COUNT(*) AS evaluated,
+                       SUM(CASE WHEN e.direction_correct THEN 1 ELSE 0 END) AS correct,
+                       AVG(e.return_pct) AS avg_return
+                FROM ai_analysis_evaluations e
+                JOIN ai_analysis_history a ON a.id = e.analysis_id
+                WHERE a.symbol = :symbol
+                  AND a.interval = :interval
+                GROUP BY a.model
+                ORDER BY COUNT(*) DESC, a.model
+                """)
+                .bind("symbol", symbol.toUpperCase())
+                .bind("interval", interval.toLowerCase())
+                .map((row, metadata) -> new ModelAggregate(
+                        row.get("model", String.class),
+                        longValue(row.get("evaluated", Long.class)),
+                        longValue(row.get("correct", Long.class)),
+                        row.get("avg_return", BigDecimal.class)
+                ))
+                .all();
+    }
+
     public Flux<AnalysisRow> findRecentAnalyses(
             String symbol,
             String interval,
@@ -171,6 +275,33 @@ public class AiAnalysisEvaluationRepository {
                 .bind("returnPct", returnPct)
                 .bind("directionCorrect", directionCorrect)
                 .then();
+    }
+
+    private int longValue(Long value) {
+        return value == null ? 0 : value.intValue();
+    }
+
+    public record HorizonAggregate(
+            String horizon,
+            int evaluated,
+            int correct,
+            BigDecimal averageReturnPct
+    ) {
+    }
+
+    public record BiasAggregate(
+            String marketBias,
+            int evaluated,
+            int correct
+    ) {
+    }
+
+    public record ModelAggregate(
+            String model,
+            int evaluated,
+            int correct,
+            BigDecimal averageReturnPct
+    ) {
     }
 
     public record AnalysisRow(

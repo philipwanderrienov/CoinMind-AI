@@ -175,7 +175,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     if (
       this.aiRunning()
-      || (state !== 'READY' && state !== 'CONFIGURED_UNVERIFIED')
+      || (state !== 'READY' && state !== 'CONFIGURED_UNVERIFIED' && state !== 'MOCK')
     ) {
       return;
     }

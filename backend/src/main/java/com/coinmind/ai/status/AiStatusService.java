@@ -95,6 +95,12 @@ public class AiStatusService {
         lastCheckedAt = Instant.now();
     }
 
+    private String displayModel() {
+        return "mock".equalsIgnoreCase(properties.provider())
+                ? "mock-signal-engine"
+                : properties.model();
+    }
+
     private AiEngineStatus status(
             String state,
             boolean keyConfigured,
@@ -103,7 +109,7 @@ public class AiStatusService {
         return new AiEngineStatus(
                 state,
                 properties.provider(),
-                properties.model(),
+                displayModel(),
                 properties.enabled(),
                 keyConfigured,
                 message,

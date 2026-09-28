@@ -481,7 +481,29 @@
               <p class="eyebrow">AI USAGE</p>
               <h3>GPT-5.6 Luna</h3>
             </div>
-            <span class="usage-live">LIVE</span>
+            <span
+              class="usage-live"
+              [class.warn]="aiStatus()?.state === 'MISSING_API_KEY' || aiStatus()?.state === 'CONFIGURED_UNVERIFIED' || aiStatus()?.state === 'RATE_LIMITED'"
+              [class.error]="aiStatus()?.state === 'AUTH_ERROR' || aiStatus()?.state === 'ERROR'"
+              [class.disabled]="aiStatus()?.state === 'DISABLED'">
+              @if (!aiStatus()) {
+                CHECKING
+              } @else if (aiStatus()!.state === 'READY') {
+                LIVE
+              } @else if (aiStatus()!.state === 'MISSING_API_KEY') {
+                API KEY EMPTY
+              } @else if (aiStatus()!.state === 'CONFIGURED_UNVERIFIED') {
+                NOT VERIFIED
+              } @else if (aiStatus()!.state === 'AUTH_ERROR') {
+                AUTH ERROR
+              } @else if (aiStatus()!.state === 'RATE_LIMITED') {
+                RATE LIMITED
+              } @else if (aiStatus()!.state === 'DISABLED') {
+                DISABLED
+              } @else {
+                ERROR
+              }
+            </span>
           </div>
 
           @if (aiUsage()) {

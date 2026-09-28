@@ -6,6 +6,7 @@ import {
   AiAnalysisResult,
   AiAnalysisHistoryItem,
   AiEngineStatus,
+  AiEvaluationSummary,
   AiGuardrailStatus,
   AiUsageSummary,
   BillingStatus,
@@ -82,6 +83,15 @@ export class MarketApiService {
     return this.http.post<AiAnalysisResult>(
       `/api/v1/ai/analysis/${symbol}/${interval}`,
       {}
+    );
+  }
+
+  getAiEvaluationSummary(
+    symbol: string,
+    interval: string
+  ): Observable<AiEvaluationSummary> {
+    return this.http.get<AiEvaluationSummary>(
+      `/api/v1/ai/history/summary/${symbol}/${interval}`
     );
   }
 

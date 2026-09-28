@@ -44,7 +44,14 @@ public class AiAnalysisService {
             String triggerType
     ) {
         return Mono.fromSupplier(() -> contextBuilder.build(symbol, interval))
-                .flatMap(context -> aiProvider.analyze(context, triggerType))
+                .flatMap(context -> analyze(context, triggerType));
+    }
+
+    public Mono<AiAnalysisResult> analyze(
+            com.coinmind.ai.model.MarketContext context,
+            String triggerType
+    ) {
+        return aiProvider.analyze(context, triggerType)
                 .doOnNext(result ->
                         repositoryProvider.ifAvailable(repository ->
                                 repository.insert(result, triggerType).subscribe()

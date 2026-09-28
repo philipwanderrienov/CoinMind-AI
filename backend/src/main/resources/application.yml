@@ -31,6 +31,9 @@ coinmind:
     cached-input-price-micros-per-million: ${AI_CACHED_INPUT_PRICE_MICROS_PER_MILLION:20000}
     output-price-micros-per-million: ${AI_OUTPUT_PRICE_MICROS_PER_MILLION:1200000}
     usage-timezone: ${AI_USAGE_TIMEZONE:Asia/Jakarta}
+    minimum-automatic-signal-score: ${AI_MIN_AUTOMATIC_SIGNAL_SCORE:45}
+    max-automatic-calls-per-hour: ${AI_MAX_AUTOMATIC_CALLS_PER_HOUR:12}
+    max-automatic-calls-per-day: ${AI_MAX_AUTOMATIC_CALLS_PER_DAY:60}
     trigger-intervals:
       - 15m
       - 1h

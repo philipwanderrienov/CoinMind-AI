@@ -11,7 +11,8 @@ public record MarketContext(
         PriceContext price,
         TechnicalContext technical,
         MicrostructureContext microstructure,
-        NewsContext news
+        NewsContext news,
+        SignalContext signal
 ) {
 
     public record PriceContext(
@@ -68,6 +69,16 @@ public record MarketContext(
             String title,
             BigDecimal sentimentScore,
             BigDecimal relevanceScore
+    ) {
+    }
+
+    public record SignalContext(
+            BigDecimal score,
+            String bias,
+            BigDecimal strength,
+            boolean triggerEligible,
+            String riskLevel,
+            List<String> reasons
     ) {
     }
 }

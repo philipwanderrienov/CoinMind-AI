@@ -31,6 +31,14 @@ public class AiStatusService {
             );
         }
 
+        if ("mock".equalsIgnoreCase(properties.provider())) {
+            return status(
+                    "MOCK",
+                    false,
+                    "Mock AI mode is active. No paid API calls will be made."
+            );
+        }
+
         if (!keyConfigured) {
             return status(
                     "MISSING_API_KEY",

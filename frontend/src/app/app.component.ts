@@ -3,6 +3,7 @@ import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular
 import { Subscription, catchError, map, of, retry, switchMap, timer } from 'rxjs';
 import {
   AiAnalysisResult,
+  AiAnalysisHistoryItem,
   AiEngineStatus,
   AiGuardrailStatus,
   AiUsageSummary,
@@ -62,6 +63,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly indicators = signal<TechnicalIndicators | null>(null);
   readonly marketContext = signal<MarketContext | null>(null);
   readonly aiAnalysis = signal<AiAnalysisResult | null>(null);
+  readonly aiHistory = signal<AiAnalysisHistoryItem[]>([]);
   readonly aiStatus = signal<AiEngineStatus | null>(null);
   readonly aiGuardrails = signal<AiGuardrailStatus | null>(null);
   readonly news = signal<NewsArticle[]>([]);
@@ -129,6 +131,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadIndicators();
     this.loadMarketContext();
     this.loadLatestAiAnalysis();
+    this.loadAiHistory();
     this.startAiStatusMonitoring();
     this.loadAiGuardrails();
     this.loadNews();
@@ -150,6 +153,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadIndicators();
     this.loadMarketContext();
     this.loadLatestAiAnalysis();
+    this.loadAiHistory();
     this.loadNews();
   }
 
@@ -159,6 +163,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadIndicators();
     this.loadMarketContext();
     this.loadLatestAiAnalysis();
+    this.loadAiHistory();
   }
 
   toggleEma(): void {
@@ -196,6 +201,7 @@ export class AppComponent implements OnInit, OnDestroy {
           this.loadAiUsage();
           this.loadAiStatus();
           this.loadAiGuardrails();
+          this.loadAiHistory();
         },
         error: () => {
           this.aiRunning.set(false);
@@ -370,6 +376,17 @@ export class AppComponent implements OnInit, OnDestroy {
         error: () => this.aiAnalysis.set(null)
       })
     );
+  }
+
+  private loadAiHistory(): void {
+    this.marketApi.getAiHistory(
+      this.selectedSymbol(),
+      this.selectedInterval(),
+      12
+    ).subscribe({
+      next: history => this.aiHistory.set(history),
+      error: () => this.aiHistory.set([])
+    });
   }
 
   private startAiStatusMonitoring(): void {

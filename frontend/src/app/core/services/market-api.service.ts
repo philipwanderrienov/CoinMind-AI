@@ -5,6 +5,7 @@ import {
   Candlestick,
   AiAnalysisResult,
   AiEngineStatus,
+  AiGuardrailStatus,
   AiUsageSummary,
   BillingStatus,
   MarketContext,
@@ -85,6 +86,10 @@ export class MarketApiService {
 
   getAiStatus(): Observable<AiEngineStatus> {
     return this.http.get<AiEngineStatus>('/api/v1/ai/status');
+  }
+
+  getAiGuardrails(): Observable<AiGuardrailStatus> {
+    return this.http.get<AiGuardrailStatus>('/api/v1/ai/guardrails');
   }
 
   getAiUsageSummary(days = 14): Observable<AiUsageSummary> {

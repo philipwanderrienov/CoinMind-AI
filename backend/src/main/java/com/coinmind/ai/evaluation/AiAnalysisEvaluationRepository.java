@@ -24,6 +24,65 @@ public class AiAnalysisEvaluationRepository {
         this.databaseClient = databaseClient;
     }
 
+    public Flux<AnalysisRow> findRecentAnalyses(
+            String symbol,
+            String interval,
+            int limit
+    ) {
+        return databaseClient.sql("""
+                SELECT id, symbol, interval, trigger_type, market_bias, confidence,
+                       summary, model, entry_price, signal_score, analyzed_at
+                FROM ai_analysis_history
+                WHERE symbol = :symbol
+                  AND interval = :interval
+                ORDER BY analyzed_at DESC
+                LIMIT :limit
+                """)
+                .bind("symbol", symbol.toUpperCase())
+                .bind("interval", interval.toLowerCase())
+                .bind("limit", Math.max(1, Math.min(limit, 100)))
+                .map((row, metadata) -> new AnalysisRow(
+                        row.get("id", String.class),
+                        row.get("symbol", String.class),
+                        row.get("interval", String.class),
+                        row.get("trigger_type", String.class),
+                        row.get("market_bias", String.class),
+                        row.get("confidence", Integer.class) == null
+                                ? 0
+                                : row.get("confidence", Integer.class),
+                        row.get("summary", String.class),
+                        row.get("model", String.class),
+                        row.get("entry_price", BigDecimal.class),
+                        row.get("signal_score", BigDecimal.class),
+                        row.get("analyzed_at", Instant.class)
+                ))
+                .all();
+    }
+
+    public Flux<EvaluationRow> findEvaluations(String analysisId) {
+        return databaseClient.sql("""
+                SELECT horizon, exit_price, return_pct,
+                       direction_correct, evaluated_at
+                FROM ai_analysis_evaluations
+                WHERE analysis_id = :analysisId
+                ORDER BY CASE horizon
+                    WHEN '1h' THEN 1
+                    WHEN '4h' THEN 2
+                    WHEN '24h' THEN 3
+                    ELSE 99
+                END
+                """)
+                .bind("analysisId", analysisId)
+                .map((row, metadata) -> new EvaluationRow(
+                        row.get("horizon", String.class),
+                        row.get("exit_price", BigDecimal.class),
+                        row.get("return_pct", BigDecimal.class),
+                        Boolean.TRUE.equals(row.get("direction_correct", Boolean.class)),
+                        row.get("evaluated_at", Instant.class)
+                ))
+                .all();
+    }
+
     public Flux<Candidate> findCandidates(
             String horizon,
             Instant eligibleBefore,
@@ -112,6 +171,30 @@ public class AiAnalysisEvaluationRepository {
                 .bind("returnPct", returnPct)
                 .bind("directionCorrect", directionCorrect)
                 .then();
+    }
+
+    public record AnalysisRow(
+            String id,
+            String symbol,
+            String interval,
+            String triggerType,
+            String marketBias,
+            int confidence,
+            String summary,
+            String model,
+            BigDecimal entryPrice,
+            BigDecimal signalScore,
+            Instant analyzedAt
+    ) {
+    }
+
+    public record EvaluationRow(
+            String horizon,
+            BigDecimal exitPrice,
+            BigDecimal returnPct,
+            boolean directionCorrect,
+            Instant evaluatedAt
+    ) {
     }
 
     public record Candidate(

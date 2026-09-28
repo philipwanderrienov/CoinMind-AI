@@ -124,6 +124,14 @@ export interface MarketContext {
       relevanceScore: number;
     }>;
   };
+  signal: {
+    score: number;
+    bias: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
+    strength: number;
+    triggerEligible: boolean;
+    riskLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+    reasons: string[];
+  };
 }
 
 export interface AiAnalysisResult {
@@ -221,7 +229,7 @@ export interface BillingStatus {
 
 
 export interface AiEngineStatus {
-  state: 'DISABLED' | 'MISSING_API_KEY' | 'CONFIGURED_UNVERIFIED' | 'READY' | 'AUTH_ERROR' | 'RATE_LIMITED' | 'ERROR';
+  state: 'DISABLED' | 'MISSING_API_KEY' | 'MOCK' | 'CONFIGURED_UNVERIFIED' | 'READY' | 'AUTH_ERROR' | 'RATE_LIMITED' | 'ERROR';
   provider: string;
   model: string;
   enabled: boolean;

@@ -4,6 +4,7 @@ import { Subscription, catchError, map, of, retry, switchMap, timer } from 'rxjs
 import {
   AiAnalysisResult,
   AiEngineStatus,
+  AiGuardrailStatus,
   AiUsageSummary,
   BillingStatus,
   Candlestick,
@@ -62,6 +63,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly marketContext = signal<MarketContext | null>(null);
   readonly aiAnalysis = signal<AiAnalysisResult | null>(null);
   readonly aiStatus = signal<AiEngineStatus | null>(null);
+  readonly aiGuardrails = signal<AiGuardrailStatus | null>(null);
   readonly news = signal<NewsArticle[]>([]);
   readonly newsSentiment = signal<NewsSentimentSummary | null>(null);
   readonly aiUsage = signal<AiUsageSummary | null>(null);
@@ -128,6 +130,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadMarketContext();
     this.loadLatestAiAnalysis();
     this.startAiStatusMonitoring();
+    this.loadAiGuardrails();
     this.loadNews();
     this.startAiUsageMonitoring();
     this.loadBillingStatus();
@@ -378,6 +381,13 @@ export class AppComponent implements OnInit, OnDestroy {
     this.marketApi.getAiStatus().subscribe({
       next: status => this.aiStatus.set(status),
       error: () => this.aiStatus.set(null)
+    });
+  }
+
+  private loadAiGuardrails(): void {
+    this.marketApi.getAiGuardrails().subscribe({
+      next: status => this.aiGuardrails.set(status),
+      error: () => this.aiGuardrails.set(null)
     });
   }
 

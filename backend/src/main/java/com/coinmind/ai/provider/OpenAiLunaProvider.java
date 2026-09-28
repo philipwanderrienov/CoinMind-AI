@@ -27,8 +27,8 @@ import java.util.Map;
 @Primary
 @ConditionalOnProperty(
         prefix = "coinmind.ai",
-        name = "enabled",
-        havingValue = "true"
+        name = "provider",
+        havingValue = "openai"
 )
 public class OpenAiLunaProvider implements AiProvider {
 

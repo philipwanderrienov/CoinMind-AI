@@ -390,6 +390,33 @@
             </div>
           }
 
+          @if (aiGuardrails()) {
+            <div class="ai-guardrail-grid">
+              <div>
+                <span>Auto trigger threshold</span>
+                <strong>|score| ≥ {{ aiGuardrails()!.minimumAutomaticSignalScore | number:'1.0-0' }}</strong>
+              </div>
+              <div>
+                <span>Auto calls / hour</span>
+                <strong>{{ aiGuardrails()!.automaticCallsThisHour }} / {{ aiGuardrails()!.maxAutomaticCallsPerHour }}</strong>
+              </div>
+              <div>
+                <span>Auto calls / day</span>
+                <strong>{{ aiGuardrails()!.automaticCallsToday }} / {{ aiGuardrails()!.maxAutomaticCallsPerDay }}</strong>
+              </div>
+              <div>
+                <span>Current signal</span>
+                <strong>
+                  @if (marketContext()?.signal?.triggerEligible) {
+                    ELIGIBLE
+                  } @else {
+                    WAIT
+                  }
+                </strong>
+              </div>
+            </div>
+          }
+
           <div class="ai-actions">
             <button
               type="button"

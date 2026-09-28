@@ -1294,3 +1294,22 @@ h1 span {
     font-size: 9px;
   }
 }
+
+
+.usage-live.warn {
+  color: #f2b84b;
+  border-color: rgba(242, 184, 75, .28);
+  background: rgba(242, 184, 75, .05);
+}
+
+.usage-live.error {
+  color: var(--negative);
+  border-color: rgba(255, 93, 122, .28);
+  background: rgba(255, 93, 122, .05);
+}
+
+.usage-live.disabled {
+  color: var(--muted);
+  border-color: var(--border);
+  background: #09111d;
+}

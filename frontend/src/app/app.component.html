@@ -575,7 +575,7 @@
               </div>
             </div>
 
-            @if (billingStatus()) {
+            @if (billingStatus() && aiStatus()?.state !== 'MOCK') {
               <div class="billing-status-card">
                 <div>
                   <span>Next AI billing</span>

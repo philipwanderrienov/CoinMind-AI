@@ -46,6 +46,75 @@ public class AiAnalysisEvaluationService {
         );
     }
 
+    public Mono<AiEvaluationSummary> summary(
+            String symbol,
+            String interval
+    ) {
+        AiAnalysisEvaluationRepository repository = repositoryProvider.getIfAvailable();
+        if (repository == null) {
+            return Mono.just(new AiEvaluationSummary(
+                    symbol.toUpperCase(),
+                    interval.toLowerCase(),
+                    0,
+                    0,
+                    List.of(),
+                    List.of(),
+                    List.of()
+            ));
+        }
+
+        Mono<Integer> totalAnalyses = repository.countAnalyses(symbol, interval);
+
+        Mono<List<AiEvaluationSummary.HorizonSummary>> horizons =
+                repository.aggregateByHorizon(symbol, interval)
+                        .map(row -> new AiEvaluationSummary.HorizonSummary(
+                                row.horizon(),
+                                row.evaluated(),
+                                row.correct(),
+                                percentage(row.correct(), row.evaluated()),
+                                scale(row.averageReturnPct())
+                        ))
+                        .collectList();
+
+        Mono<List<AiEvaluationSummary.BiasSummary>> biases =
+                repository.aggregateByBias(symbol, interval)
+                        .map(row -> new AiEvaluationSummary.BiasSummary(
+                                row.marketBias(),
+                                row.evaluated(),
+                                row.correct(),
+                                percentage(row.correct(), row.evaluated())
+                        ))
+                        .collectList();
+
+        Mono<List<AiEvaluationSummary.ModelSummary>> models =
+                repository.aggregateByModel(symbol, interval)
+                        .map(row -> new AiEvaluationSummary.ModelSummary(
+                                row.model(),
+                                row.evaluated(),
+                                row.correct(),
+                                percentage(row.correct(), row.evaluated()),
+                                scale(row.averageReturnPct())
+                        ))
+                        .collectList();
+
+        return Mono.zip(totalAnalyses, horizons, biases, models)
+                .map(tuple -> {
+                    int totalEvaluations = tuple.getT2().stream()
+                            .mapToInt(AiEvaluationSummary.HorizonSummary::evaluated)
+                            .sum();
+
+                    return new AiEvaluationSummary(
+                            symbol.toUpperCase(),
+                            interval.toLowerCase(),
+                            tuple.getT1(),
+                            totalEvaluations,
+                            tuple.getT2(),
+                            tuple.getT3(),
+                            tuple.getT4()
+                    );
+                });
+    }
+
     public Flux<AiAnalysisHistoryItem> history(
             String symbol,
             String interval,
@@ -82,6 +151,23 @@ public class AiAnalysisEvaluationService {
                                         evaluations
                                 ))
                 );
+    }
+
+    private BigDecimal percentage(int numerator, int denominator) {
+        if (denominator <= 0) {
+            return BigDecimal.ZERO;
+        }
+
+        return BigDecimal.valueOf(numerator)
+                .multiply(BigDecimal.valueOf(100), MC)
+                .divide(BigDecimal.valueOf(denominator), MC)
+                .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal scale(BigDecimal value) {
+        return value == null
+                ? BigDecimal.ZERO
+                : value.setScale(4, RoundingMode.HALF_UP);
     }
 
     private Flux<Void> evaluateHorizon(

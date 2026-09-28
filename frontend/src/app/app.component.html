@@ -367,7 +367,7 @@
           @if (aiStatus()) {
             <div class="ai-admin-status"
                  [class.ready]="aiStatus()!.state === 'READY'"
-                 [class.warn]="aiStatus()!.state === 'MISSING_API_KEY' || aiStatus()!.state === 'RATE_LIMITED'"
+                 [class.warn]="aiStatus()!.state === 'MISSING_API_KEY' || aiStatus()!.state === 'RATE_LIMITED' || aiStatus()!.state === 'CONFIGURED_UNVERIFIED'"
                  [class.error]="aiStatus()!.state === 'AUTH_ERROR' || aiStatus()!.state === 'ERROR'">
               <div>
                 <span>AI ENGINE</span>
@@ -387,12 +387,14 @@
             <button
               type="button"
               class="analyze-button"
-              [disabled]="aiRunning() || aiStatus()?.state !== 'READY'"
+              [disabled]="aiRunning() || (aiStatus()?.state !== 'READY' && aiStatus()?.state !== 'CONFIGURED_UNVERIFIED')"
               (click)="runAiAnalysis()">
               @if (aiRunning()) {
                 Analyzing…
               } @else if (aiStatus()?.state === 'MISSING_API_KEY') {
                 API key required
+              } @else if (aiStatus()?.state === 'CONFIGURED_UNVERIFIED') {
+                Verify AI connection
               } @else if (aiStatus()?.state === 'AUTH_ERROR') {
                 Fix API key
               } @else if (aiStatus()?.state === 'RATE_LIMITED') {

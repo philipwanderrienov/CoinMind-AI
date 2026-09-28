@@ -511,6 +511,69 @@
           </div>
         </article>
 
+        <article class="panel evaluation-summary-panel">
+          <div class="panel-header compact">
+            <div>
+              <p class="eyebrow">AI EVALUATION SUMMARY</p>
+              <h3>{{ symbolLabel(selectedSymbol()) }} {{ selectedInterval() }} performance</h3>
+            </div>
+            @if (aiEvaluationSummary()) {
+              <span class="history-count">
+                {{ aiEvaluationSummary()!.totalEvaluations }} evaluations
+              </span>
+            }
+          </div>
+
+          @if (aiEvaluationSummary()) {
+            <div class="evaluation-summary-grid">
+              @for (horizon of aiEvaluationSummary()!.horizons; track horizon.horizon) {
+                <div>
+                  <span>{{ horizon.horizon }} accuracy</span>
+                  <strong>{{ horizon.accuracyPct | number:'1.1-1' }}%</strong>
+                  <small>
+                    {{ horizon.correct }}/{{ horizon.evaluated }} correct
+                    · avg {{ horizon.averageReturnPct >= 0 ? '+' : '' }}{{ horizon.averageReturnPct | number:'1.2-2' }}%
+                  </small>
+                </div>
+              } @empty {
+                <div class="evaluation-empty">
+                  No completed evaluations yet. The first 1h score appears after an analysis has aged for about one hour.
+                </div>
+              }
+            </div>
+
+            @if (aiEvaluationSummary()!.biases.length) {
+              <div class="bias-performance">
+                @for (bias of aiEvaluationSummary()!.biases; track bias.marketBias) {
+                  <div>
+                    <span>{{ bias.marketBias }}</span>
+                    <strong>{{ bias.hitRatePct | number:'1.1-1' }}%</strong>
+                    <small>{{ bias.correct }}/{{ bias.evaluated }}</small>
+                  </div>
+                }
+              </div>
+            }
+
+            @if (aiEvaluationSummary()!.models.length) {
+              <div class="model-performance">
+                <span class="model-performance-title">Model comparison</span>
+                @for (model of aiEvaluationSummary()!.models; track model.model) {
+                  <div>
+                    <strong>{{ model.model }}</strong>
+                    <span>{{ model.accuracyPct | number:'1.1-1' }}% accuracy</span>
+                    <span>{{ model.evaluated }} evaluated</span>
+                    <span>
+                      avg {{ model.averageReturnPct >= 0 ? '+' : '' }}{{ model.averageReturnPct | number:'1.2-2' }}%
+                    </span>
+                  </div>
+                }
+              </div>
+            }
+          } @else {
+            <div class="empty-usage">Loading AI evaluation metrics…</div>
+          }
+        </article>
+
         <article class="panel history-panel">
           <div class="panel-header compact">
             <div>

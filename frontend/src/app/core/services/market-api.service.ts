@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import {
   Candlestick,
   AiAnalysisResult,
+  AiAnalysisHistoryItem,
   AiEngineStatus,
   AiGuardrailStatus,
   AiUsageSummary,
@@ -81,6 +82,16 @@ export class MarketApiService {
     return this.http.post<AiAnalysisResult>(
       `/api/v1/ai/analysis/${symbol}/${interval}`,
       {}
+    );
+  }
+
+  getAiHistory(
+    symbol: string,
+    interval: string,
+    limit = 20
+  ): Observable<AiAnalysisHistoryItem[]> {
+    return this.http.get<AiAnalysisHistoryItem[]>(
+      `/api/v1/ai/history/${symbol}/${interval}?limit=${limit}`
     );
   }
 

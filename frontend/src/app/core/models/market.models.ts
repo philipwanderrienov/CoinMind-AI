@@ -238,3 +238,12 @@ export interface AiEngineStatus {
   lastHttpStatus: number | null;
   lastCheckedAt: string | null;
 }
+
+
+export interface AiGuardrailStatus {
+  minimumAutomaticSignalScore: number;
+  automaticCallsThisHour: number;
+  automaticCallsToday: number;
+  maxAutomaticCallsPerHour: number;
+  maxAutomaticCallsPerDay: number;
+}

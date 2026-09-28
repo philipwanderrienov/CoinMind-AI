@@ -2,6 +2,7 @@ package com.coinmind.ai.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @ConfigurationProperties(prefix = "coinmind.ai")
@@ -17,6 +18,9 @@ public record AiProperties(
         long cachedInputPriceMicrosPerMillion,
         long outputPriceMicrosPerMillion,
         String usageTimezone,
-        List<String> triggerIntervals
+        List<String> triggerIntervals,
+        BigDecimal minimumAutomaticSignalScore,
+        int maxAutomaticCallsPerHour,
+        int maxAutomaticCallsPerDay
 ) {
 }

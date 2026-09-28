@@ -271,3 +271,31 @@ export interface AiAnalysisHistoryItem {
   analyzedAt: string;
   evaluations: AiAnalysisEvaluation[];
 }
+
+
+export interface AiEvaluationSummary {
+  symbol: string;
+  interval: string;
+  totalAnalyses: number;
+  totalEvaluations: number;
+  horizons: Array<{
+    horizon: string;
+    evaluated: number;
+    correct: number;
+    accuracyPct: number;
+    averageReturnPct: number;
+  }>;
+  biases: Array<{
+    marketBias: string;
+    evaluated: number;
+    correct: number;
+    hitRatePct: number;
+  }>;
+  models: Array<{
+    model: string;
+    evaluated: number;
+    correct: number;
+    accuracyPct: number;
+    averageReturnPct: number;
+  }>;
+}

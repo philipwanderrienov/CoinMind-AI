@@ -221,7 +221,7 @@ h1 span {
 
 .workspace-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: 1fr;
   gap: 14px;
 }
 
@@ -367,6 +367,7 @@ h1 span {
 
 .side-stack {
   display: grid;
+  grid-template-columns: 1fr;
   gap: 14px;
   align-content: start;
 }
@@ -1176,4 +1177,120 @@ h1 span {
 
 .ai-admin-status.error strong {
   color: var(--negative);
+}
+
+
+/* Desktop monitoring layout: every section uses the full content width. */
+@media (min-width: 1051px) {
+  .workspace-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .side-stack {
+    grid-template-columns: 1fr;
+  }
+
+  .side-stack > .panel {
+    width: 100%;
+  }
+
+  .market-stats .stat-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0 28px;
+    padding: 8px 22px 20px;
+  }
+
+  .market-stats .stat-list > div {
+    min-width: 0;
+  }
+
+  .score-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .news-summary {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+
+  .headline-list {
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+
+  .headline {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 28px;
+  }
+
+  .headline strong {
+    font-size: 12px;
+  }
+
+  .headline span {
+    font-size: 9px;
+  }
+
+  .ai-panel {
+    padding: 26px 28px;
+  }
+
+  .ai-panel h3 {
+    max-width: none;
+    font-size: 24px;
+  }
+
+  .ai-panel > p:not(.eyebrow) {
+    max-width: 900px;
+  }
+
+  .ai-context-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .ai-actions {
+    grid-template-columns: repeat(2, minmax(0, 220px));
+    justify-content: start;
+  }
+
+  .pipeline {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .provider-status {
+    max-width: 460px;
+  }
+
+  .usage-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    padding: 12px 22px;
+  }
+
+  .usage-cost {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    padding: 0 22px 12px;
+  }
+
+  .billing-status-card {
+    margin-left: 22px;
+    margin-right: 22px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .usage-days {
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+
+  .usage-days > div:not(.empty-usage) {
+    grid-template-columns: 1fr 2fr 1fr auto;
+    min-height: 36px;
+    font-size: 9px;
+  }
 }

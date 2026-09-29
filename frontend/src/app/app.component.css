@@ -3542,3 +3542,124 @@ main {
     display: none;
   }
 }
+
+
+/* ===== Status strip redesign ===== */
+.status-strip {
+  width: 100%;
+  border-bottom: 1px solid #e7ecf3;
+  background: rgba(255,255,255,.90);
+}
+
+.status-strip-inner {
+  width: min(1380px, 94vw);
+  min-height: 38px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #fff;
+  color: #526176;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.status-item .status-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #c4ccd8;
+  box-shadow: none;
+}
+
+.status-item.ok {
+  color: #176b56;
+  border-color: #d3eee5;
+  background: #f4fcf8;
+}
+
+.status-item.ok .status-dot {
+  background: #14b886;
+}
+
+.status-item.warn {
+  color: #8a6420;
+  border-color: #efdfb8;
+  background: #fffaf0;
+}
+
+.status-item.warn .status-dot {
+  background: #e9aa35;
+}
+
+.status-item.error {
+  color: #a34455;
+  border-color: #f0d8dd;
+  background: #fff6f7;
+}
+
+.status-item.error .status-dot {
+  background: #e25b73;
+}
+
+@media (max-width: 760px) {
+  .topbar {
+    padding-bottom: 10px;
+  }
+
+  .status-strip {
+    background: rgba(255,255,255,.96);
+  }
+
+  .status-strip-inner {
+    width: calc(100% - 20px);
+    min-height: 38px;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 5px 0;
+    scrollbar-width: none;
+  }
+
+  .status-strip-inner::-webkit-scrollbar {
+    display: none;
+  }
+
+  .status-item {
+    min-height: 28px;
+    min-width: 0;
+    padding: 0 9px;
+    font-size: 8px;
+    white-space: nowrap;
+    box-shadow: none;
+  }
+
+  .status-item.backend-status {
+    display: none;
+  }
+
+  .status-item.market-status,
+  .status-item.notification-status {
+    flex: 1 1 0;
+    justify-content: center;
+  }
+
+  .system-status {
+    display: none !important;
+  }
+
+  main {
+    padding-top: 6px;
+  }
+}

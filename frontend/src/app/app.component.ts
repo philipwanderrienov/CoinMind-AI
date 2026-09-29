@@ -3,6 +3,7 @@ import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular
 import { Subscription, catchError, fromEvent, map, of, retry, switchMap, timer } from 'rxjs';
 import {
   AiAnalysisResult,
+  AiDecisionReview,
   AiAnalysisHistoryItem,
   AiEngineStatus,
   AiEvaluationSummary,
@@ -70,6 +71,8 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly tradeSetup = signal<TradeSetup | null>(null);
   readonly marketContext = signal<MarketContext | null>(null);
   readonly aiAnalysis = signal<AiAnalysisResult | null>(null);
+  readonly aiDecisionReview = signal<AiDecisionReview | null>(null);
+  readonly aiDecisionReviewRunning = signal(false);
   readonly aiHistory = signal<AiAnalysisHistoryItem[]>([]);
   readonly aiEvaluationSummary = signal<AiEvaluationSummary | null>(null);
   readonly aiStatus = signal<AiEngineStatus | null>(null);
@@ -218,6 +221,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   selectSymbol(symbol: string): void {
     this.selectedSymbol.set(symbol);
+    this.aiDecisionReview.set(null);
     this.loadHistory();
     this.loadDecisionCandles();
     this.loadTimeframeIndicators();
@@ -252,6 +256,29 @@ export class AppComponent implements OnInit, OnDestroy {
 
   toggleMacd(): void {
     this.showMacd.update(value => !value);
+  }
+
+  runAiDecisionReview(): void {
+    if (this.aiDecisionReviewRunning()) {
+      return;
+    }
+
+    this.aiDecisionReviewRunning.set(true);
+    this.aiDecisionReview.set(null);
+
+    this.subscriptions.add(
+      this.marketApi.reviewTradeDecision(this.selectedSymbol()).subscribe({
+        next: review => {
+          this.aiDecisionReview.set(review);
+          this.aiDecisionReviewRunning.set(false);
+          this.loadAiUsage();
+          this.loadAiStatus();
+        },
+        error: () => {
+          this.aiDecisionReviewRunning.set(false);
+        }
+      })
+    );
   }
 
   runAiAnalysis(): void {

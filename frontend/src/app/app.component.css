@@ -4618,3 +4618,164 @@ main {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* ===== AI decision review ===== */
+.ai-decision-review {
+  margin: 0 18px 12px;
+  padding: 12px;
+  border: 1px solid rgba(109, 93, 252, .20);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(109,93,252,.07), transparent 32%),
+    #fbfbff;
+}
+
+.ai-decision-review-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ai-decision-review-head h4 {
+  margin: 0;
+  color: #26364f;
+  font-size: 12px;
+}
+
+.ai-review-button {
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid rgba(109,93,252,.28);
+  border-radius: 8px;
+  background: #f2efff;
+  color: #5d4fd2;
+  font: inherit;
+  font-size: 8px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.ai-review-button:disabled {
+  opacity: .55;
+  cursor: default;
+}
+
+.ai-review-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.ai-review-summary > div {
+  padding: 9px 10px;
+  border: 1px solid #e5eaf1;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.ai-review-summary span,
+.ai-review-factors > div > span {
+  display: block;
+  color: #8491a3;
+  font-size: 7px;
+  margin-bottom: 4px;
+}
+
+.ai-review-summary strong {
+  color: #25344b;
+  font-size: 11px;
+}
+
+.ai-review-verdict.confirm {
+  border-color: #cdebe1;
+  background: #f1fbf7;
+}
+
+.ai-review-verdict.confirm strong {
+  color: #087d60;
+}
+
+.ai-review-verdict.watch {
+  border-color: #efdfb8;
+  background: #fffaf0;
+}
+
+.ai-review-verdict.watch strong {
+  color: #8a6420;
+}
+
+.ai-review-verdict.wait {
+  border-color: #e4e9ef;
+  background: #f8fafc;
+}
+
+.ai-review-copy,
+.ai-review-placeholder {
+  margin: 9px 0 0;
+  color: #68778c;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.ai-review-factors {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.ai-review-factors > div {
+  padding: 9px 10px;
+  border: 1px solid #e6ebf2;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.ai-review-factors small {
+  display: block;
+  color: #6f7d90;
+  font-size: 8px;
+  line-height: 1.45;
+  margin-top: 3px;
+}
+
+.ai-review-meta {
+  margin-top: 8px;
+  color: #98a2b1;
+  font-size: 7px;
+}
+
+@media (max-width: 760px) {
+  .ai-decision-review {
+    margin: 0 10px 8px;
+    padding: 9px;
+  }
+
+  .ai-decision-review-head h4 {
+    font-size: 10px;
+  }
+
+  .ai-review-button {
+    min-height: 28px;
+    padding: 0 8px;
+    font-size: 7px;
+  }
+
+  .ai-review-summary,
+  .ai-review-factors {
+    gap: 5px;
+  }
+
+  .ai-review-summary > div,
+  .ai-review-factors > div {
+    padding: 7px 8px;
+  }
+
+  .ai-review-copy,
+  .ai-review-placeholder {
+    font-size: 8px;
+  }
+}

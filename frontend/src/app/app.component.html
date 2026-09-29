@@ -273,6 +273,24 @@
               </div>
             </div>
 
+            <div class="trade-price-card">
+              <div class="trade-price-main">
+                <span>Current price</span>
+                <strong>{{ formatPrice(decisionPrice(tradeSetup()!)) }}</strong>
+                <small>{{ symbolLabel(selectedSymbol()) }} / USDT live</small>
+              </div>
+
+              <div class="trade-price-status" [class]="entryStatusClass(tradeSetup()!)">
+                <span>Status</span>
+                <strong>{{ entryStatus(tradeSetup()!) }}</strong>
+                @if (tradeSetup()!.action !== 'WAIT') {
+                  <small>{{ entryAreaLabel(tradeSetup()!) }} {{ formatPrice(tradeSetup()!.entryLow) }} – {{ formatPrice(tradeSetup()!.entryHigh) }}</small>
+                } @else {
+                  <small>CoinMind belum menemukan area entry yang cukup kuat.</small>
+                }
+              </div>
+            </div>
+
             <div class="decision-context">
               <div class="decision-context-summary">
                 <div>
@@ -305,33 +323,36 @@
             </div>
 
             @if (tradeSetup()!.action !== 'WAIT') {
-              <div class="trade-levels">
-                <div>
-                  <span>Entry zone</span>
+              <div class="trade-levels actionable">
+                <div class="entry-area">
+                  <span>{{ entryAreaLabel(tradeSetup()!) }}</span>
                   <strong>
                     {{ formatPrice(tradeSetup()!.entryLow) }}
                     –
                     {{ formatPrice(tradeSetup()!.entryHigh) }}
                   </strong>
+                  <small>{{ entryStatus(tradeSetup()!) }}</small>
                 </div>
                 <div class="invalidation">
-                  <span>Stop / invalidation</span>
+                  <span>STOP LOSS</span>
                   <strong>{{ formatPrice(tradeSetup()!.invalidationPrice) }}</strong>
+                  <small>Setup invalid jika level ini terlewati</small>
                 </div>
                 <div class="target">
-                  <span>Target 1</span>
+                  <span>TARGET 1</span>
                   <strong>{{ formatPrice(tradeSetup()!.target1) }}</strong>
                   <small>R:R {{ tradeSetup()!.riskReward1 | number:'1.1-1' }}</small>
                 </div>
                 <div class="target">
-                  <span>Target 2</span>
+                  <span>TARGET 2</span>
                   <strong>{{ formatPrice(tradeSetup()!.target2) }}</strong>
                   <small>R:R {{ tradeSetup()!.riskReward2 | number:'1.1-1' }}</small>
                 </div>
               </div>
             } @else {
-              <div class="trade-wait">
-                Belum ada setup yang cukup kuat. Lebih aman menunggu kondisi yang lebih jelas.
+              <div class="trade-wait actionable-wait">
+                <strong>Belum ada harga entry yang direkomendasikan.</strong>
+                <span>CoinMind masih menunggu alignment dan kondisi market yang lebih jelas sebelum membentuk BUY AREA atau SELL AREA.</span>
               </div>
             }
 

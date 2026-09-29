@@ -104,6 +104,29 @@ export class AppComponent implements OnInit, OnDestroy {
     return values.length ? values[values.length - 1] : null;
   });
 
+  decisionCandle(interval: string): Candlestick | null {
+    return this.decisionCandles()[interval] ?? null;
+  }
+
+  candleChangePercent(candle: Candlestick | null): number | null {
+    if (!candle || candle.open === 0) {
+      return null;
+    }
+
+    return ((candle.close - candle.open) / candle.open) * 100;
+  }
+
+  timeframeRole(interval: string): string {
+    switch (interval) {
+      case '1m': return 'Execution';
+      case '15m': return 'Short-term';
+      case '1h': return 'Decision';
+      case '4h': return 'Trend';
+      case '1d': return 'Context';
+      default: return '';
+    }
+  }
+
   readonly marketUiStatus = computed(() => {
     const state = this.connectionState();
 

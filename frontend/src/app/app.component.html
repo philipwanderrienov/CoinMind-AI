@@ -410,6 +410,65 @@
               }
             </section>
 
+            <section class="ai-decision-review">
+              <div class="ai-decision-review-head">
+                <div>
+                  <p class="eyebrow">AI DECISION REVIEW</p>
+                  <h4>Review keputusan engine dengan AI</h4>
+                </div>
+                <button
+                  type="button"
+                  class="ai-review-button"
+                  [disabled]="aiDecisionReviewRunning()"
+                  (click)="runAiDecisionReview()">
+                  {{ aiDecisionReviewRunning() ? 'Reviewing…' : (aiDecisionReview() ? 'Review again' : 'Review with AI') }}
+                </button>
+              </div>
+
+              @if (aiDecisionReview()) {
+                <div class="ai-review-summary">
+                  <div class="ai-review-verdict"
+                       [class.confirm]="aiDecisionReview()!.verdict === 'CONFIRM'"
+                       [class.watch]="aiDecisionReview()!.verdict === 'WATCH'"
+                       [class.wait]="aiDecisionReview()!.verdict === 'WAIT' || aiDecisionReview()!.verdict === 'UNAVAILABLE'">
+                    <span>AI verdict</span>
+                    <strong>{{ aiDecisionReview()!.verdict }}</strong>
+                  </div>
+
+                  <div>
+                    <span>AI confidence</span>
+                    <strong>{{ aiDecisionReview()!.confidence }}%</strong>
+                  </div>
+                </div>
+
+                <p class="ai-review-copy">{{ aiDecisionReview()!.summary }}</p>
+
+                <div class="ai-review-factors">
+                  <div>
+                    <span>Konfirmasi</span>
+                    @for (item of aiDecisionReview()!.confirmations; track item) {
+                      <small>+ {{ item }}</small>
+                    }
+                  </div>
+
+                  <div>
+                    <span>Concern</span>
+                    @for (item of aiDecisionReview()!.concerns; track item) {
+                      <small>• {{ item }}</small>
+                    }
+                  </div>
+                </div>
+
+                <div class="ai-review-meta">
+                  {{ aiDecisionReview()!.model }} · {{ aiDecisionReview()!.reviewedAt | date:'HH:mm:ss' }}
+                </div>
+              } @else {
+                <p class="ai-review-placeholder">
+                  Engine tetap menjadi sumber keputusan utama. AI dipakai sebagai reviewer tambahan untuk mengecek alignment, regime, news sentiment, dan konflik market.
+                </p>
+              }
+            </section>
+
             <div class="trade-detail-grid">
               <div>
                 <span>Kenapa?</span>

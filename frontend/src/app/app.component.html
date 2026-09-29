@@ -8,116 +8,72 @@
       </div>
     </div>
 
-    <div class="system-status">
-      <div class="connection backend-status"
-           [class.live]="backendState() === 'up'"
-           [class.offline]="backendState() === 'down'">
+    </header>
+
+  <div class="status-strip" aria-label="Application status">
+    <div class="status-strip-inner">
+      <div class="status-item backend-status"
+           [class.ok]="backendState() === 'up'"
+           [class.error]="backendState() === 'down'">
         <span class="status-dot"></span>
-        <div>
-          <strong>
-            @if (backendState() === 'up') {
-              Server connected
-            } @else if (backendState() === 'down') {
-              Server unavailable
-            } @else {
-              Checking server
-            }
-          </strong>
-          <small>
-            @if (backendState() === 'up') {
-              Ping {{ backendLatencyMs() }} ms
-              @if (backendLastCheckedAt()) {
-                · checked {{ backendLastCheckedAt() | date:'HH:mm:ss' }}
-              }
-            } @else if (backendError()) {
-              {{ backendError() }}
-            } @else {
-              Health check in progress
-            }
-          </small>
-        </div>
+        <span>
+          @if (backendState() === 'up') {
+            Server connected
+          } @else if (backendState() === 'down') {
+            Server unavailable
+          } @else {
+            Checking server
+          }
+        </span>
       </div>
 
-      <div class="connection market-status"
-           [class.live]="connectionState() === 'live'"
-           [class.stale]="connectionState() === 'stale'"
-           [class.offline]="connectionState() === 'offline'">
+      <div class="status-item market-status"
+           [class.ok]="connectionState() === 'live'"
+           [class.warn]="connectionState() === 'stale'"
+           [class.error]="connectionState() === 'offline'">
         <span class="status-dot"></span>
-        <div>
-          <strong>Market {{ marketUiStatus() }}</strong>
-          <small>
-            @if (marketFeedHealth()?.status === 'DEGRADED') {
-              Backend feed degraded ·
-              T {{ marketFeedHealth()?.streams?.ticker?.ageSeconds ?? '-' }}s ·
-              K {{ marketFeedHealth()?.streams?.kline?.ageSeconds ?? '-' }}s ·
-              O {{ marketFeedHealth()?.streams?.orderBook?.ageSeconds ?? '-' }}s ·
-              R {{ marketFeedHealth()?.streams?.trade?.ageSeconds ?? '-' }}s
-            } @else if (marketUiStatus() === 'RECONNECTING') {
-              Last event {{ marketStreamAgeSeconds() ?? 0 }}s ago · attempt #{{ marketReconnectCount() }}
-            } @else if (marketUiStatus() === 'DEGRADED') {
-              No fresh market data for {{ marketStreamAgeSeconds() ?? 0 }}s
-            } @else if (marketUiStatus() === 'OFFLINE') {
-              Market data unavailable
-            } @else if (lastMarketEventAt()) {
-              Last event {{ lastMarketEventAt() | date:'HH:mm:ss' }}
-              @if (marketStreamAgeSeconds() !== null) {
-                · {{ marketStreamAgeSeconds() }}s ago
-              }
-            } @else {
-              Waiting for first market event
-            }
-          </small>
-        </div>
+        <span>
+          @if (connectionState() === 'live') {
+            Market aktif
+          } @else if (connectionState() === 'stale') {
+            Market terlambat
+          } @else if (connectionState() === 'offline') {
+            Market offline
+          } @else {
+            Menghubungkan market
+          }
+        </span>
       </div>
 
-      <div class="connection notification-status"
-           [class.live]="pushStatus() === 'enabled'"
-           [class.stale]="pushStatus() === 'permission-required' || pushStatus() === 'install-required' || pushStatus() === 'secure-context-required'"
-           [class.offline]="pushStatus() === 'denied' || pushStatus() === 'disabled' || pushStatus() === 'unsupported' || pushStatus() === 'error'">
+      <div class="status-item notification-status"
+           [class.ok]="pushStatus() === 'enabled'"
+           [class.warn]="pushStatus() === 'permission-required' || pushStatus() === 'install-required' || pushStatus() === 'secure-context-required'"
+           [class.error]="pushStatus() === 'denied' || pushStatus() === 'disabled' || pushStatus() === 'unsupported' || pushStatus() === 'error'">
         <span class="status-dot"></span>
-        <div>
-          <strong>
-            @if (pushStatus() === 'enabled') {
-              Notifications ON
-            } @else if (pushStatus() === 'denied') {
-              Notifications BLOCKED
-            } @else if (pushStatus() === 'permission-required') {
-              Notifications READY
-            } @else if (pushStatus() === 'install-required') {
-              Install for alerts
-            } @else if (pushStatus() === 'secure-context-required') {
-              Alerts need HTTPS
-            } @else if (pushStatus() === 'disabled') {
-              Notifications OFF
-            } @else if (pushStatus() === 'unsupported') {
-              Alerts unavailable
-            } @else {
-              Checking notifications
-            }
-          </strong>
-          <small>
-            @if (pushStatus() === 'enabled') {
-              Following this device's notification settings
-            } @else if (pushStatus() === 'denied') {
-              Re-enable from your phone's app notification settings
-            } @else if (pushStatus() === 'permission-required') {
-              Installed app · device permission not decided yet
-            } @else if (pushStatus() === 'install-required') {
-              Install CoinMind to receive alerts on this phone
-            } @else if (pushStatus() === 'secure-context-required') {
-              Open CoinMind over HTTPS to enable phone notifications
-            } @else if (pushStatus() === 'disabled') {
-              Web Push is not configured on the server
-            } @else if (pushStatus() === 'unsupported') {
-              This browser does not support PWA notifications
-            } @else {
-              Reading device permission
-            }
-          </small>
-        </div>
+        <span>
+          @if (pushStatus() === 'enabled') {
+            Notifikasi aktif
+          } @else if (pushStatus() === 'secure-context-required') {
+            Notifikasi butuh HTTPS
+          } @else if (pushStatus() === 'install-required') {
+            Install app untuk notifikasi
+          } @else if (pushStatus() === 'permission-required') {
+            Izinkan notifikasi
+          } @else if (pushStatus() === 'denied') {
+            Notifikasi diblokir
+          } @else if (pushStatus() === 'disabled') {
+            Notifikasi belum aktif
+          } @else if (pushStatus() === 'unsupported') {
+            Notifikasi tidak tersedia
+          } @else {
+            Cek notifikasi
+          }
+        </span>
       </div>
     </div>
-  </header>
+  </div>
+
+  
 
   @if (showNotificationOnboarding()) {
     <div class="notification-onboarding-backdrop">

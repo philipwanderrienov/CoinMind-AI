@@ -397,26 +397,60 @@
             <span class="details-hint">Lihat detail</span>
           </summary>
           <div class="advanced-market-grid">
-<article class="panel market-stats">
+<article class="panel timeframe-context-panel">
           <div class="panel-header compact">
             <div>
-              <p class="eyebrow">CURRENT CANDLE</p>
-              <h3>{{ selectedInterval() }} snapshot</h3>
+              <p class="eyebrow">MARKET TIMEFRAMES</p>
+              <h3>Arah market dari entry hingga trend utama</h3>
             </div>
-            @if (currentCandle()) {
-              <span class="state-pill" [class.closed]="currentCandle()?.closed">
-                {{ currentCandle()?.closed ? 'CLOSED' : 'FORMING' }}
-              </span>
+            <span class="timeframe-focus-label">1H + 4H utama</span>
+          </div>
+
+          <div class="timeframe-context-grid">
+            @for (interval of decisionIntervals; track interval) {
+              @let candle = decisionCandle(interval);
+              @let change = candleChangePercent(candle);
+
+              <div
+                class="timeframe-context-card"
+                [class.primary]="interval === '1h' || interval === '4h'"
+                [class.execution]="interval === '1m'">
+                <div class="timeframe-context-head">
+                  <div>
+                    <strong>{{ interval }}</strong>
+                    <span>{{ timeframeRole(interval) }}</span>
+                  </div>
+
+                  @if (candle) {
+                    <span class="candle-state" [class.closed]="candle.closed">
+                      {{ candle.closed ? 'Closed' : 'Live' }}
+                    </span>
+                  }
+                </div>
+
+                @if (candle) {
+                  <div class="timeframe-close">{{ formatPrice(candle.close) }}</div>
+                  <div class="timeframe-change" [class]="changeClass(change)">
+                    {{ (change ?? 0) >= 0 ? '+' : '' }}{{ change | number:'1.2-2' }}%
+                  </div>
+
+                  <div class="timeframe-range">
+                    <span>L {{ formatPrice(candle.low) }}</span>
+                    <span>H {{ formatPrice(candle.high) }}</span>
+                  </div>
+                } @else {
+                  <div class="timeframe-empty">Menunggu data</div>
+                }
+              </div>
             }
           </div>
 
-          <div class="stat-list">
-            <div><span>Open</span><strong>{{ formatPrice(currentCandle()?.open) }}</strong></div>
-            <div><span>High</span><strong>{{ formatPrice(currentCandle()?.high) }}</strong></div>
-            <div><span>Low</span><strong>{{ formatPrice(currentCandle()?.low) }}</strong></div>
-            <div><span>Close</span><strong>{{ formatPrice(currentCandle()?.close) }}</strong></div>
-            <div><span>Volume</span><strong>{{ formatCompact(currentCandle()?.quoteVolume) }}</strong></div>
-            <div><span>Trades</span><strong>{{ formatCompact(currentCandle()?.tradeCount) }}</strong></div>
+          <div class="timeframe-guide">
+            <span><strong>1m</strong> timing entry</span>
+            <span><strong>15m</strong> momentum</span>
+            <span class="primary"><strong>1h</strong> keputusan</span>
+            <span class="primary"><strong>4h</strong> trend utama</span>
+            <span><strong>1d</strong> konteks besar</span>
           </div>
         </article>
 

@@ -301,6 +301,18 @@ export interface AiEvaluationSummary {
 }
 
 
+export interface AiDecisionReview {
+  symbol: string;
+  engineAction: string;
+  verdict: 'CONFIRM' | 'WATCH' | 'WAIT' | 'UNAVAILABLE';
+  confidence: number;
+  summary: string;
+  confirmations: string[];
+  concerns: string[];
+  model: string;
+  reviewedAt: string;
+}
+
 export interface TradeSetup {
   symbol: string;
   interval: string;

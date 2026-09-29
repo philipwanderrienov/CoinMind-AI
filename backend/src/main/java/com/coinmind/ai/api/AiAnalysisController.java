@@ -1,6 +1,7 @@
 package com.coinmind.ai.api;
 
 import com.coinmind.ai.model.AiAnalysisResult;
+import com.coinmind.ai.model.AiDecisionReview;
 import com.coinmind.ai.model.MarketContext;
 import com.coinmind.ai.service.AiAnalysisService;
 import com.coinmind.ai.service.MarketContextBuilder;
@@ -41,6 +42,13 @@ public class AiAnalysisController {
             @PathVariable String interval
     ) {
         return aiAnalysisService.latest(symbol, interval);
+    }
+
+    @PostMapping("/decision-review/{symbol}")
+    public Mono<AiDecisionReview> reviewDecision(
+            @PathVariable String symbol
+    ) {
+        return aiAnalysisService.reviewDecision(symbol);
     }
 
     @PostMapping("/analysis/{symbol}/{interval}")

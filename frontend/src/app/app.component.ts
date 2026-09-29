@@ -48,6 +48,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly intervals = ['1m', '5m', '15m', '1h', '4h', '1d'];
   readonly decisionIntervals = ['1m', '15m', '1h', '4h', '1d'];
   readonly decisionCandles = signal<Record<string, Candlestick | null>>({});
+  readonly timeframeIndicators = signal<Record<string, TechnicalIndicators | null>>({});
 
   readonly selectedSymbol = signal('BTCUSDT');
   readonly selectedInterval = signal('1m');
@@ -127,6 +128,38 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
+  timeframeIndicator(interval: string): TechnicalIndicators | null {
+    return this.timeframeIndicators()[interval] ?? null;
+  }
+
+  technicalDirection(score: number | null | undefined): string {
+    if (score == null) {
+      return 'Waiting';
+    }
+    if (score >= 25) {
+      return 'Bullish';
+    }
+    if (score <= -25) {
+      return 'Bearish';
+    }
+    return 'Neutral';
+  }
+
+  momentumStrength(score: number | null | undefined): string {
+    if (score == null) {
+      return 'Waiting';
+    }
+
+    const strength = Math.abs(score);
+    if (strength >= 60) {
+      return 'Strong';
+    }
+    if (strength >= 30) {
+      return 'Moderate';
+    }
+    return 'Weak';
+  }
+
   readonly marketUiStatus = computed(() => {
     const state = this.connectionState();
 
@@ -159,6 +192,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadSnapshots();
     this.loadHistory();
     this.loadDecisionCandles();
+    this.loadTimeframeIndicators();
     this.loadMicrostructure();
     this.loadIndicators();
     this.loadMarketContext();
@@ -565,6 +599,29 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadTimeframeIndicators(): void {
+    const symbol = this.selectedSymbol();
+
+    this.decisionIntervals.forEach(interval => {
+      this.subscriptions.add(
+        this.marketApi.getIndicators(symbol, interval).subscribe({
+          next: indicators => {
+            this.timeframeIndicators.update(current => ({
+              ...current,
+              [interval]: indicators
+            }));
+          },
+          error: () => {
+            this.timeframeIndicators.update(current => ({
+              ...current,
+              [interval]: null
+            }));
+          }
+        })
+      );
+    });
+  }
+
   private loadIndicators(): void {
     this.subscriptions.add(
       this.marketApi.getIndicators(
@@ -689,6 +746,16 @@ export class AppComponent implements OnInit, OnDestroy {
               candle.closed
             ) {
               this.loadIndicators();
+              if (this.decisionIntervals.includes(candle.interval)) {
+                this.marketApi.getIndicators(candle.symbol, candle.interval).subscribe({
+                  next: indicators => {
+                    this.timeframeIndicators.update(current => ({
+                      ...current,
+                      [candle.interval]: indicators
+                    }));
+                  }
+                });
+              }
               this.loadMarketContext();
               this.loadTradeSetup();
 

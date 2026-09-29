@@ -675,6 +675,16 @@ export class AppComponent implements OnInit, OnDestroy {
 
             if (
               candle.symbol === this.selectedSymbol() &&
+              this.decisionIntervals.includes(candle.interval)
+            ) {
+              this.decisionCandles.update(current => ({
+                ...current,
+                [candle.interval]: candle
+              }));
+            }
+
+            if (
+              candle.symbol === this.selectedSymbol() &&
               candle.interval === this.selectedInterval() &&
               candle.closed
             ) {

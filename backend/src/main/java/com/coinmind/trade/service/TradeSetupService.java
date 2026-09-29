@@ -48,10 +48,7 @@ public class TradeSetupService {
             );
         }
 
-        MarketContext anchor = contexts.getOrDefault(
-                "1h",
-                contextBuilder.build(symbol, interval)
-        );
+        MarketContext anchor = contexts.get("1h");
 
         BigDecimal weightedScore = weightedSignalScore(contexts);
         String side = weightedScore.signum() > 0

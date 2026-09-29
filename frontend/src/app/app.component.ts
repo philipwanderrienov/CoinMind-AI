@@ -220,6 +220,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.selectedSymbol.set(symbol);
     this.loadHistory();
     this.loadDecisionCandles();
+    this.loadTimeframeIndicators();
     this.loadMicrostructure();
     this.loadIndicators();
     this.loadMarketContext();

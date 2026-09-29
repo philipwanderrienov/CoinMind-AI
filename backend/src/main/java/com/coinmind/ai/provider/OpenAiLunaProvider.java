@@ -236,6 +236,33 @@ public class OpenAiLunaProvider implements AiProvider {
     ) {
         try {
             JsonNode response = objectMapper.readTree(body);
+            JsonNode usage = response.path("usage");
+
+            long inputTokens = usage.path("input_tokens").asLong(0);
+            long cachedInputTokens = usage.path("input_tokens_details")
+                    .path("cached_tokens")
+                    .asLong(0);
+            long outputTokens = usage.path("output_tokens").asLong(0);
+            long reasoningTokens = usage.path("output_tokens_details")
+                    .path("reasoning_tokens")
+                    .asLong(0);
+            long totalTokens = usage.path("total_tokens").asLong(
+                    inputTokens + outputTokens
+            );
+
+            usageService.record(
+                    response.path("id").asText(""),
+                    setup.symbol(),
+                    "1h",
+                    "DECISION_REVIEW",
+                    properties.model(),
+                    inputTokens,
+                    cachedInputTokens,
+                    outputTokens,
+                    reasoningTokens,
+                    totalTokens
+            );
+
             String outputText = extractOutputText(response);
             JsonNode review = objectMapper.readTree(cleanJson(outputText));
 

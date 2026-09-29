@@ -3296,3 +3296,249 @@ main {
     margin-top: 6px;
   }
 }
+
+
+/* ===== Mobile polish: clean first-screen hierarchy ===== */
+@media (max-width: 760px) {
+  .topbar {
+    position: static;
+    min-height: 0;
+    padding: 10px 14px 8px;
+    gap: 8px;
+    box-shadow: none;
+  }
+
+  .brand {
+    width: 100%;
+  }
+
+  .brand-tagline {
+    display: none;
+  }
+
+  .system-status {
+    display: flex;
+    gap: 6px;
+    padding-top: 6px;
+    border-top: 0;
+    overflow-x: auto;
+  }
+
+  .backend-status {
+    display: none;
+  }
+
+  .connection,
+  .market-status,
+  .notification-status {
+    padding: 5px 8px;
+    border-radius: 999px;
+    background: #fff;
+  }
+
+  .connection strong {
+    font-size: 8px;
+  }
+
+  main {
+    width: calc(100% - 20px);
+    padding-top: 8px;
+  }
+
+  .dashboard-nav {
+    position: static;
+    margin: 0 0 8px;
+    padding: 4px;
+    border-radius: 12px;
+    box-shadow: none;
+  }
+
+  .dashboard-nav a {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 7px 6px;
+    font-size: 8px;
+  }
+
+  .workspace-grid {
+    gap: 8px;
+  }
+
+  .ticker-grid {
+    order: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin: 0 0 8px;
+    overflow: visible;
+  }
+
+  .ticker-card {
+    min-width: 0;
+    padding: 8px 9px;
+    border-radius: 12px;
+    box-shadow: none;
+  }
+
+  .ticker-head {
+    gap: 5px;
+  }
+
+  .asset-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
+    font-size: 10px;
+  }
+
+  .ticker-head strong {
+    font-size: 10px;
+  }
+
+  .ticker-head small,
+  .live-pill,
+  .ticker-meta span:last-child {
+    display: none;
+  }
+
+  .ticker-price {
+    margin: 7px 0 2px;
+    font-size: 13px;
+    line-height: 1.1;
+  }
+
+  .ticker-meta {
+    justify-content: flex-start;
+    font-size: 8px;
+  }
+
+  .chart-panel {
+    order: 1;
+    border-radius: 14px;
+  }
+
+  .chart-panel .panel-header {
+    padding: 10px 12px 8px;
+    gap: 8px;
+  }
+
+  .chart-panel .eyebrow {
+    display: none;
+  }
+
+  .market-title h2 {
+    font-size: 14px;
+  }
+
+  .selected-price {
+    font-size: 11px;
+  }
+
+  .timeframes {
+    padding: 3px;
+    border-radius: 8px;
+  }
+
+  .timeframes button {
+    min-width: 0;
+    height: 25px;
+    padding: 0 7px;
+    font-size: 8px;
+  }
+
+  .indicator-toolbar {
+    min-height: 30px;
+    padding: 4px 10px;
+    gap: 5px;
+  }
+
+  .indicator-toolbar > span:first-child {
+    display: none;
+  }
+
+  .indicator-toolbar button {
+    min-height: 23px;
+    padding: 0 9px;
+    border-radius: 7px;
+    font-size: 8px;
+  }
+
+  .chart-wrap {
+    height: 235px;
+  }
+
+  .chart-footer {
+    min-height: 24px;
+    padding: 5px 10px;
+  }
+
+  .footer-note {
+    display: none;
+  }
+
+  .trade-setup-panel {
+    order: 2;
+    margin-top: 0;
+    border-radius: 14px;
+  }
+
+  .trade-setup-panel .panel-header {
+    padding: 10px 12px 7px;
+    align-items: center;
+    flex-direction: row;
+  }
+
+  .trade-setup-panel .eyebrow {
+    margin-bottom: 3px;
+    font-size: 8px;
+  }
+
+  .trade-setup-panel h3 {
+    font-size: 13px;
+  }
+
+  .trade-overview,
+  .trade-levels {
+    gap: 5px;
+    padding: 6px 10px 8px;
+  }
+
+  .trade-overview > div,
+  .trade-levels > div {
+    padding: 8px;
+  }
+
+  .trade-overview span,
+  .trade-levels span {
+    font-size: 7px;
+  }
+
+  .trade-overview strong,
+  .trade-levels strong {
+    font-size: 10px;
+  }
+
+  .trade-detail-grid,
+  .trade-generated {
+    display: none;
+  }
+
+  .trade-wait {
+    margin: 0 10px 10px;
+    padding: 8px 9px;
+    font-size: 9px;
+  }
+
+  .market-condition-panel {
+    order: 3;
+    margin-top: 0;
+  }
+
+  .side-stack {
+    gap: 8px;
+  }
+
+  .secure-access-banner {
+    display: none;
+  }
+}

@@ -1571,3 +1571,145 @@ h1 span {
     padding: 8px 0;
   }
 }
+
+
+.trade-setup-panel {
+  overflow: hidden;
+}
+
+.trade-action {
+  border-radius: 7px;
+  padding: 5px 9px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  background: #09111d;
+}
+
+.trade-action.buy {
+  color: var(--positive);
+  border-color: rgba(33, 212, 167, .3);
+  background: rgba(33, 212, 167, .06);
+}
+
+.trade-action.sell {
+  color: var(--negative);
+  border-color: rgba(255, 93, 122, .3);
+  background: rgba(255, 93, 122, .06);
+}
+
+.trade-action.watch {
+  color: #f2b84b;
+  border-color: rgba(242, 184, 75, .3);
+  background: rgba(242, 184, 75, .05);
+}
+
+.trade-overview {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0 18px 12px;
+}
+
+.trade-overview > div,
+.trade-levels > div {
+  padding: 11px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #09111d;
+}
+
+.trade-overview span,
+.trade-levels span,
+.trade-detail-grid > div > span {
+  display: block;
+  color: var(--muted);
+  font-size: 8px;
+  margin-bottom: 5px;
+}
+
+.trade-overview strong {
+  font-size: 13px;
+}
+
+.trade-levels {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0 18px 12px;
+}
+
+.trade-levels strong {
+  display: block;
+  font-size: 11px;
+}
+
+.trade-levels small {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+.trade-levels .target {
+  border-color: rgba(33, 212, 167, .18);
+}
+
+.trade-levels .invalidation {
+  border-color: rgba(255, 93, 122, .18);
+}
+
+.trade-wait {
+  margin: 0 18px 12px;
+  padding: 13px;
+  border: 1px dashed var(--border);
+  border-radius: 9px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.trade-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 0 18px 12px;
+}
+
+.trade-detail-grid > div {
+  padding: 11px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #09111d;
+}
+
+.trade-detail-grid small {
+  display: block;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.45;
+  margin-top: 4px;
+}
+
+.trade-generated {
+  padding: 0 18px 18px;
+  color: var(--muted);
+  font-size: 8px;
+}
+
+@media (max-width: 760px) {
+  .trade-overview,
+  .trade-levels,
+  .trade-detail-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .trade-overview,
+  .trade-levels,
+  .trade-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}

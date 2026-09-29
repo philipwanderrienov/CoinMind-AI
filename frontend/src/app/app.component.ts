@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
-import { Subscription, catchError, map, of, retry, switchMap, timer } from 'rxjs';
+import { Subscription, catchError, fromEvent, map, of, retry, switchMap, timer } from 'rxjs';
 import {
   AiAnalysisResult,
   AiAnalysisHistoryItem,
@@ -145,6 +145,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.startAiUsageMonitoring();
     this.loadBillingStatus();
     this.initializePushNotifications();
+    this.startNotificationPermissionMonitoring();
     this.connectRealtime();
     this.startRealtimeWatchdog();
   }
@@ -228,7 +229,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.pushStatus.set('enabling');
 
     try {
-      const status = await this.pushNotifications.enable();
+      const status = await this.pushNotifications.requestPermission();
       this.pushStatus.set(status);
       this.showNotificationOnboarding.set(false);
     } catch {
@@ -238,7 +239,10 @@ export class AppComponent implements OnInit, OnDestroy {
 
   dismissNotificationOnboarding(): void {
     this.showNotificationOnboarding.set(false);
-    sessionStorage.setItem('coinmind-notification-onboarding-dismissed', '1');
+    localStorage.setItem(
+      'coinmind-notification-onboarding-dismissed-at',
+      Date.now().toString()
+    );
   }
 
   formatPrice(value: number | null | undefined): string {
@@ -260,21 +264,45 @@ export class AppComponent implements OnInit, OnDestroy {
     return value > 0 ? 'positive' : 'negative';
   }
 
-  private async initializePushNotifications(): Promise<void> {
+  private async initializePushNotifications(
+    allowOnboarding = true
+  ): Promise<void> {
     try {
-      const status = await this.pushNotifications.initialize();
+      const status = await this.pushNotifications.refreshFromDeviceSettings();
       this.pushStatus.set(status);
 
-      const dismissed =
-        sessionStorage.getItem('coinmind-notification-onboarding-dismissed') === '1';
+      const dismissedAt = Number(
+        localStorage.getItem('coinmind-notification-onboarding-dismissed-at') ?? 0
+      );
+      const onboardingCooldownMs = 7 * 24 * 60 * 60 * 1000;
+      const canShowOnboarding =
+        !dismissedAt || Date.now() - dismissedAt >= onboardingCooldownMs;
 
       this.showNotificationOnboarding.set(
-        status === 'permission-required' && !dismissed
+        allowOnboarding &&
+        status === 'permission-required' &&
+        canShowOnboarding
       );
     } catch {
       this.pushStatus.set('error');
       this.showNotificationOnboarding.set(false);
     }
+  }
+
+  private startNotificationPermissionMonitoring(): void {
+    this.subscriptions.add(
+      fromEvent(window, 'focus').subscribe(() => {
+        void this.initializePushNotifications(false);
+      })
+    );
+
+    this.subscriptions.add(
+      fromEvent(document, 'visibilitychange').subscribe(() => {
+        if (document.visibilityState === 'visible') {
+          void this.initializePushNotifications(false);
+        }
+      })
+    );
   }
 
   private startMarketFeedHealthCheck(): void {

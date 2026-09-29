@@ -4200,3 +4200,116 @@ main {
     font-size: 6.5px;
   }
 }
+
+
+/* ===== Decision Engine v2 context ===== */
+.decision-context {
+  margin: 0 18px 12px;
+  padding: 10px;
+  border: 1px solid #e5eaf2;
+  border-radius: 12px;
+  background: #fbfcfe;
+}
+
+.decision-context-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.decision-context-summary > div {
+  padding: 9px 10px;
+  border: 1px solid #e6ebf2;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.decision-context-summary span,
+.decision-timeframe span {
+  display: block;
+  color: #8592a4;
+  font-size: 7px;
+}
+
+.decision-context-summary strong {
+  display: block;
+  margin-top: 3px;
+  color: #26364f;
+  font-size: 12px;
+}
+
+.decision-context-summary small {
+  color: #7f8c9f;
+  font-size: 7px;
+}
+
+.decision-timeframes {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.decision-timeframe {
+  min-width: 0;
+  padding: 7px;
+  border: 1px solid #e8edf4;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.decision-timeframe.primary {
+  border-color: rgba(109, 93, 252, .30);
+  background: #f7f5ff;
+}
+
+.decision-timeframe strong {
+  display: block;
+  margin: 3px 0 2px;
+  color: #35445a;
+  font-size: 8px;
+}
+
+.decision-timeframe small {
+  color: #96a1b0;
+  font-size: 6px;
+}
+
+@media (max-width: 760px) {
+  .decision-context {
+    margin: 0 10px 8px;
+    padding: 8px;
+  }
+
+  .decision-context-summary {
+    gap: 5px;
+  }
+
+  .decision-context-summary > div {
+    padding: 7px 8px;
+  }
+
+  .decision-context-summary strong {
+    font-size: 10px;
+  }
+
+  .decision-timeframes {
+    grid-template-columns: repeat(5, minmax(56px, 1fr));
+    gap: 4px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .decision-timeframes::-webkit-scrollbar {
+    display: none;
+  }
+
+  .decision-timeframe {
+    padding: 6px;
+  }
+
+  .decision-timeframe strong {
+    font-size: 7px;
+  }
+}

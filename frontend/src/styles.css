@@ -1,16 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  color-scheme: dark;
-  --bg: #070c16;
-  --panel: #0c1321;
-  --border: #172236;
-  --text: #eef3fc;
-  --muted: #74839d;
-  --accent: #826bff;
-  --accent-soft: #9b89ff;
-  --positive: #21d4a7;
-  --negative: #ff5d7a;
+  color-scheme: light;
+  --bg: #f4f7fb;
+  --panel: rgba(255, 255, 255, .92);
+  --panel-strong: #ffffff;
+  --border: #dde5f0;
+  --text: #172033;
+  --muted: #718096;
+  --accent: #6d5dfc;
+  --accent-soft: #8072ff;
+  --positive: #0da47a;
+  --negative: #e04f68;
+  --warning: #d9901a;
+  --shadow: 0 12px 34px rgba(44, 62, 92, .08);
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: var(--bg);
   color: var(--text);
@@ -30,9 +33,9 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background:
-    radial-gradient(circle at 15% -10%, rgba(93, 69, 207, .13), transparent 28%),
-    radial-gradient(circle at 90% 10%, rgba(33, 212, 167, .035), transparent 22%),
-    var(--bg);
+    radial-gradient(circle at 5% -8%, rgba(109, 93, 252, .13), transparent 26%),
+    radial-gradient(circle at 96% 4%, rgba(56, 189, 248, .10), transparent 22%),
+    linear-gradient(180deg, #fbfcff 0%, #f4f7fb 46%, #eef3f8 100%);
 }
 
 button,

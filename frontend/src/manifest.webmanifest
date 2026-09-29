@@ -4,8 +4,8 @@
   "description": "Crypto market intelligence powered by realtime data and AI.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#09111f",
-  "theme_color": "#09111f",
+  "background_color": "#f4f7fb",
+  "theme_color": "#ffffff",
   "icons": [
     {
       "src": "/favicon.svg",

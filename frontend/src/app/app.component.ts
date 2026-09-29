@@ -409,6 +409,30 @@ export class AppComponent implements OnInit, OnDestroy {
     );
   }
 
+  private loadDecisionCandles(): void {
+    const symbol = this.selectedSymbol();
+
+    this.decisionIntervals.forEach(interval => {
+      this.subscriptions.add(
+        this.marketApi.getHistoricalCandles(symbol, interval, 2).subscribe({
+          next: history => {
+            const latest = history.length ? history[history.length - 1] : null;
+            this.decisionCandles.update(current => ({
+              ...current,
+              [interval]: latest
+            }));
+          },
+          error: () => {
+            this.decisionCandles.update(current => ({
+              ...current,
+              [interval]: null
+            }));
+          }
+        })
+      );
+    });
+  }
+
   private loadHistory(): void {
     const symbol = this.selectedSymbol();
     const interval = this.selectedInterval();

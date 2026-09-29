@@ -1,4 +1,5 @@
 <div class="app-shell">
+  <div class="sticky-control-shell">
   <header class="topbar">
     <div class="brand">
       <div class="brand-mark">CM</div>
@@ -71,6 +72,50 @@
         </span>
       </div>
     </div>
+
+    <div class="sticky-controls-inner">
+    <nav class="dashboard-nav" aria-label="CoinMind sections">
+      <a href="#dashboard">Dashboard</a>
+      <a href="#signals">Signals</a>
+      <a href="#news">News</a>
+      <a href="#performance">History</a>
+    </nav>
+    <section class="ticker-grid">
+      @for (symbol of symbols; track symbol) {
+        @let ticker = tickers()[symbol];
+        <button
+          type="button"
+          class="ticker-card"
+          [class.active]="selectedSymbol() === symbol"
+          (click)="selectSymbol(symbol)">
+          <div class="ticker-head">
+            <div class="asset-icon">{{ symbolLabel(symbol).slice(0, 1) }}</div>
+            <div>
+              <strong>{{ symbolLabel(symbol) }}</strong>
+              <small>/ USDT</small>
+            </div>
+            <span class="live-pill">LIVE</span>
+          </div>
+
+          <div class="ticker-price">{{ formatPrice(ticker?.closePrice) }}</div>
+
+          @if (ticker) {
+            @let change = ((ticker.closePrice - ticker.openPrice) / ticker.openPrice) * 100;
+            <div class="ticker-meta">
+              <span [class]="changeClass(change)">
+                {{ change >= 0 ? '+' : '' }}{{ change | number:'1.2-2' }}%
+              </span>
+              <span>Vol {{ formatCompact(ticker.quoteVolume) }}</span>
+            </div>
+          } @else {
+            <div class="ticker-meta muted">Waiting for market data</div>
+          }
+        </button>
+      }
+    </section>
+    </div>
+  </div>
+
   </div>
 
   
@@ -107,48 +152,8 @@
   }
 
   <main>
-
-    <nav class="dashboard-nav" aria-label="CoinMind sections">
-      <a href="#dashboard">Dashboard</a>
-      <a href="#signals">Signals</a>
-      <a href="#news">News</a>
-      <a href="#performance">History</a>
-    </nav>
-
     <section class="workspace-grid">
-    <section class="ticker-grid">
-      @for (symbol of symbols; track symbol) {
-        @let ticker = tickers()[symbol];
-        <button
-          type="button"
-          class="ticker-card"
-          [class.active]="selectedSymbol() === symbol"
-          (click)="selectSymbol(symbol)">
-          <div class="ticker-head">
-            <div class="asset-icon">{{ symbolLabel(symbol).slice(0, 1) }}</div>
-            <div>
-              <strong>{{ symbolLabel(symbol) }}</strong>
-              <small>/ USDT</small>
-            </div>
-            <span class="live-pill">LIVE</span>
-          </div>
 
-          <div class="ticker-price">{{ formatPrice(ticker?.closePrice) }}</div>
-
-          @if (ticker) {
-            @let change = ((ticker.closePrice - ticker.openPrice) / ticker.openPrice) * 100;
-            <div class="ticker-meta">
-              <span [class]="changeClass(change)">
-                {{ change >= 0 ? '+' : '' }}{{ change | number:'1.2-2' }}%
-              </span>
-              <span>Vol {{ formatCompact(ticker.quoteVolume) }}</span>
-            </div>
-          } @else {
-            <div class="ticker-meta muted">Waiting for market data</div>
-          }
-        </button>
-      }
-    </section>
 
       <article class="panel chart-panel" id="dashboard">
         <div class="panel-header">

@@ -285,6 +285,103 @@
           </div>
         </article>
 
+        <article class="panel trade-setup-panel">
+          <div class="panel-header compact">
+            <div>
+              <p class="eyebrow">TRADE DECISION ENGINE</p>
+              <h3>{{ symbolLabel(selectedSymbol()) }} {{ selectedInterval() }} setup</h3>
+            </div>
+
+            @if (tradeSetup()) {
+              <span
+                class="trade-action"
+                [class.buy]="tradeSetup()!.action === 'BUY'"
+                [class.sell]="tradeSetup()!.action === 'SELL'"
+                [class.watch]="tradeSetup()!.action === 'WATCH_BUY' || tradeSetup()!.action === 'WATCH_SELL'"
+                [class.wait]="tradeSetup()!.action === 'WAIT'">
+                {{ tradeSetup()!.action.replace('_', ' ') }}
+              </span>
+            }
+          </div>
+
+          @if (tradeSetup()) {
+            <div class="trade-overview">
+              <div>
+                <span>Confidence</span>
+                <strong>{{ tradeSetup()!.confidence }}%</strong>
+              </div>
+              <div>
+                <span>Signal</span>
+                <strong>{{ tradeSetup()!.signalScore | number:'1.0-1' }}</strong>
+              </div>
+              <div>
+                <span>Risk</span>
+                <strong>{{ tradeSetup()!.riskLevel }}</strong>
+              </div>
+              <div>
+                <span>Side</span>
+                <strong>{{ tradeSetup()!.side }}</strong>
+              </div>
+            </div>
+
+            @if (tradeSetup()!.action !== 'WAIT') {
+              <div class="trade-levels">
+                <div>
+                  <span>Entry zone</span>
+                  <strong>
+                    {{ formatPrice(tradeSetup()!.entryLow) }}
+                    –
+                    {{ formatPrice(tradeSetup()!.entryHigh) }}
+                  </strong>
+                </div>
+                <div class="invalidation">
+                  <span>Invalidation</span>
+                  <strong>{{ formatPrice(tradeSetup()!.invalidationPrice) }}</strong>
+                </div>
+                <div class="target">
+                  <span>Target 1</span>
+                  <strong>{{ formatPrice(tradeSetup()!.target1) }}</strong>
+                  <small>R:R {{ tradeSetup()!.riskReward1 | number:'1.1-1' }}</small>
+                </div>
+                <div class="target">
+                  <span>Target 2</span>
+                  <strong>{{ formatPrice(tradeSetup()!.target2) }}</strong>
+                  <small>R:R {{ tradeSetup()!.riskReward2 | number:'1.1-1' }}</small>
+                </div>
+              </div>
+            } @else {
+              <div class="trade-wait">
+                Current market conditions do not meet the directional setup threshold.
+              </div>
+            }
+
+            <div class="trade-detail-grid">
+              <div>
+                <span>Why</span>
+                @for (reason of tradeSetup()!.reasons; track reason) {
+                  <small>+ {{ reason }}</small>
+                }
+              </div>
+
+              <div>
+                <span>Risk notes</span>
+                @for (warning of tradeSetup()!.warnings; track warning) {
+                  <small>• {{ warning }}</small>
+                }
+              </div>
+            </div>
+
+            <div class="trade-generated">
+              Generated {{ tradeSetup()!.generatedAt | date:'HH:mm:ss' }}
+              · deterministic rule engine
+            </div>
+          } @else {
+            <div class="empty-usage">
+              Waiting for enough live market data to calculate a trade setup.
+            </div>
+          }
+        </article>
+
         <article class="panel news-panel">
           <div class="panel-header compact">
             <div>

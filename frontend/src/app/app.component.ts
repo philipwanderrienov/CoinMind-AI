@@ -327,6 +327,54 @@ export class AppComponent implements OnInit, OnDestroy {
     return value > 0 ? 'positive' : 'negative';
   }
 
+  decisionPrice(setup: TradeSetup): number {
+    return this.selectedTicker()?.closePrice ?? setup.marketPrice;
+  }
+
+  entryAreaLabel(setup: TradeSetup): string {
+    return setup.side === 'SHORT' ? 'SELL AREA' : 'BUY AREA';
+  }
+
+  entryStatus(setup: TradeSetup): string {
+    if (
+      setup.action === 'WAIT' ||
+      setup.entryLow == null ||
+      setup.entryHigh == null
+    ) {
+      return 'NO ENTRY YET';
+    }
+
+    const price = this.decisionPrice(setup);
+
+    if (price >= setup.entryLow && price <= setup.entryHigh) {
+      return 'IN ENTRY AREA';
+    }
+
+    if (setup.side === 'LONG') {
+      return price > setup.entryHigh
+        ? 'WAIT FOR PULLBACK'
+        : 'WAIT FOR CONFIRMATION';
+    }
+
+    return price < setup.entryLow
+      ? 'WAIT FOR REBOUND'
+      : 'WAIT FOR CONFIRMATION';
+  }
+
+  entryStatusClass(setup: TradeSetup): string {
+    const status = this.entryStatus(setup);
+
+    if (status === 'IN ENTRY AREA') {
+      return 'ready';
+    }
+
+    if (status === 'NO ENTRY YET') {
+      return 'neutral';
+    }
+
+    return 'waiting';
+  }
+
   private async initializePushNotifications(
     allowOnboarding = true
   ): Promise<void> {

@@ -46,6 +46,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   readonly symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT'];
   readonly intervals = ['1m', '5m', '15m', '1h', '4h', '1d'];
+  readonly decisionIntervals = ['1m', '15m', '1h', '4h', '1d'];
+  readonly decisionCandles = signal<Record<string, Candlestick | null>>({});
 
   readonly selectedSymbol = signal('BTCUSDT');
   readonly selectedInterval = signal('1m');

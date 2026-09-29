@@ -273,6 +273,37 @@
               </div>
             </div>
 
+            <div class="decision-context">
+              <div class="decision-context-summary">
+                <div>
+                  <span>Timeframe alignment</span>
+                  <strong>{{ tradeSetup()!.alignmentScore }}%</strong>
+                  <small>{{ tradeSetup()!.alignmentLabel }}</small>
+                </div>
+                <div>
+                  <span>Market regime</span>
+                  <strong>{{ tradeSetup()!.marketRegime.replace('_', ' ') }}</strong>
+                  <small>1H + 4H anchored</small>
+                </div>
+              </div>
+
+              <div class="decision-timeframes">
+                @for (timeframe of tradeSetup()!.timeframes; track timeframe.interval) {
+                  <div
+                    class="decision-timeframe"
+                    [class.primary]="timeframe.interval === '1h' || timeframe.interval === '4h'">
+                    <span>{{ timeframe.interval }}</span>
+                    <strong
+                      [class.positive]="timeframe.bias === 'BULLISH'"
+                      [class.negative]="timeframe.bias === 'BEARISH'">
+                      {{ timeframe.bias }}
+                    </strong>
+                    <small>{{ timeframe.weight }}% weight</small>
+                  </div>
+                }
+              </div>
+            </div>
+
             @if (tradeSetup()!.action !== 'WAIT') {
               <div class="trade-levels">
                 <div>

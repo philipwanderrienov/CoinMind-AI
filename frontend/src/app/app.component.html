@@ -84,13 +84,13 @@
             } @else if (pushStatus() === 'permission-required') {
               Notifications READY
             } @else if (pushStatus() === 'install-required') {
-              Install app for alerts
+              Install for alerts
             } @else if (pushStatus() === 'secure-context-required') {
-              Secure access needed
+              Alerts need HTTPS
             } @else if (pushStatus() === 'disabled') {
               Notifications OFF
             } @else if (pushStatus() === 'unsupported') {
-              Notifications UNSUPPORTED
+              Alerts unavailable
             } @else {
               Checking notifications
             }
@@ -372,18 +372,6 @@
             </div>
           }
         </article>
-
-      @if (pushStatus() === 'secure-context-required') {
-      <div class="secure-access-banner">
-        <div>
-          <strong>Notifikasi HP membutuhkan akses HTTPS</strong>
-          <span>
-            Kamu sedang membuka CoinMind lewat koneksi HTTP. Gunakan alamat HTTPS CoinMind
-            agar instalasi PWA dan notifikasi perangkat bisa aktif.
-          </span>
-        </div>
-      </div>
-    }
 
       <article class="panel market-condition-panel">
         <div class="panel-header compact">

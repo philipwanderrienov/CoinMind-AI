@@ -167,6 +167,13 @@
       </div>
     </section>
 
+    <nav class="dashboard-nav" aria-label="CoinMind sections">
+      <a href="#dashboard">Dashboard</a>
+      <a href="#signals">Signals</a>
+      <a href="#news">News</a>
+      <a href="#performance">Performance</a>
+    </nav>
+
     @if (pushStatus() === 'secure-context-required') {
       <div class="secure-access-banner">
         <div>
@@ -180,7 +187,7 @@
     }
 
     <section class="workspace-grid">
-      <article class="panel chart-panel">
+      <article class="panel chart-panel" id="dashboard">
         <div class="panel-header">
           <div>
             <p class="eyebrow">LIVE MARKET</p>
@@ -297,7 +304,7 @@
     </section>
 
 
-<article class="panel trade-setup-panel">
+<article class="panel trade-setup-panel" id="signals">
           <div class="panel-header compact">
             <div>
               <p class="eyebrow">TRADE DECISION</p>
@@ -537,7 +544,7 @@
           </div>
         </details>
 
-        <article class="panel news-panel">
+        <article class="panel news-panel" id="news">
           <div class="panel-header compact">
             <div>
               <p class="eyebrow">NEWS SENTIMENT</p>
@@ -661,7 +668,16 @@
           </details>
         </article>
 
-        <article class="panel evaluation-summary-panel">
+        <details class="secondary-details" id="performance">
+          <summary>
+            <div>
+              <strong>Performance & advanced</strong>
+              <span>Accuracy, history, AI usage, dan detail evaluasi</span>
+            </div>
+            <span class="details-hint">Buka</span>
+          </summary>
+          <div class="secondary-details-content">
+<article class="panel evaluation-summary-panel">
           <div class="panel-header compact">
             <div>
               <p class="eyebrow">AI EVALUATION SUMMARY</p>
@@ -887,6 +903,9 @@
             <div class="empty-usage">Loading AI usage…</div>
           }
         </article>
+          </div>
+        </details>
+
       </aside>
     </section>
   </main>

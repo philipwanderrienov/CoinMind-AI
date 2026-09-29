@@ -17,7 +17,8 @@ import {
   NewsSentimentSummary,
   OrderBookSnapshot,
   TechnicalIndicators,
-  TickerSnapshot
+  TickerSnapshot,
+  TradeSetup
 } from '../models/market.models';
 
 @Injectable({ providedIn: 'root' })
@@ -121,6 +122,12 @@ export class MarketApiService {
 
   getBillingStatus(): Observable<BillingStatus> {
     return this.http.get<BillingStatus>('/api/v1/billing/status');
+  }
+
+  getTradeSetup(symbol: string, interval: string): Observable<TradeSetup> {
+    return this.http.get<TradeSetup>(
+      `/api/v1/trade/setup/${symbol}/${interval}`
+    );
   }
 
   getIndicators(symbol: string, interval: string): Observable<TechnicalIndicators> {

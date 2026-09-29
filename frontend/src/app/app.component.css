@@ -1827,3 +1827,511 @@ h1 span {
     font-size: 9px;
   }
 }
+
+
+/* ===== Bright product-oriented UI refresh ===== */
+
+.app-shell {
+  color: var(--text);
+}
+
+.topbar {
+  height: 68px;
+  padding: 0 max(18px, 3vw);
+  background: rgba(255, 255, 255, .86);
+  border-bottom: 1px solid rgba(211, 221, 234, .9);
+  box-shadow: 0 6px 24px rgba(40, 58, 88, .05);
+}
+
+.brand-mark {
+  color: #fff;
+  background: linear-gradient(145deg, #7c6dfb, #5b8cff);
+  box-shadow: 0 9px 22px rgba(99, 102, 241, .22);
+}
+
+.brand-name {
+  color: #162033;
+}
+
+.brand-name span {
+  color: #735ff7;
+}
+
+.connection {
+  min-width: auto;
+}
+
+.connection strong {
+  color: #314057;
+  font-size: 10px;
+}
+
+.connection small {
+  color: #8290a4;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+}
+
+.system-status {
+  gap: 12px;
+}
+
+.backend-status,
+.notification-status {
+  padding-right: 12px;
+  border-right: 1px solid #e4eaf2;
+}
+
+.notification-status {
+  padding-left: 0;
+  border-left: 0;
+}
+
+main {
+  width: min(1380px, 94vw);
+  padding: 22px 0 54px;
+}
+
+.compact-hero {
+  min-height: 92px;
+  margin-bottom: 14px;
+  padding: 18px 22px;
+  align-items: center;
+  border: 1px solid #dfe6f1;
+  border-radius: 20px;
+  background:
+    linear-gradient(110deg, rgba(255,255,255,.95), rgba(243,246,255,.95)),
+    radial-gradient(circle at 90% 10%, rgba(109,93,252,.16), transparent 36%);
+  box-shadow: var(--shadow);
+}
+
+.compact-hero .eyebrow {
+  margin-bottom: 6px;
+}
+
+.compact-hero h1 {
+  max-width: none;
+  font-size: clamp(20px, 2.4vw, 31px);
+  line-height: 1.12;
+  letter-spacing: -.035em;
+  color: #182238;
+}
+
+.compact-hero .hero-copy {
+  max-width: 720px;
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #718096;
+}
+
+.compact-hero .hero-status {
+  min-width: 155px;
+  padding: 10px 14px;
+  border: 1px solid #e2e8f2;
+  border-radius: 14px;
+  background: rgba(255,255,255,.72);
+}
+
+.compact-hero .hero-status > span {
+  color: var(--positive);
+  font-size: 9px;
+}
+
+.compact-hero .hero-status strong {
+  color: #25334b;
+  font-size: 12px;
+}
+
+.panel,
+.ticker-card {
+  background: rgba(255, 255, 255, .92);
+  border-color: #dfe6f0;
+  box-shadow: 0 8px 26px rgba(49, 65, 91, .055);
+}
+
+.chart-panel {
+  box-shadow: 0 14px 38px rgba(49, 65, 91, .08);
+}
+
+.panel-header {
+  border-bottom-color: #e8edf4;
+}
+
+.panel-header h2,
+.panel-header h3,
+.ai-panel h3 {
+  color: #1c2940;
+}
+
+.selected-price {
+  color: #26364f;
+}
+
+.eyebrow {
+  color: #7466df;
+}
+
+.timeframes {
+  background: #f5f7fb;
+  border-color: #dde5ef;
+}
+
+.timeframes button {
+  color: #718096;
+}
+
+.timeframes button.active {
+  color: #fff;
+  background: linear-gradient(135deg, #7565ef, #6289f8);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, .18);
+}
+
+.chart-wrap {
+  height: 400px;
+  background: #fff;
+}
+
+.indicator-toolbar {
+  background: #f9fbfd;
+  border-bottom-color: #e6ecf3;
+}
+
+.indicator-toolbar button {
+  background: #fff;
+  border-color: #dce4ee;
+  color: #66758a;
+}
+
+.indicator-toolbar button.active {
+  color: #6555e8;
+  border-color: rgba(101,85,232,.28);
+  background: #f3f0ff;
+}
+
+.chart-footer {
+  border-top-color: #e7edf4;
+  background: #fbfcfe;
+}
+
+.ticker-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0 0;
+}
+
+.ticker-card {
+  padding: 14px 15px;
+  border-radius: 14px;
+}
+
+.ticker-card:hover,
+.ticker-card.active {
+  border-color: rgba(109, 93, 252, .42);
+  background: linear-gradient(180deg, #ffffff, #f8f7ff);
+  transform: translateY(-1px);
+}
+
+.asset-icon {
+  width: 29px;
+  height: 29px;
+  background: #f0efff;
+  color: #6657df;
+}
+
+.live-pill {
+  background: #ecfbf6;
+  border-color: #ccefe4;
+  color: #087b5c;
+}
+
+.ticker-price {
+  margin: 12px 0 6px;
+  font-size: clamp(18px, 2vw, 25px);
+  color: #1c2940;
+}
+
+.ticker-meta {
+  color: #7b899d;
+  font-size: 9px;
+}
+
+.stat-list > div,
+.headline,
+.usage-days > div:not(.empty-usage),
+.history-item {
+  border-color: #e8edf4;
+}
+
+.stat-list span,
+.news-summary span,
+.ai-context-grid span,
+.provider-status span,
+.history-meta,
+.history-title span,
+.history-title small {
+  color: #7c8a9e;
+}
+
+.score-grid > div,
+.news-summary > div,
+.ai-context-grid > div,
+.usage-grid > div,
+.usage-cost > div,
+.billing-status-card > div,
+.ai-guardrail-grid > div,
+.evaluation-list > div,
+.trade-overview > div,
+.trade-levels > div,
+.trade-detail-grid > div {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+.ai-panel {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(109,93,252,.10), transparent 28%),
+    #fff;
+}
+
+.ai-panel::after {
+  background: rgba(109,93,252,.08);
+}
+
+.ai-orb {
+  color: #5e50d8;
+  border-color: rgba(109,93,252,.18);
+  background: #f1efff;
+}
+
+.pipeline > div {
+  border-color: #e1e7f0;
+  color: #8794a5;
+  background: #fafbfd;
+}
+
+.pipeline .done {
+  color: #0b946f;
+}
+
+.pipeline .active {
+  color: #6254d8;
+  border-color: rgba(109,93,252,.22);
+  background: #f5f2ff;
+}
+
+.notification-onboarding-backdrop {
+  background: rgba(46, 56, 78, .28);
+}
+
+.notification-onboarding {
+  color: #1d2a40;
+  background: rgba(255,255,255,.98);
+  border-color: #dfe5ef;
+  box-shadow: 0 24px 70px rgba(37, 50, 76, .18);
+}
+
+.notification-icon {
+  color: #fff;
+  border: 0;
+  background: linear-gradient(145deg, #7565ef, #5e8cf7);
+}
+
+.notification-primary {
+  color: #fff;
+  border-color: transparent !important;
+  background: linear-gradient(135deg, #7565ef, #6489f4);
+}
+
+.notification-secondary {
+  color: #6d7a8e;
+  background: #f6f8fb;
+}
+
+.positive {
+  color: #08966f !important;
+}
+
+.negative {
+  color: #dd4b65 !important;
+}
+
+.neutral,
+.muted {
+  color: #7b899d;
+}
+
+@media (max-width: 760px) {
+  .topbar {
+    min-height: 64px;
+    padding: 10px 16px;
+    gap: 8px;
+  }
+
+  .brand-mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  .brand-name {
+    font-size: 15px;
+  }
+
+  .system-status {
+    width: 100%;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 8px 0 0;
+    border-top: 1px solid #edf1f6;
+    scrollbar-width: none;
+  }
+
+  .system-status::-webkit-scrollbar {
+    display: none;
+  }
+
+  .connection,
+  .backend-status,
+  .market-status,
+  .notification-status {
+    min-width: max-content;
+    padding: 6px 9px;
+    border: 1px solid #e1e7ef;
+    border-radius: 999px;
+    background: rgba(255,255,255,.78);
+  }
+
+  .backend-status,
+  .notification-status {
+    border-right: 1px solid #e1e7ef;
+  }
+
+  .connection strong {
+    font-size: 8px;
+    white-space: nowrap;
+  }
+
+  .connection small {
+    display: none;
+  }
+
+  main {
+    width: min(96vw, 1380px);
+    padding-top: 10px;
+  }
+
+  .compact-hero {
+    min-height: auto;
+    margin-bottom: 10px;
+    padding: 12px 14px;
+    border-radius: 16px;
+  }
+
+  .compact-hero h1 {
+    font-size: 18px;
+    line-height: 1.18;
+  }
+
+  .compact-hero .hero-copy {
+    margin-top: 5px;
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  .compact-hero .hero-status {
+    display: none;
+  }
+
+  .chart-panel {
+    border-radius: 16px;
+  }
+
+  .chart-panel .panel-header {
+    padding: 12px 14px 9px;
+  }
+
+  .market-title {
+    gap: 7px;
+  }
+
+  .market-title h2 {
+    font-size: 14px;
+  }
+
+  .selected-price {
+    font-size: 12px;
+  }
+
+  .timeframes {
+    width: 100%;
+  }
+
+  .timeframes button {
+    min-width: 34px;
+    height: 27px;
+    font-size: 9px;
+  }
+
+  .indicator-toolbar {
+    min-height: 34px;
+    padding: 5px 12px;
+  }
+
+  .indicator-toolbar button {
+    min-height: 25px;
+    font-size: 8px;
+  }
+
+  .chart-wrap {
+    height: 310px;
+  }
+
+  .chart-footer {
+    padding: 7px 12px;
+    font-size: 8px;
+  }
+
+  .ticker-grid {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: 10px 0 0;
+    padding-bottom: 3px;
+    scrollbar-width: none;
+  }
+
+  .ticker-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ticker-card {
+    min-width: 150px;
+    padding: 10px 11px;
+  }
+
+  .ticker-price {
+    margin: 9px 0 4px;
+    font-size: 18px;
+  }
+
+  .ticker-head strong {
+    font-size: 11px;
+  }
+
+  .live-pill {
+    font-size: 7px;
+  }
+
+  .side-stack {
+    gap: 10px;
+  }
+
+  .panel {
+    border-radius: 16px;
+  }
+}

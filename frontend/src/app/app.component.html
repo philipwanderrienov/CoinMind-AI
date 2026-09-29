@@ -1,7 +1,37 @@
 <div class="app-shell">
   <header class="topbar">
     <div class="brand">
-      <div class="brand-mark">CM</div>
+      <div class="brand-mark">CM  @if (showNotificationOnboarding()) {
+    <div class="notification-onboarding-backdrop">
+      <section class="notification-onboarding" role="dialog" aria-modal="true">
+        <div class="notification-icon">CM</div>
+        <p class="eyebrow">MOBILE NOTIFICATIONS</p>
+        <h3>Get CoinMind alerts on your phone</h3>
+        <p>
+          Allow notifications so installed CoinMind can show trade signals,
+          market alerts and important system events in your phone notification bar,
+          even when the app is not open.
+        </p>
+
+        <div class="notification-onboarding-actions">
+          <button
+            type="button"
+            class="notification-primary"
+            [disabled]="pushStatus() === 'enabling'"
+            (click)="enablePushNotifications()">
+            {{ pushStatus() === 'enabling' ? 'Enabling…' : 'Allow notifications' }}
+          </button>
+          <button
+            type="button"
+            class="notification-secondary"
+            (click)="dismissNotificationOnboarding()">
+            Not now
+          </button>
+        </div>
+      </section>
+    </div>
+  }
+</div>
       <div>
         <div class="brand-name">CoinMind <span>AI</span></div>
         <div class="brand-tagline">Crypto market intelligence</div>
@@ -539,30 +569,10 @@
               }
             </button>
 
-            <button
-              type="button"
-              class="push-button"
-              [disabled]="pushStatus() === 'enabling' || pushStatus() === 'enabled'"
-              (click)="enablePushNotifications()">
-              @if (pushStatus() === 'enabled') {
-                Notifications enabled
-              } @else if (pushStatus() === 'enabling') {
-                Enabling…
-              } @else {
-                Enable billing push
-              }
-            </button>
+
           </div>
 
-          @if (pushStatus() === 'unsupported') {
-            <div class="push-note">Push notifications are not supported by this browser.</div>
-          } @else if (pushStatus() === 'disabled') {
-            <div class="push-note">Web Push is not configured on the server yet.</div>
-          } @else if (pushStatus() === 'denied') {
-            <div class="push-note">Notification permission was denied.</div>
-          } @else if (pushStatus() === 'error') {
-            <div class="push-note">Unable to enable push notifications.</div>
-          }
+
 
           @if (aiAnalysis()) {
             <div class="analysis-result">

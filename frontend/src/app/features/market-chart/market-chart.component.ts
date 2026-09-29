@@ -71,23 +71,23 @@ export class MarketChartComponent implements AfterViewInit, OnChanges, OnDestroy
       width: this.chartElement.nativeElement.clientWidth,
       height: this.chartElement.nativeElement.clientHeight,
       layout: {
-        background: { type: ColorType.Solid, color: '#0b1220' },
-        textColor: '#8d9bb3',
+        background: { type: ColorType.Solid, color: '#ffffff' },
+        textColor: '#718096',
         panes: {
-          separatorColor: '#22304a',
-          separatorHoverColor: '#6f59db',
+          separatorColor: '#dbe4ef',
+          separatorHoverColor: '#6d5dfc',
           enableResize: true
         }
       },
       grid: {
-        vertLines: { color: '#172033' },
-        horzLines: { color: '#172033' }
+        vertLines: { color: '#eef2f7' },
+        horzLines: { color: '#eef2f7' }
       },
       rightPriceScale: {
-        borderColor: '#22304a'
+        borderColor: '#dbe4ef'
       },
       timeScale: {
-        borderColor: '#22304a',
+        borderColor: '#dbe4ef',
         timeVisible: true,
         secondsVisible: false
       }

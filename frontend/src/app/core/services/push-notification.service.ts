@@ -7,6 +7,7 @@ export type PushDeviceStatus =
   | 'enabled'
   | 'permission-required'
   | 'install-required'
+  | 'secure-context-required'
   | 'unsupported'
   | 'disabled'
   | 'denied';
@@ -16,6 +17,10 @@ export class PushNotificationService {
   private readonly http = inject(HttpClient);
 
   async initialize(): Promise<PushDeviceStatus> {
+    if (!window.isSecureContext) {
+      return 'secure-context-required';
+    }
+
     if (!this.isSupported()) {
       return 'unsupported';
     }
@@ -45,6 +50,10 @@ export class PushNotificationService {
   }
 
   async requestPermission(): Promise<PushDeviceStatus> {
+    if (!window.isSecureContext) {
+      return 'secure-context-required';
+    }
+
     if (!this.isSupported()) {
       return 'unsupported';
     }

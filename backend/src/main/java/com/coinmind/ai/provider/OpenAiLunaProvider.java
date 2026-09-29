@@ -2,8 +2,10 @@ package com.coinmind.ai.provider;
 
 import com.coinmind.ai.config.AiProperties;
 import com.coinmind.ai.model.AiAnalysisResult;
+import com.coinmind.ai.model.AiDecisionReview;
 import com.coinmind.ai.model.MarketContext;
 import com.coinmind.ai.usage.AiUsageService;
+import com.coinmind.trade.model.TradeSetup;
 import com.coinmind.ai.status.AiStatusService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,6 +128,131 @@ public class OpenAiLunaProvider implements AiProvider {
                             error
                     );
                 });
+    }
+
+    @Override
+    public Mono<AiDecisionReview> reviewDecision(
+            TradeSetup setup,
+            MarketContext context
+    ) {
+        if (properties.apiKey() == null || properties.apiKey().isBlank()) {
+            return Mono.just(new AiDecisionReview(
+                    setup.symbol(),
+                    setup.action(),
+                    "UNAVAILABLE",
+                    0,
+                    "AI engine is not configured yet.",
+                    List.of(),
+                    List.of("OpenAI API key is missing"),
+                    properties.model(),
+                    Instant.now()
+            ));
+        }
+
+        return Mono.fromCallable(() -> buildDecisionReviewRequest(setup, context))
+                .flatMap(request ->
+                        webClient.post()
+                                .uri("/v1/responses")
+                                .bodyValue(request)
+                                .retrieve()
+                                .bodyToMono(String.class)
+                )
+                .map(body -> parseDecisionReview(body, setup))
+                .doOnNext(ignored -> statusService.markReady());
+    }
+
+    private Map<String, Object> buildDecisionReviewRequest(
+            TradeSetup setup,
+            MarketContext context
+    ) throws Exception {
+        String payload = objectMapper.writeValueAsString(Map.of(
+                "engineDecision", setup,
+                "marketContext1h", context
+        ));
+
+        String prompt = """
+                Review CoinMind's deterministic crypto trade decision.
+                Do not invent missing data and do not override the engine with unsupported claims.
+                Focus on whether the engine decision is confirmed, should remain watch-only, or should wait.
+                Treat the supplied entry/target/stop levels as engine-generated reference levels.
+                Keep the review concise and explain conflicts, especially timeframe alignment, market regime, and news sentiment.
+
+                DecisionPayload:
+                """ + payload;
+
+        Map<String, Object> schema = Map.of(
+                "type", "object",
+                "properties", Map.of(
+                        "verdict", Map.of(
+                                "type", "string",
+                                "enum", List.of("CONFIRM", "WATCH", "WAIT")
+                        ),
+                        "confidence", Map.of(
+                                "type", "integer",
+                                "minimum", 0,
+                                "maximum", 100
+                        ),
+                        "summary", Map.of("type", "string"),
+                        "confirmations", Map.of(
+                                "type", "array",
+                                "items", Map.of("type", "string"),
+                                "maxItems", 4
+                        ),
+                        "concerns", Map.of(
+                                "type", "array",
+                                "items", Map.of("type", "string"),
+                                "maxItems", 4
+                        )
+                ),
+                "required", List.of(
+                        "verdict",
+                        "confidence",
+                        "summary",
+                        "confirmations",
+                        "concerns"
+                ),
+                "additionalProperties", false
+        );
+
+        return Map.of(
+                "model", properties.model(),
+                "input", prompt,
+                "reasoning", Map.of("effort", properties.reasoningEffort()),
+                "max_output_tokens", properties.maxOutputTokens(),
+                "text", Map.of(
+                        "format", Map.of(
+                                "type", "json_schema",
+                                "name", "coinmind_decision_review",
+                                "strict", true,
+                                "schema", schema
+                        )
+                )
+        );
+    }
+
+    private AiDecisionReview parseDecisionReview(
+            String body,
+            TradeSetup setup
+    ) {
+        try {
+            JsonNode response = objectMapper.readTree(body);
+            String outputText = extractOutputText(response);
+            JsonNode review = objectMapper.readTree(cleanJson(outputText));
+
+            return new AiDecisionReview(
+                    setup.symbol(),
+                    setup.action(),
+                    review.path("verdict").asText("WAIT"),
+                    Math.max(0, Math.min(100, review.path("confidence").asInt(0))),
+                    review.path("summary").asText(""),
+                    stringList(review.path("confirmations")),
+                    stringList(review.path("concerns")),
+                    properties.model(),
+                    Instant.now()
+            );
+        } catch (Exception ex) {
+            throw new IllegalStateException("Unable to parse AI decision review", ex);
+        }
     }
 
     private Map<String, Object> buildRequest(MarketContext context) throws Exception {

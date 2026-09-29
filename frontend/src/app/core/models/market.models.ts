@@ -309,6 +309,18 @@ export interface TradeSetup {
   confidence: number;
   signalScore: number;
   riskLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+  alignmentScore: number;
+  alignmentLabel: 'STRONG' | 'GOOD' | 'MIXED' | 'WEAK';
+  marketRegime: 'TRENDING_BULLISH' | 'TRENDING_BEARISH' | 'SIDEWAYS' | 'HIGH_VOLATILITY' | 'MIXED';
+  timeframes: Array<{
+    interval: string;
+    weight: number;
+    signalScore: number;
+    trendScore: number;
+    momentumScore: number;
+    volatilityScore: number;
+    bias: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
+  }>;
   marketPrice: number;
   entryLow: number | null;
   entryHigh: number | null;

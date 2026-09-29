@@ -34,6 +34,7 @@ import { formatCompact, formatPrice } from './shared/price-format';
   styleUrl: './app.component.css'
 })
 export class AppComponent implements OnInit, OnDestroy {
+  readonly Math = Math;
   private readonly marketApi = inject(MarketApiService);
   private readonly pushNotifications = inject(PushNotificationService);
   private readonly subscriptions = new Subscription();

@@ -1793,3 +1793,37 @@ h1 span {
     place-items: center;
   }
 }
+
+
+.notification-status {
+  padding-left: 18px;
+  border-left: 1px solid var(--border);
+}
+
+.notification-status.live strong {
+  color: var(--positive);
+}
+
+.notification-status.offline strong {
+  color: var(--negative);
+}
+
+.notification-status.stale strong {
+  color: #f2b84b;
+}
+
+@media (max-width: 760px) {
+  .system-status {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .notification-status {
+    display: flex;
+    padding-left: 12px;
+    border-left: 1px solid var(--border);
+  }
+
+  .notification-status strong {
+    font-size: 9px;
+  }
+}

@@ -12,6 +12,10 @@ public record TradeSetup(
         int confidence,
         BigDecimal signalScore,
         String riskLevel,
+        int alignmentScore,
+        String alignmentLabel,
+        String marketRegime,
+        List<TimeframeSignal> timeframes,
         BigDecimal marketPrice,
         BigDecimal entryLow,
         BigDecimal entryHigh,
@@ -24,4 +28,14 @@ public record TradeSetup(
         List<String> warnings,
         Instant generatedAt
 ) {
+    public record TimeframeSignal(
+            String interval,
+            int weight,
+            BigDecimal signalScore,
+            BigDecimal trendScore,
+            BigDecimal momentumScore,
+            BigDecimal volatilityScore,
+            String bias
+    ) {
+    }
 }

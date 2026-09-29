@@ -11,66 +11,8 @@
 
     </header>
 
-  <div class="status-strip" aria-label="Application status">
-    <div class="status-strip-inner">
-      <div class="status-item backend-status"
-           [class.ok]="backendState() === 'up'"
-           [class.error]="backendState() === 'down'">
-        <span class="status-dot"></span>
-        <span>
-          @if (backendState() === 'up') {
-            Server connected
-          } @else if (backendState() === 'down') {
-            Server unavailable
-          } @else {
-            Checking server
-          }
-        </span>
-      </div>
+    <div class="status-strip" aria-label="Application status">
 
-      <div class="status-item market-status"
-           [class.ok]="connectionState() === 'live'"
-           [class.warn]="connectionState() === 'stale'"
-           [class.error]="connectionState() === 'offline'">
-        <span class="status-dot"></span>
-        <span>
-          @if (connectionState() === 'live') {
-            Market aktif
-          } @else if (connectionState() === 'stale') {
-            Market terlambat
-          } @else if (connectionState() === 'offline') {
-            Market offline
-          } @else {
-            Menghubungkan market
-          }
-        </span>
-      </div>
-
-      <div class="status-item notification-status"
-           [class.ok]="pushStatus() === 'enabled'"
-           [class.warn]="pushStatus() === 'permission-required' || pushStatus() === 'install-required' || pushStatus() === 'secure-context-required'"
-           [class.error]="pushStatus() === 'denied' || pushStatus() === 'disabled' || pushStatus() === 'unsupported' || pushStatus() === 'error'">
-        <span class="status-dot"></span>
-        <span>
-          @if (pushStatus() === 'enabled') {
-            Notifikasi aktif
-          } @else if (pushStatus() === 'secure-context-required') {
-            Notifikasi butuh HTTPS
-          } @else if (pushStatus() === 'install-required') {
-            Install app untuk notifikasi
-          } @else if (pushStatus() === 'permission-required') {
-            Izinkan notifikasi
-          } @else if (pushStatus() === 'denied') {
-            Notifikasi diblokir
-          } @else if (pushStatus() === 'disabled') {
-            Notifikasi belum aktif
-          } @else if (pushStatus() === 'unsupported') {
-            Notifikasi tidak tersedia
-          } @else {
-            Cek notifikasi
-          }
-        </span>
-      </div>
     </div>
 
     <div class="sticky-controls-inner">
@@ -115,10 +57,6 @@
     </section>
     </div>
   </div>
-
-  </div>
-
-  
 
   @if (showNotificationOnboarding()) {
     <div class="notification-onboarding-backdrop">

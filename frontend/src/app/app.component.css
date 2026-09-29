@@ -4313,3 +4313,153 @@ main {
     font-size: 7px;
   }
 }
+
+
+/* ===== Actionable trade price card ===== */
+.trade-price-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+  gap: 8px;
+  margin: 0 18px 12px;
+}
+
+.trade-price-main,
+.trade-price-status {
+  padding: 12px;
+  border: 1px solid #e3e9f1;
+  border-radius: 11px;
+  background: #fff;
+}
+
+.trade-price-main span,
+.trade-price-status span {
+  display: block;
+  color: #8491a3;
+  font-size: 7px;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.trade-price-main strong {
+  display: block;
+  color: #1f2d42;
+  font-size: 18px;
+  letter-spacing: -.03em;
+}
+
+.trade-price-main small,
+.trade-price-status small {
+  display: block;
+  margin-top: 4px;
+  color: #8b97a7;
+  font-size: 7px;
+  line-height: 1.35;
+}
+
+.trade-price-status {
+  background: #f8fafc;
+}
+
+.trade-price-status strong {
+  display: block;
+  color: #58667a;
+  font-size: 11px;
+}
+
+.trade-price-status.ready {
+  border-color: #ccecdf;
+  background: #f1fbf7;
+}
+
+.trade-price-status.ready strong {
+  color: #087d60;
+}
+
+.trade-price-status.waiting {
+  border-color: #efdfb8;
+  background: #fffaf0;
+}
+
+.trade-price-status.waiting strong {
+  color: #8b651e;
+}
+
+.trade-levels.actionable .entry-area {
+  border-color: rgba(109, 93, 252, .28);
+  background: #f7f5ff;
+}
+
+.trade-levels.actionable .entry-area span {
+  color: #6757dc;
+  font-weight: 800;
+}
+
+.trade-levels.actionable .entry-area strong {
+  color: #372f7c;
+}
+
+.trade-levels.actionable .invalidation span {
+  color: #c94159;
+  font-weight: 800;
+}
+
+.trade-levels.actionable .target span {
+  color: #087d60;
+  font-weight: 800;
+}
+
+.actionable-wait {
+  display: grid;
+  gap: 4px;
+  border-style: solid;
+  background: #f8fafc;
+}
+
+.actionable-wait strong {
+  color: #34445c;
+  font-size: 10px;
+}
+
+.actionable-wait span {
+  color: #7b899d;
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+@media (max-width: 760px) {
+  .trade-price-card {
+    grid-template-columns: 1fr 1.2fr;
+    gap: 5px;
+    margin: 0 10px 8px;
+  }
+
+  .trade-price-main,
+  .trade-price-status {
+    padding: 8px;
+    border-radius: 9px;
+  }
+
+  .trade-price-main strong {
+    font-size: 14px;
+  }
+
+  .trade-price-status strong {
+    font-size: 9px;
+  }
+
+  .trade-price-main span,
+  .trade-price-status span,
+  .trade-price-main small,
+  .trade-price-status small {
+    font-size: 6.5px;
+  }
+
+  .trade-levels.actionable {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .trade-levels.actionable > div {
+    min-height: 72px;
+  }
+}

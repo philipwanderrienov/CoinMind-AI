@@ -20,13 +20,17 @@ export class PushNotificationService {
       return 'unsupported';
     }
 
+    if (!this.isInstalledPwa()) {
+      return 'install-required';
+    }
+
     const config = await this.getConfig();
     if (!config.enabled || !config.publicKey) {
       return 'disabled';
     }
 
-    await navigator.serviceWorker.register('/service-worker.js');
-    const registration = await navigator.serviceWorker.ready;
+    const registration = await navigator.serviceWorker.register('/service-worker.js');
+    await navigator.serviceWorker.ready;
 
     if (Notification.permission === 'denied') {
       return 'denied';
@@ -37,12 +41,10 @@ export class PushNotificationService {
       return 'enabled';
     }
 
-    return this.isInstalledPwa()
-      ? 'permission-required'
-      : 'install-required';
+    return 'permission-required';
   }
 
-  async enable(): Promise<PushDeviceStatus> {
+  async requestPermission(): Promise<PushDeviceStatus> {
     if (!this.isSupported()) {
       return 'unsupported';
     }
@@ -57,8 +59,13 @@ export class PushNotificationService {
     }
 
     const permission = await Notification.requestPermission();
-    if (permission !== 'granted') {
+
+    if (permission === 'denied') {
       return 'denied';
+    }
+
+    if (permission !== 'granted') {
+      return 'permission-required';
     }
 
     const registration = await navigator.serviceWorker.register('/service-worker.js');
@@ -66,6 +73,10 @@ export class PushNotificationService {
     await this.ensureSubscription(registration, config.publicKey);
 
     return 'enabled';
+  }
+
+  async refreshFromDeviceSettings(): Promise<PushDeviceStatus> {
+    return this.initialize();
   }
 
   isInstalledPwa(): boolean {

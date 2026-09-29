@@ -30,13 +30,13 @@ import { Candlestick } from '../../core/models/market.models';
       display: block;
       width: 100%;
       height: 100%;
-      min-height: 260px;
+      min-height: 200px;
     }
 
     .chart-container {
       width: 100%;
       height: 100%;
-      min-height: 260px;
+      min-height: 200px;
     }
   `]
 })
@@ -340,7 +340,7 @@ export class MarketChartComponent implements AfterViewInit, OnChanges, OnDestroy
 
       if (panes[0]) {
         panes[0].setHeight(
-          this.showRsi || this.showMacd ? 220 : 300
+          this.showRsi || this.showMacd ? 190 : 220
         );
       }
 

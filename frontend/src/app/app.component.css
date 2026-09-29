@@ -1713,3 +1713,83 @@ h1 span {
     grid-template-columns: 1fr;
   }
 }
+
+
+.notification-onboarding-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: end center;
+  padding: 20px;
+  background: rgba(3, 8, 16, .68);
+  backdrop-filter: blur(8px);
+}
+
+.notification-onboarding {
+  width: min(100%, 420px);
+  padding: 22px;
+  border: 1px solid rgba(125, 99, 255, .28);
+  border-radius: 16px;
+  background: #0b1220;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, .45);
+}
+
+.notification-icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 18px;
+  border-radius: 13px;
+  color: #d9d3ff;
+  font-size: 11px;
+  font-weight: 800;
+  border: 1px solid rgba(125, 99, 255, .28);
+  background: rgba(125, 99, 255, .10);
+}
+
+.notification-onboarding h3 {
+  margin: 0;
+  font-size: 19px;
+}
+
+.notification-onboarding > p:not(.eyebrow) {
+  margin: 10px 0 18px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.notification-onboarding-actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.notification-onboarding-actions button {
+  min-height: 38px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.notification-primary {
+  color: #e7e2ff;
+  border-color: rgba(125, 99, 255, .38) !important;
+  background: rgba(125, 99, 255, .14);
+}
+
+.notification-secondary {
+  color: var(--muted);
+  background: #09111d;
+}
+
+@media (min-width: 700px) {
+  .notification-onboarding-backdrop {
+    place-items: center;
+  }
+}

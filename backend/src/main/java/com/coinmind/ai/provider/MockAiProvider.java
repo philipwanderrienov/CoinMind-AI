@@ -1,7 +1,9 @@
 package com.coinmind.ai.provider;
 
 import com.coinmind.ai.model.AiAnalysisResult;
+import com.coinmind.ai.model.AiDecisionReview;
 import com.coinmind.ai.model.MarketContext;
+import com.coinmind.trade.model.TradeSetup;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
@@ -61,4 +63,28 @@ public class MockAiProvider implements AiProvider {
                 Instant.now()
         ));
     }
+    @Override
+    public Mono<AiDecisionReview> reviewDecision(
+            TradeSetup setup,
+            MarketContext context
+    ) {
+        String verdict = setup.action().equals("WAIT")
+                ? "WAIT"
+                : setup.action().startsWith("WATCH")
+                ? "WATCH"
+                : "CONFIRM";
+
+        return Mono.just(new AiDecisionReview(
+                setup.symbol(),
+                setup.action(),
+                verdict,
+                setup.confidence(),
+                "Mock AI review mirrors the deterministic engine. Use live Luna for production review.",
+                setup.reasons().stream().limit(3).toList(),
+                setup.warnings().stream().limit(3).toList(),
+                name(),
+                Instant.now()
+        ));
+    }
+
 }

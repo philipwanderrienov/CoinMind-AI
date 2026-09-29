@@ -158,6 +158,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.startMarketFeedHealthCheck();
     this.loadSnapshots();
     this.loadHistory();
+    this.loadDecisionCandles();
     this.loadMicrostructure();
     this.loadIndicators();
     this.loadMarketContext();
@@ -184,6 +185,7 @@ export class AppComponent implements OnInit, OnDestroy {
   selectSymbol(symbol: string): void {
     this.selectedSymbol.set(symbol);
     this.loadHistory();
+    this.loadDecisionCandles();
     this.loadMicrostructure();
     this.loadIndicators();
     this.loadMarketContext();

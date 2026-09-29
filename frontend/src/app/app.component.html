@@ -16,11 +16,11 @@
         <div>
           <strong>
             @if (backendState() === 'up') {
-              Backend UP
+              Server connected
             } @else if (backendState() === 'down') {
-              Backend DOWN
+              Server unavailable
             } @else {
-              Checking backend
+              Checking server
             }
           </strong>
           <small>
@@ -44,7 +44,7 @@
            [class.offline]="connectionState() === 'offline'">
         <span class="status-dot"></span>
         <div>
-          <strong>Market Data {{ marketUiStatus() }}</strong>
+          <strong>Market {{ marketUiStatus() }}</strong>
           <small>
             @if (marketFeedHealth()?.status === 'DEGRADED') {
               Backend feed degraded ·
@@ -72,7 +72,7 @@
 
       <div class="connection notification-status"
            [class.live]="pushStatus() === 'enabled'"
-           [class.stale]="pushStatus() === 'permission-required' || pushStatus() === 'install-required'"
+           [class.stale]="pushStatus() === 'permission-required' || pushStatus() === 'install-required' || pushStatus() === 'secure-context-required'"
            [class.offline]="pushStatus() === 'denied' || pushStatus() === 'disabled' || pushStatus() === 'unsupported' || pushStatus() === 'error'">
         <span class="status-dot"></span>
         <div>
@@ -84,7 +84,9 @@
             } @else if (pushStatus() === 'permission-required') {
               Notifications READY
             } @else if (pushStatus() === 'install-required') {
-              Browser mode
+              Install app for alerts
+            } @else if (pushStatus() === 'secure-context-required') {
+              Secure access needed
             } @else if (pushStatus() === 'disabled') {
               Notifications OFF
             } @else if (pushStatus() === 'unsupported') {
@@ -101,7 +103,9 @@
             } @else if (pushStatus() === 'permission-required') {
               Installed app · device permission not decided yet
             } @else if (pushStatus() === 'install-required') {
-              Install CoinMind to enable device notifications
+              Install CoinMind to receive alerts on this phone
+            } @else if (pushStatus() === 'secure-context-required') {
+              Open CoinMind over HTTPS to enable phone notifications
             } @else if (pushStatus() === 'disabled') {
               Web Push is not configured on the server
             } @else if (pushStatus() === 'unsupported') {
@@ -147,55 +151,20 @@
   }
 
   <main>
-    <section class="hero-row">
+    <section class="hero-row compact-hero">
       <div>
-        <p class="eyebrow">MARKET OVERVIEW</p>
-        <h1>Read the market.<br><span>Reason with AI.</span></h1>
+        <p class="eyebrow">COINMIND OVERVIEW</p>
+        <h1>Market crypto, lebih mudah dipahami.</h1>
         <p class="hero-copy">
-          Realtime BTC, ETH and SOL market data—built as the data foundation for
-          CoinMind's technical and AI analysis engine.
+          Pantau harga, chart, sinyal, berita, dan insight AI dari satu dashboard.
         </p>
       </div>
 
       <div class="hero-status">
-        <span>Phase 1</span>
-        <strong>Market Data Foundation</strong>
-        <small>Binance realtime feed</small>
+        <span>Live</span>
+        <strong>{{ symbolLabel(selectedSymbol()) }} / USDT</strong>
+        <small>{{ selectedInterval() }} chart</small>
       </div>
-    </section>
-
-    <section class="ticker-grid">
-      @for (symbol of symbols; track symbol) {
-        @let ticker = tickers()[symbol];
-        <button
-          type="button"
-          class="ticker-card"
-          [class.active]="selectedSymbol() === symbol"
-          (click)="selectSymbol(symbol)">
-          <div class="ticker-head">
-            <div class="asset-icon">{{ symbolLabel(symbol).slice(0, 1) }}</div>
-            <div>
-              <strong>{{ symbolLabel(symbol) }}</strong>
-              <small>/ USDT</small>
-            </div>
-            <span class="live-pill">LIVE</span>
-          </div>
-
-          <div class="ticker-price">{{ formatPrice(ticker?.closePrice) }}</div>
-
-          @if (ticker) {
-            @let change = ((ticker.closePrice - ticker.openPrice) / ticker.openPrice) * 100;
-            <div class="ticker-meta">
-              <span [class]="changeClass(change)">
-                {{ change >= 0 ? '+' : '' }}{{ change | number:'1.2-2' }}%
-              </span>
-              <span>Vol {{ formatCompact(ticker.quoteVolume) }}</span>
-            </div>
-          } @else {
-            <div class="ticker-meta muted">Waiting for market data</div>
-          }
-        </button>
-      }
     </section>
 
     <section class="workspace-grid">
@@ -280,6 +249,41 @@
           </span>
         </div>
       </article>
+
+    <section class="ticker-grid">
+      @for (symbol of symbols; track symbol) {
+        @let ticker = tickers()[symbol];
+        <button
+          type="button"
+          class="ticker-card"
+          [class.active]="selectedSymbol() === symbol"
+          (click)="selectSymbol(symbol)">
+          <div class="ticker-head">
+            <div class="asset-icon">{{ symbolLabel(symbol).slice(0, 1) }}</div>
+            <div>
+              <strong>{{ symbolLabel(symbol) }}</strong>
+              <small>/ USDT</small>
+            </div>
+            <span class="live-pill">LIVE</span>
+          </div>
+
+          <div class="ticker-price">{{ formatPrice(ticker?.closePrice) }}</div>
+
+          @if (ticker) {
+            @let change = ((ticker.closePrice - ticker.openPrice) / ticker.openPrice) * 100;
+            <div class="ticker-meta">
+              <span [class]="changeClass(change)">
+                {{ change >= 0 ? '+' : '' }}{{ change | number:'1.2-2' }}%
+              </span>
+              <span>Vol {{ formatCompact(ticker.quoteVolume) }}</span>
+            </div>
+          } @else {
+            <div class="ticker-meta muted">Waiting for market data</div>
+          }
+        </button>
+      }
+    </section>
+
 
       <aside class="side-stack">
         <article class="panel market-stats">

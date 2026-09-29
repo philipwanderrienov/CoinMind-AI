@@ -472,37 +472,78 @@
           </div>
         </article>
 
-        <article class="panel market-stats">
+        <article class="panel technical-context-panel">
           <div class="panel-header compact">
             <div>
-              <p class="eyebrow">TECHNICAL INDICATORS</p>
-              <h3>{{ selectedInterval() }} market structure</h3>
+              <p class="eyebrow">TECHNICAL CONTEXT</p>
+              <h3>Indikator penting per timeframe</h3>
             </div>
+            <span class="timeframe-focus-label">1H + 4H utama</span>
           </div>
 
-          <div class="stat-list">
-            <div><span>EMA 20</span><strong>{{ formatPrice(indicators()?.ema20) }}</strong></div>
-            <div><span>EMA 50</span><strong>{{ formatPrice(indicators()?.ema50) }}</strong></div>
-            <div><span>EMA 200</span><strong>{{ formatPrice(indicators()?.ema200) }}</strong></div>
-            <div><span>RSI 14</span><strong>{{ indicators()?.rsi14 | number:'1.1-2' }}</strong></div>
-            <div><span>MACD</span><strong>{{ indicators()?.macdHistogram | number:'1.2-4' }}</strong></div>
-            <div><span>ATR 14</span><strong>{{ indicators()?.atr14 | number:'1.2-4' }}</strong></div>
-            <div><span>Volume ratio</span><strong>{{ indicators()?.volumeRatio | number:'1.2-2' }}</strong></div>
+          <div class="technical-context-grid">
+            @for (interval of decisionIntervals; track interval) {
+              @let indicator = timeframeIndicator(interval);
+
+              <div
+                class="technical-context-card"
+                [class.primary]="interval === '1h' || interval === '4h'"
+                [class.execution]="interval === '1m'">
+                <div class="technical-context-head">
+                  <div>
+                    <strong>{{ interval }}</strong>
+                    <span>{{ timeframeRole(interval) }}</span>
+                  </div>
+
+                  @if (indicator) {
+                    <span
+                      class="technical-bias"
+                      [class.positive]="(indicator.trendScore ?? 0) >= 25"
+                      [class.negative]="(indicator.trendScore ?? 0) <= -25">
+                      {{ technicalDirection(indicator.trendScore) }}
+                    </span>
+                  }
+                </div>
+
+                @if (indicator) {
+                  <div class="technical-key-grid">
+                    <div>
+                      <span>Trend</span>
+                      <strong>{{ indicator.trendScore | number:'1.0-0' }}</strong>
+                    </div>
+                    <div>
+                      <span>Momentum</span>
+                      <strong>{{ momentumStrength(indicator.momentumScore) }}</strong>
+                    </div>
+                    <div>
+                      <span>RSI</span>
+                      <strong>{{ indicator.rsi14 | number:'1.0-0' }}</strong>
+                    </div>
+                    <div>
+                      <span>MACD</span>
+                      <strong [class]="(indicator.macdHistogram ?? 0) > 0 ? 'positive' : (indicator.macdHistogram ?? 0) < 0 ? 'negative' : 'neutral'">
+                        {{ indicator.macdHistogram | number:'1.2-2' }}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <div class="technical-secondary">
+                    <span>Vol {{ indicator.volumeRatio | number:'1.2-2' }}×</span>
+                    <span>ATR {{ indicator.atr14 | number:'1.2-2' }}</span>
+                  </div>
+                } @else {
+                  <div class="timeframe-empty">Menunggu indikator</div>
+                }
+              </div>
+            }
           </div>
 
-          <div class="score-grid">
-            <div>
-              <span>Trend</span>
-              <strong>{{ indicators()?.trendScore | number:'1.0-0' }}</strong>
-            </div>
-            <div>
-              <span>Momentum</span>
-              <strong>{{ indicators()?.momentumScore | number:'1.0-0' }}</strong>
-            </div>
-            <div>
-              <span>Volatility</span>
-              <strong>{{ indicators()?.volatilityScore | number:'1.0-0' }}</strong>
-            </div>
+          <div class="technical-guide">
+            <span><strong>1m</strong> timing</span>
+            <span><strong>15m</strong> momentum</span>
+            <span class="primary"><strong>1h</strong> keputusan</span>
+            <span class="primary"><strong>4h</strong> trend</span>
+            <span><strong>1d</strong> konteks</span>
           </div>
         </article>
           </div>

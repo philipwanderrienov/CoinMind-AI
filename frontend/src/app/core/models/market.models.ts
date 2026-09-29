@@ -299,3 +299,25 @@ export interface AiEvaluationSummary {
     averageReturnPct: number;
   }>;
 }
+
+
+export interface TradeSetup {
+  symbol: string;
+  interval: string;
+  action: 'WAIT' | 'WATCH_BUY' | 'WATCH_SELL' | 'BUY' | 'SELL';
+  side: 'NONE' | 'LONG' | 'SHORT';
+  confidence: number;
+  signalScore: number;
+  riskLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+  marketPrice: number;
+  entryLow: number | null;
+  entryHigh: number | null;
+  invalidationPrice: number | null;
+  target1: number | null;
+  target2: number | null;
+  riskReward1: number | null;
+  riskReward2: number | null;
+  reasons: string[];
+  warnings: string[];
+  generatedAt: string;
+}

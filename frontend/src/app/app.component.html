@@ -356,6 +356,60 @@
               </div>
             }
 
+            <section class="ai-decision-review">
+              <div class="ai-decision-review-head">
+                <div>
+                  <span>AI REVIEW</span>
+                  <strong>Review keputusan engine dengan AI</strong>
+                </div>
+                <button
+                  type="button"
+                  [disabled]="aiDecisionReviewRunning()"
+                  (click)="runAiDecisionReview()">
+                  {{ aiDecisionReviewRunning() ? 'Reviewing…' : (aiDecisionReview() ? 'Review lagi' : 'Review dengan AI') }}
+                </button>
+              </div>
+
+              @if (aiDecisionReview()) {
+                <div class="ai-review-result">
+                  <div class="ai-review-verdict">
+                    <span>AI verdict</span>
+                    <strong
+                      [class.positive]="aiDecisionReview()!.verdict === 'CONFIRM'"
+                      [class.negative]="aiDecisionReview()!.verdict === 'WAIT'">
+                      {{ aiDecisionReview()!.verdict }}
+                    </strong>
+                    <small>{{ aiDecisionReview()!.confidence }}% confidence</small>
+                  </div>
+
+                  <p>{{ aiDecisionReview()!.summary }}</p>
+
+                  <div class="ai-review-factors">
+                    <div>
+                      <span>Yang dikonfirmasi AI</span>
+                      @for (item of aiDecisionReview()!.confirmations; track item) {
+                        <small>+ {{ item }}</small>
+                      }
+                    </div>
+                    <div>
+                      <span>Concern AI</span>
+                      @for (item of aiDecisionReview()!.concerns; track item) {
+                        <small>• {{ item }}</small>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="ai-review-meta">
+                    {{ aiDecisionReview()!.model }} · {{ aiDecisionReview()!.reviewedAt | date:'HH:mm:ss' }}
+                  </div>
+                </div>
+              } @else {
+                <div class="ai-review-empty">
+                  Engine decision di atas bersifat deterministik. Jalankan AI Review untuk second opinion berbasis context market + news terbaru.
+                </div>
+              }
+            </section>
+
             <div class="trade-detail-grid">
               <div>
                 <span>Kenapa?</span>

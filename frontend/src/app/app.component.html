@@ -297,8 +297,170 @@
     </section>
 
 
+<article class="panel trade-setup-panel">
+          <div class="panel-header compact">
+            <div>
+              <p class="eyebrow">TRADE DECISION</p>
+              <h3>Apa yang sebaiknya dilakukan sekarang?</h3>
+            </div>
+
+            @if (tradeSetup()) {
+              <span
+                class="trade-action"
+                [class.buy]="tradeSetup()!.action === 'BUY'"
+                [class.sell]="tradeSetup()!.action === 'SELL'"
+                [class.watch]="tradeSetup()!.action === 'WATCH_BUY' || tradeSetup()!.action === 'WATCH_SELL'"
+                [class.wait]="tradeSetup()!.action === 'WAIT'">
+                {{ tradeSetup()!.action.replace('_', ' ') }}
+              </span>
+            }
+          </div>
+
+          @if (tradeSetup()) {
+            <div class="trade-overview">
+              <div>
+                <span>Confidence</span>
+                <strong>{{ tradeSetup()!.confidence }}%</strong>
+              </div>
+              <div>
+                <span>Market score</span>
+                <strong>{{ tradeSetup()!.signalScore | number:'1.0-1' }}</strong>
+              </div>
+              <div>
+                <span>Risk</span>
+                <strong>{{ tradeSetup()!.riskLevel }}</strong>
+              </div>
+              <div>
+                <span>Direction</span>
+                <strong>{{ tradeSetup()!.side }}</strong>
+              </div>
+            </div>
+
+            @if (tradeSetup()!.action !== 'WAIT') {
+              <div class="trade-levels">
+                <div>
+                  <span>Entry zone</span>
+                  <strong>
+                    {{ formatPrice(tradeSetup()!.entryLow) }}
+                    –
+                    {{ formatPrice(tradeSetup()!.entryHigh) }}
+                  </strong>
+                </div>
+                <div class="invalidation">
+                  <span>Stop / invalidation</span>
+                  <strong>{{ formatPrice(tradeSetup()!.invalidationPrice) }}</strong>
+                </div>
+                <div class="target">
+                  <span>Target 1</span>
+                  <strong>{{ formatPrice(tradeSetup()!.target1) }}</strong>
+                  <small>R:R {{ tradeSetup()!.riskReward1 | number:'1.1-1' }}</small>
+                </div>
+                <div class="target">
+                  <span>Target 2</span>
+                  <strong>{{ formatPrice(tradeSetup()!.target2) }}</strong>
+                  <small>R:R {{ tradeSetup()!.riskReward2 | number:'1.1-1' }}</small>
+                </div>
+              </div>
+            } @else {
+              <div class="trade-wait">
+                Belum ada setup yang cukup kuat. Lebih aman menunggu kondisi yang lebih jelas.
+              </div>
+            }
+
+            <div class="trade-detail-grid">
+              <div>
+                <span>Kenapa?</span>
+                @for (reason of tradeSetup()!.reasons; track reason) {
+                  <small>+ {{ reason }}</small>
+                }
+              </div>
+
+              <div>
+                <span>Yang perlu diperhatikan</span>
+                @for (warning of tradeSetup()!.warnings; track warning) {
+                  <small>• {{ warning }}</small>
+                }
+              </div>
+            </div>
+
+            <div class="trade-generated">
+              Generated {{ tradeSetup()!.generatedAt | date:'HH:mm:ss' }}
+              · CoinMind decision engine
+            </div>
+          } @else {
+            <div class="empty-usage">
+              Waiting for enough live market data to calculate a trade setup.
+            </div>
+          }
+        </article>
+
+      <article class="panel market-condition-panel">
+        <div class="panel-header compact">
+          <div>
+            <p class="eyebrow">MARKET CONDITION</p>
+            <h3>Kondisi market saat ini</h3>
+          </div>
+        </div>
+
+        @if (marketContext()) {
+          <div class="condition-grid">
+            <div>
+              <span>Trend</span>
+              <strong [class]="(marketContext()!.technical.trendScore ?? 0) > 20 ? 'positive' : (marketContext()!.technical.trendScore ?? 0) < -20 ? 'negative' : 'neutral'">
+                @if ((marketContext()!.technical.trendScore ?? 0) > 20) {
+                  Bullish
+                } @else if ((marketContext()!.technical.trendScore ?? 0) < -20) {
+                  Bearish
+                } @else {
+                  Neutral
+                }
+              </strong>
+            </div>
+            <div>
+              <span>Momentum</span>
+              <strong>
+                @if (Math.abs(marketContext()!.technical.momentumScore ?? 0) >= 60) {
+                  Strong
+                } @else if (Math.abs(marketContext()!.technical.momentumScore ?? 0) >= 30) {
+                  Moderate
+                } @else {
+                  Weak
+                }
+              </strong>
+            </div>
+            <div>
+              <span>Risk</span>
+              <strong>{{ tradeSetup()?.riskLevel ?? marketContext()!.signal.riskLevel }}</strong>
+            </div>
+            <div>
+              <span>News mood</span>
+              <strong [class]="(marketContext()!.news.averageSentiment ?? 0) > 0.15 ? 'positive' : (marketContext()!.news.averageSentiment ?? 0) < -0.15 ? 'negative' : 'neutral'">
+                @if ((marketContext()!.news.averageSentiment ?? 0) > 0.15) {
+                  Positive
+                } @else if ((marketContext()!.news.averageSentiment ?? 0) < -0.15) {
+                  Negative
+                } @else {
+                  Neutral
+                }
+              </strong>
+            </div>
+          </div>
+        } @else {
+          <div class="empty-usage">Menunggu data market untuk merangkum kondisi.</div>
+        }
+      </article>
+
       <aside class="side-stack">
-        <article class="panel market-stats">
+        <details class="advanced-market-details">
+          <summary>
+            <div>
+              <strong>Detail market</strong>
+              <span>Candle, order flow, dan indikator teknikal</span>
+            </div>
+            <span class="details-hint">Lihat detail</span>
+          </summary>
+          <div class="advanced-market-grid">
+<article class="panel market-stats">
           <div class="panel-header compact">
             <div>
               <p class="eyebrow">CURRENT CANDLE</p>
@@ -372,103 +534,8 @@
             </div>
           </div>
         </article>
-
-        <article class="panel trade-setup-panel">
-          <div class="panel-header compact">
-            <div>
-              <p class="eyebrow">TRADE DECISION ENGINE</p>
-              <h3>{{ symbolLabel(selectedSymbol()) }} {{ selectedInterval() }} setup</h3>
-            </div>
-
-            @if (tradeSetup()) {
-              <span
-                class="trade-action"
-                [class.buy]="tradeSetup()!.action === 'BUY'"
-                [class.sell]="tradeSetup()!.action === 'SELL'"
-                [class.watch]="tradeSetup()!.action === 'WATCH_BUY' || tradeSetup()!.action === 'WATCH_SELL'"
-                [class.wait]="tradeSetup()!.action === 'WAIT'">
-                {{ tradeSetup()!.action.replace('_', ' ') }}
-              </span>
-            }
           </div>
-
-          @if (tradeSetup()) {
-            <div class="trade-overview">
-              <div>
-                <span>Confidence</span>
-                <strong>{{ tradeSetup()!.confidence }}%</strong>
-              </div>
-              <div>
-                <span>Signal</span>
-                <strong>{{ tradeSetup()!.signalScore | number:'1.0-1' }}</strong>
-              </div>
-              <div>
-                <span>Risk</span>
-                <strong>{{ tradeSetup()!.riskLevel }}</strong>
-              </div>
-              <div>
-                <span>Side</span>
-                <strong>{{ tradeSetup()!.side }}</strong>
-              </div>
-            </div>
-
-            @if (tradeSetup()!.action !== 'WAIT') {
-              <div class="trade-levels">
-                <div>
-                  <span>Entry zone</span>
-                  <strong>
-                    {{ formatPrice(tradeSetup()!.entryLow) }}
-                    –
-                    {{ formatPrice(tradeSetup()!.entryHigh) }}
-                  </strong>
-                </div>
-                <div class="invalidation">
-                  <span>Invalidation</span>
-                  <strong>{{ formatPrice(tradeSetup()!.invalidationPrice) }}</strong>
-                </div>
-                <div class="target">
-                  <span>Target 1</span>
-                  <strong>{{ formatPrice(tradeSetup()!.target1) }}</strong>
-                  <small>R:R {{ tradeSetup()!.riskReward1 | number:'1.1-1' }}</small>
-                </div>
-                <div class="target">
-                  <span>Target 2</span>
-                  <strong>{{ formatPrice(tradeSetup()!.target2) }}</strong>
-                  <small>R:R {{ tradeSetup()!.riskReward2 | number:'1.1-1' }}</small>
-                </div>
-              </div>
-            } @else {
-              <div class="trade-wait">
-                Current market conditions do not meet the directional setup threshold.
-              </div>
-            }
-
-            <div class="trade-detail-grid">
-              <div>
-                <span>Why</span>
-                @for (reason of tradeSetup()!.reasons; track reason) {
-                  <small>+ {{ reason }}</small>
-                }
-              </div>
-
-              <div>
-                <span>Risk notes</span>
-                @for (warning of tradeSetup()!.warnings; track warning) {
-                  <small>• {{ warning }}</small>
-                }
-              </div>
-            </div>
-
-            <div class="trade-generated">
-              Generated {{ tradeSetup()!.generatedAt | date:'HH:mm:ss' }}
-              · deterministic rule engine
-            </div>
-          } @else {
-            <div class="empty-usage">
-              Waiting for enough live market data to calculate a trade setup.
-            </div>
-          }
-        </article>
+        </details>
 
         <article class="panel news-panel">
           <div class="panel-header compact">
@@ -514,166 +581,84 @@
           </div>
         </article>
 
-        <article class="panel ai-panel">
-          <div class="ai-orb">AI</div>
-          <p class="eyebrow">COINMIND INTELLIGENCE</p>
-          <h3>Structured market context is ready.</h3>
-
-          @if (marketContext()) {
-            <p>
-              CoinMind is now combining price, technical structure and realtime
-              microstructure into one compact AI-ready payload.
-            </p>
-
-            <div class="ai-context-grid">
-              <div>
-                <span>Trend</span>
-                <strong>{{ marketContext()?.technical?.trendScore | number:'1.0-0' }}</strong>
-              </div>
-              <div>
-                <span>Momentum</span>
-                <strong>{{ marketContext()?.technical?.momentumScore | number:'1.0-0' }}</strong>
-              </div>
-              <div>
-                <span>Buy/Sell</span>
-                <strong>{{ marketContext()?.microstructure?.buySellRatio | number:'1.2-2' }}</strong>
-              </div>
-              <div>
-                <span>RSI</span>
-                <strong>{{ marketContext()?.technical?.rsi14 | number:'1.1-1' }}</strong>
-              </div>
-              <div class="signal-score-card">
-                <span>Signal score</span>
-                <strong [class]="marketContext()!.signal.bias === 'BULLISH' ? 'positive' : marketContext()!.signal.bias === 'BEARISH' ? 'negative' : 'neutral'">
-                  {{ marketContext()!.signal.score | number:'1.0-0' }}
-                </strong>
-                <small>{{ marketContext()!.signal.bias }} · {{ marketContext()!.signal.riskLevel }} risk</small>
-              </div>
+        <article class="panel ai-insight-panel">
+          <div class="panel-header compact">
+            <div>
+              <p class="eyebrow">AI INSIGHT</p>
+              <h3>Ringkasan tambahan</h3>
             </div>
-          } @else {
-            <p>
-              Waiting for enough live market data to assemble the AI context.
-            </p>
-          }
-
-          @if (aiStatus()) {
-            <div class="ai-admin-status"
-                 [class.ready]="aiStatus()!.state === 'READY' || aiStatus()!.state === 'MOCK'"
-                 [class.warn]="aiStatus()!.state === 'MISSING_API_KEY' || aiStatus()!.state === 'RATE_LIMITED' || aiStatus()!.state === 'CONFIGURED_UNVERIFIED'"
-                 [class.error]="aiStatus()!.state === 'AUTH_ERROR' || aiStatus()!.state === 'ERROR'">
-              <div>
-                <span>AI ENGINE</span>
-                <strong>{{ aiStatus()!.state }}</strong>
-              </div>
-              <p>{{ aiStatus()!.message }}</p>
-              <small>
-                {{ aiStatus()!.model }}
-                @if (aiStatus()!.lastHttpStatus) {
-                  · HTTP {{ aiStatus()!.lastHttpStatus }}
-                }
-              </small>
-            </div>
-          }
-
-          @if (aiGuardrails()) {
-            <div class="ai-guardrail-grid">
-              <div>
-                <span>Auto trigger threshold</span>
-                <strong>|score| ≥ {{ aiGuardrails()!.minimumAutomaticSignalScore | number:'1.0-0' }}</strong>
-              </div>
-              <div>
-                <span>Auto calls / hour</span>
-                <strong>{{ aiGuardrails()!.automaticCallsThisHour }} / {{ aiGuardrails()!.maxAutomaticCallsPerHour }}</strong>
-              </div>
-              <div>
-                <span>Auto calls / day</span>
-                <strong>{{ aiGuardrails()!.automaticCallsToday }} / {{ aiGuardrails()!.maxAutomaticCallsPerDay }}</strong>
-              </div>
-              <div>
-                <span>Current signal</span>
-                <strong>
-                  @if (marketContext()?.signal?.triggerEligible) {
-                    ELIGIBLE
-                  } @else {
-                    WAIT
-                  }
-                </strong>
-              </div>
-            </div>
-          }
-
-          <div class="ai-actions">
-            <button
-              type="button"
-              class="analyze-button"
-              [disabled]="aiRunning() || (aiStatus()?.state !== 'READY' && aiStatus()?.state !== 'CONFIGURED_UNVERIFIED' && aiStatus()?.state !== 'MOCK')"
-              (click)="runAiAnalysis()">
-              @if (aiRunning()) {
-                Analyzing…
-              } @else if (aiStatus()?.state === 'MOCK') {
-                Run mock analysis
-              } @else if (aiStatus()?.state === 'MISSING_API_KEY') {
-                API key required
-              } @else if (aiStatus()?.state === 'CONFIGURED_UNVERIFIED') {
-                Verify AI connection
-              } @else if (aiStatus()?.state === 'AUTH_ERROR') {
-                Fix API key
-              } @else if (aiStatus()?.state === 'RATE_LIMITED') {
-                AI rate limited
-              } @else if (aiStatus()?.state === 'DISABLED') {
-                AI disabled
-              } @else {
-                Analyze now
-              }
-            </button>
-
-
+            @if (aiAnalysis()) {
+              <span
+                class="insight-bias"
+                [class.positive]="aiAnalysis()!.marketBias === 'BULLISH'"
+                [class.negative]="aiAnalysis()!.marketBias === 'BEARISH'">
+                {{ aiAnalysis()!.marketBias }}
+              </span>
+            }
           </div>
-
-
 
           @if (aiAnalysis()) {
-            <div class="analysis-result">
-              <div class="analysis-result-head">
-                <span [class]="aiAnalysis()!.marketBias === 'BULLISH' ? 'positive' : aiAnalysis()!.marketBias === 'BEARISH' ? 'negative' : 'neutral'">
-                  {{ aiAnalysis()!.marketBias }}
-                </span>
+            <div class="ai-insight-body">
+              <div class="ai-insight-confidence">
+                <span>Confidence</span>
                 <strong>{{ aiAnalysis()!.confidence }}%</strong>
               </div>
-
               <p>{{ aiAnalysis()!.summary }}</p>
-
-              @if (aiAnalysis()!.supportingFactors.length) {
-                <div class="analysis-factors">
-                  <span>Supporting</span>
-                  @for (factor of aiAnalysis()!.supportingFactors; track factor) {
-                    <small>+ {{ factor }}</small>
-                  }
-                </div>
-              }
-
-              @if (aiAnalysis()!.riskFactors.length) {
-                <div class="analysis-factors risks">
-                  <span>Risks</span>
-                  @for (risk of aiAnalysis()!.riskFactors; track risk) {
-                    <small>− {{ risk }}</small>
-                  }
-                </div>
-              }
             </div>
+          } @else if (marketContext()) {
+            <div class="ai-insight-body">
+              <div class="ai-insight-confidence">
+                <span>Market bias</span>
+                <strong>{{ marketContext()!.signal.bias }}</strong>
+              </div>
+              <p>
+                CoinMind sudah merangkum market. Insight AI penuh akan muncul setelah analisis tersedia.
+              </p>
+            </div>
+          } @else {
+            <div class="empty-usage">Menunggu data untuk membuat insight.</div>
           }
 
-          <div class="pipeline">
-            <div class="done"><span>01</span> Market feed</div>
-            <div class="done"><span>02</span> Historical candles</div>
-            <div class="done"><span>03</span> Indicators</div>
-            <div class="active"><span>04</span> AI provider</div>
-          </div>
+          <details class="ai-advanced-details">
+            <summary>AI & system details</summary>
+            <div class="ai-advanced-content">
+              @if (aiStatus()) {
+                <div>
+                  <span>Engine</span>
+                  <strong>{{ aiStatus()!.state }}</strong>
+                </div>
+                <div>
+                  <span>Model</span>
+                  <strong>{{ aiStatus()!.model }}</strong>
+                </div>
+              }
 
-          <div class="provider-status">
-            <span>Provider</span>
-            <strong>{{ aiAnalysis()?.model ?? aiStatus()?.model ?? 'none' }}</strong>
-          </div>
+              @if (aiGuardrails()) {
+                <div>
+                  <span>Auto trigger</span>
+                  <strong>|score| ≥ {{ aiGuardrails()!.minimumAutomaticSignalScore | number:'1.0-0' }}</strong>
+                </div>
+                <div>
+                  <span>Auto calls today</span>
+                  <strong>{{ aiGuardrails()!.automaticCallsToday }} / {{ aiGuardrails()!.maxAutomaticCallsPerDay }}</strong>
+                </div>
+              }
+
+              <button
+                type="button"
+                class="analyze-button"
+                [disabled]="aiRunning() || (aiStatus()?.state !== 'READY' && aiStatus()?.state !== 'CONFIGURED_UNVERIFIED' && aiStatus()?.state !== 'MOCK')"
+                (click)="runAiAnalysis()">
+                @if (aiRunning()) {
+                  Analyzing…
+                } @else if (aiStatus()?.state === 'MOCK') {
+                  Run test analysis
+                } @else {
+                  Analyze now
+                }
+              </button>
+            </div>
+          </details>
         </article>
 
         <article class="panel evaluation-summary-panel">

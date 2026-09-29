@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import {
   Candlestick,
   AiAnalysisResult,
+  AiDecisionReview,
   AiAnalysisHistoryItem,
   AiEngineStatus,
   AiEvaluationSummary,
@@ -83,6 +84,13 @@ export class MarketApiService {
   triggerAiAnalysis(symbol: string, interval: string): Observable<AiAnalysisResult> {
     return this.http.post<AiAnalysisResult>(
       `/api/v1/ai/analysis/${symbol}/${interval}`,
+      {}
+    );
+  }
+
+  reviewTradeDecision(symbol: string): Observable<AiDecisionReview> {
+    return this.http.post<AiDecisionReview>(
+      `/api/v1/ai/decision-review/${symbol}`,
       {}
     );
   }

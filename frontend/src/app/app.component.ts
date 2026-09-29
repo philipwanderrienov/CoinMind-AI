@@ -18,7 +18,8 @@ import {
   NewsSentimentSummary,
   OrderBookSnapshot,
   TechnicalIndicators,
-  TickerSnapshot
+  TickerSnapshot,
+  TradeSetup
 } from './core/models/market.models';
 import { MarketApiService } from './core/services/market-api.service';
 import { PushNotificationService } from './core/services/push-notification.service';
@@ -62,6 +63,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly orderBooks = signal<Record<string, OrderBookSnapshot>>({});
   readonly microstructure = signal<MarketMicrostructure | null>(null);
   readonly indicators = signal<TechnicalIndicators | null>(null);
+  readonly tradeSetup = signal<TradeSetup | null>(null);
   readonly marketContext = signal<MarketContext | null>(null);
   readonly aiAnalysis = signal<AiAnalysisResult | null>(null);
   readonly aiHistory = signal<AiAnalysisHistoryItem[]>([]);
@@ -132,6 +134,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadMicrostructure();
     this.loadIndicators();
     this.loadMarketContext();
+    this.loadTradeSetup();
     this.loadLatestAiAnalysis();
     this.loadAiHistory();
     this.loadAiEvaluationSummary();
@@ -155,6 +158,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadMicrostructure();
     this.loadIndicators();
     this.loadMarketContext();
+    this.loadTradeSetup();
     this.loadLatestAiAnalysis();
     this.loadAiHistory();
     this.loadAiEvaluationSummary();
@@ -166,6 +170,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadHistory();
     this.loadIndicators();
     this.loadMarketContext();
+    this.loadTradeSetup();
     this.loadLatestAiAnalysis();
     this.loadAiHistory();
     this.loadAiEvaluationSummary();
@@ -446,6 +451,16 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadTradeSetup(): void {
+    this.marketApi.getTradeSetup(
+      this.selectedSymbol(),
+      this.selectedInterval()
+    ).subscribe({
+      next: setup => this.tradeSetup.set(setup),
+      error: () => this.tradeSetup.set(null)
+    });
+  }
+
   private loadIndicators(): void {
     this.subscriptions.add(
       this.marketApi.getIndicators(
@@ -561,6 +576,7 @@ export class AppComponent implements OnInit, OnDestroy {
             ) {
               this.loadIndicators();
               this.loadMarketContext();
+              this.loadTradeSetup();
 
               if (['15m', '1h', '4h', '1d'].includes(candle.interval)) {
                 setTimeout(() => this.loadLatestAiAnalysis(), 2500);

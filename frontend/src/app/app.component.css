@@ -2335,3 +2335,64 @@ main {
     border-radius: 16px;
   }
 }
+
+
+/* Light surfaces for advanced/admin cards */
+.ai-admin-status,
+.usage-live.disabled,
+.evaluation-summary-grid > div:not(.evaluation-empty),
+.bias-performance > div,
+.trade-action {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.model-performance {
+  background: #fbfcfe;
+  border-color: #e3e9f1;
+}
+
+.trade-action.buy {
+  color: #087d60;
+  background: #ecfbf6;
+  border-color: #caeee2;
+}
+
+.trade-action.sell {
+  color: #c94159;
+  background: #fff2f4;
+  border-color: #f5d5db;
+}
+
+.secure-access-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 0 0 10px;
+  padding: 10px 14px;
+  border: 1px solid #f0dfb7;
+  border-radius: 13px;
+  background: #fffaf0;
+  color: #77571b;
+  font-size: 10px;
+}
+
+.secure-access-banner strong {
+  display: block;
+  margin-bottom: 2px;
+  color: #654711;
+  font-size: 10px;
+}
+
+.secure-access-banner span {
+  color: #8a6a2d;
+  line-height: 1.4;
+}
+
+@media (max-width: 760px) {
+  .secure-access-banner {
+    padding: 8px 10px;
+    font-size: 9px;
+  }
+}

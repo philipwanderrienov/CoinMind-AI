@@ -4463,3 +4463,158 @@ main {
     min-height: 72px;
   }
 }
+
+
+/* ===== AI decision review ===== */
+.ai-decision-review {
+  margin: 0 18px 12px;
+  padding: 12px;
+  border: 1px solid #e3e9f1;
+  border-radius: 12px;
+  background: #fbfcfe;
+}
+
+.ai-decision-review-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ai-decision-review-head > div {
+  display: grid;
+  gap: 3px;
+}
+
+.ai-decision-review-head span {
+  color: #7565e8;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.ai-decision-review-head strong {
+  color: #2b3950;
+  font-size: 11px;
+}
+
+.ai-decision-review-head button {
+  min-height: 32px;
+  padding: 0 11px;
+  border: 1px solid rgba(109, 93, 252, .28);
+  border-radius: 9px;
+  background: #f3f0ff;
+  color: #5b4bd1;
+  font: inherit;
+  font-size: 8px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.ai-decision-review-head button:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+.ai-review-empty {
+  margin-top: 9px;
+  color: #7d899a;
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+.ai-review-result {
+  margin-top: 10px;
+  display: grid;
+  gap: 9px;
+}
+
+.ai-review-verdict {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ai-review-verdict span {
+  color: #8793a5;
+  font-size: 7px;
+}
+
+.ai-review-verdict strong {
+  color: #3a4860;
+  font-size: 11px;
+}
+
+.ai-review-verdict small {
+  color: #8793a5;
+  font-size: 7px;
+}
+
+.ai-review-result > p {
+  margin: 0;
+  color: #58677c;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.ai-review-factors {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.ai-review-factors > div {
+  padding: 8px;
+  border: 1px solid #e8edf4;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.ai-review-factors span,
+.ai-review-factors small {
+  display: block;
+}
+
+.ai-review-factors span {
+  margin-bottom: 4px;
+  color: #7c899b;
+  font-size: 7px;
+}
+
+.ai-review-factors small {
+  color: #5f6f83;
+  font-size: 7px;
+  line-height: 1.4;
+  margin-top: 3px;
+}
+
+.ai-review-meta {
+  color: #9aa4b2;
+  font-size: 6.5px;
+}
+
+@media (max-width: 760px) {
+  .ai-decision-review {
+    margin: 0 10px 8px;
+    padding: 9px;
+  }
+
+  .ai-decision-review-head {
+    gap: 8px;
+  }
+
+  .ai-decision-review-head strong {
+    font-size: 9px;
+  }
+
+  .ai-decision-review-head button {
+    min-height: 29px;
+    padding: 0 8px;
+    font-size: 7px;
+  }
+
+  .ai-review-factors {
+    grid-template-columns: 1fr;
+  }
+}

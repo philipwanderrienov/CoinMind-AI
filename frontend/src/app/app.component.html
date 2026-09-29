@@ -1,37 +1,7 @@
 <div class="app-shell">
   <header class="topbar">
     <div class="brand">
-      <div class="brand-mark">CM  @if (showNotificationOnboarding()) {
-    <div class="notification-onboarding-backdrop">
-      <section class="notification-onboarding" role="dialog" aria-modal="true">
-        <div class="notification-icon">CM</div>
-        <p class="eyebrow">MOBILE NOTIFICATIONS</p>
-        <h3>Get CoinMind alerts on your phone</h3>
-        <p>
-          Allow notifications so installed CoinMind can show trade signals,
-          market alerts and important system events in your phone notification bar,
-          even when the app is not open.
-        </p>
-
-        <div class="notification-onboarding-actions">
-          <button
-            type="button"
-            class="notification-primary"
-            [disabled]="pushStatus() === 'enabling'"
-            (click)="enablePushNotifications()">
-            {{ pushStatus() === 'enabling' ? 'Enabling…' : 'Allow notifications' }}
-          </button>
-          <button
-            type="button"
-            class="notification-secondary"
-            (click)="dismissNotificationOnboarding()">
-            Not now
-          </button>
-        </div>
-      </section>
-    </div>
-  }
-</div>
+      <div class="brand-mark">CM</div>
       <div>
         <div class="brand-name">CoinMind <span>AI</span></div>
         <div class="brand-tagline">Crypto market intelligence</div>
@@ -74,9 +44,7 @@
            [class.offline]="connectionState() === 'offline'">
         <span class="status-dot"></span>
         <div>
-          <strong>
-            Market Data {{ marketUiStatus() }}
-          </strong>
+          <strong>Market Data {{ marketUiStatus() }}</strong>
           <small>
             @if (marketFeedHealth()?.status === 'DEGRADED') {
               Backend feed degraded ·
@@ -101,8 +69,82 @@
           </small>
         </div>
       </div>
+
+      <div class="connection notification-status"
+           [class.live]="pushStatus() === 'enabled'"
+           [class.stale]="pushStatus() === 'permission-required' || pushStatus() === 'install-required'"
+           [class.offline]="pushStatus() === 'denied' || pushStatus() === 'disabled' || pushStatus() === 'unsupported' || pushStatus() === 'error'">
+        <span class="status-dot"></span>
+        <div>
+          <strong>
+            @if (pushStatus() === 'enabled') {
+              Notifications ON
+            } @else if (pushStatus() === 'denied') {
+              Notifications BLOCKED
+            } @else if (pushStatus() === 'permission-required') {
+              Notifications READY
+            } @else if (pushStatus() === 'install-required') {
+              Browser mode
+            } @else if (pushStatus() === 'disabled') {
+              Notifications OFF
+            } @else if (pushStatus() === 'unsupported') {
+              Notifications UNSUPPORTED
+            } @else {
+              Checking notifications
+            }
+          </strong>
+          <small>
+            @if (pushStatus() === 'enabled') {
+              Following this device's notification settings
+            } @else if (pushStatus() === 'denied') {
+              Re-enable from your phone's app notification settings
+            } @else if (pushStatus() === 'permission-required') {
+              Installed app · device permission not decided yet
+            } @else if (pushStatus() === 'install-required') {
+              Install CoinMind to enable device notifications
+            } @else if (pushStatus() === 'disabled') {
+              Web Push is not configured on the server
+            } @else if (pushStatus() === 'unsupported') {
+              This browser does not support PWA notifications
+            } @else {
+              Reading device permission
+            }
+          </small>
+        </div>
+      </div>
     </div>
   </header>
+
+  @if (showNotificationOnboarding()) {
+    <div class="notification-onboarding-backdrop">
+      <section class="notification-onboarding" role="dialog" aria-modal="true">
+        <div class="notification-icon">CM</div>
+        <p class="eyebrow">DEVICE NOTIFICATIONS</p>
+        <h3>Allow CoinMind notifications</h3>
+        <p>
+          CoinMind uses your phone's notification permission. After you allow it,
+          sound, vibration, lock-screen visibility and blocking are controlled from
+          your device settings.
+        </p>
+
+        <div class="notification-onboarding-actions">
+          <button
+            type="button"
+            class="notification-primary"
+            [disabled]="pushStatus() === 'enabling'"
+            (click)="enablePushNotifications()">
+            {{ pushStatus() === 'enabling' ? 'Opening permission…' : 'Continue' }}
+          </button>
+          <button
+            type="button"
+            class="notification-secondary"
+            (click)="dismissNotificationOnboarding()">
+            Not now
+          </button>
+        </div>
+      </section>
+    </div>
+  }
 
   <main>
     <section class="hero-row">

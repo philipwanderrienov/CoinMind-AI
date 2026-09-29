@@ -3663,3 +3663,139 @@ main {
     padding-top: 6px;
   }
 }
+
+
+/* ===== Sticky primary controls ===== */
+.sticky-control-shell {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.98), rgba(247,249,253,.96));
+  border-bottom: 1px solid #e4eaf2;
+  box-shadow: 0 10px 28px rgba(40, 56, 82, .07);
+  backdrop-filter: blur(18px);
+}
+
+.sticky-control-shell .topbar {
+  position: static;
+  z-index: auto;
+  border-bottom: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.sticky-controls-inner {
+  width: min(1380px, 94vw);
+  margin: 0 auto;
+  padding: 7px 0 9px;
+}
+
+.sticky-control-shell .dashboard-nav {
+  position: static;
+  top: auto;
+  z-index: auto;
+  margin-bottom: 7px;
+}
+
+.sticky-control-shell .ticker-grid {
+  margin: 0;
+}
+
+@media (min-width: 761px) {
+  .sticky-control-shell .topbar {
+    height: 62px;
+  }
+
+  .sticky-control-shell .status-strip-inner {
+    min-height: 32px;
+  }
+
+  .sticky-controls-inner {
+    display: grid;
+    grid-template-columns: minmax(360px, .72fr) minmax(540px, 1.28fr);
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .sticky-control-shell .dashboard-nav {
+    margin: 0;
+    height: 100%;
+  }
+
+  .sticky-control-shell .ticker-grid {
+    gap: 8px;
+  }
+
+  .sticky-control-shell .ticker-card {
+    padding: 10px 12px;
+    border-radius: 12px;
+    box-shadow: none;
+  }
+
+  .sticky-control-shell .ticker-price {
+    margin: 7px 0 3px;
+    font-size: 17px;
+  }
+
+  .sticky-control-shell .ticker-head strong {
+    font-size: 10px;
+  }
+
+  .sticky-control-shell .asset-icon {
+    width: 25px;
+    height: 25px;
+    border-radius: 8px;
+  }
+
+  .sticky-control-shell .live-pill {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .sticky-control-shell {
+    box-shadow: 0 7px 18px rgba(40, 56, 82, .065);
+  }
+
+  .sticky-control-shell .topbar {
+    min-height: 52px;
+    padding: 8px 12px 6px;
+  }
+
+  .sticky-control-shell .status-strip-inner {
+    min-height: 34px;
+    padding: 4px 0;
+  }
+
+  .sticky-controls-inner {
+    width: calc(100% - 20px);
+    padding: 5px 0 7px;
+  }
+
+  .sticky-control-shell .dashboard-nav {
+    margin-bottom: 5px;
+  }
+
+  .sticky-control-shell .ticker-grid {
+    margin: 0;
+  }
+
+  .sticky-control-shell .ticker-card {
+    min-height: 43px;
+    padding: 5px 7px;
+  }
+
+  .sticky-control-shell .ticker-price {
+    margin-top: 2px;
+    font-size: 10.5px;
+  }
+
+  .sticky-control-shell .ticker-meta {
+    margin-top: 1px;
+  }
+
+  main {
+    padding-top: 8px;
+  }
+}

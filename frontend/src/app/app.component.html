@@ -167,6 +167,18 @@
       </div>
     </section>
 
+    @if (pushStatus() === 'secure-context-required') {
+      <div class="secure-access-banner">
+        <div>
+          <strong>Notifikasi HP membutuhkan akses HTTPS</strong>
+          <span>
+            Kamu sedang membuka CoinMind lewat koneksi HTTP. Gunakan alamat HTTPS CoinMind
+            agar instalasi PWA dan notifikasi perangkat bisa aktif.
+          </span>
+        </div>
+      </div>
+    }
+
     <section class="workspace-grid">
       <article class="panel chart-panel">
         <div class="panel-header">

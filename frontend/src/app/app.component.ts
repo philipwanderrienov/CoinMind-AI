@@ -22,7 +22,7 @@ import {
   TradeSetup
 } from './core/models/market.models';
 import { MarketApiService } from './core/services/market-api.service';
-import { PushNotificationService } from './core/services/push-notification.service';
+import { PushDeviceStatus, PushNotificationService } from './core/services/push-notification.service';
 import { MarketChartComponent } from './features/market-chart/market-chart.component';
 import { formatCompact, formatPrice } from './shared/price-format';
 
@@ -75,7 +75,8 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly aiUsage = signal<AiUsageSummary | null>(null);
   readonly billingStatus = signal<BillingStatus | null>(null);
   readonly aiRunning = signal(false);
-  readonly pushStatus = signal<'idle' | 'enabling' | 'enabled' | 'unsupported' | 'disabled' | 'denied' | 'error'>('idle');
+  readonly pushStatus = signal<PushDeviceStatus | 'checking' | 'enabling' | 'error'>('checking');
+  readonly showNotificationOnboarding = signal(false);
   readonly showEma = signal(false);
   readonly showRsi = signal(false);
   readonly showMacd = signal(false);
@@ -143,6 +144,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadNews();
     this.startAiUsageMonitoring();
     this.loadBillingStatus();
+    this.initializePushNotifications();
     this.connectRealtime();
     this.startRealtimeWatchdog();
   }
@@ -228,10 +230,15 @@ export class AppComponent implements OnInit, OnDestroy {
     try {
       const status = await this.pushNotifications.enable();
       this.pushStatus.set(status);
-      this.loadBillingStatus();
+      this.showNotificationOnboarding.set(false);
     } catch {
       this.pushStatus.set('error');
     }
+  }
+
+  dismissNotificationOnboarding(): void {
+    this.showNotificationOnboarding.set(false);
+    sessionStorage.setItem('coinmind-notification-onboarding-dismissed', '1');
   }
 
   formatPrice(value: number | null | undefined): string {
@@ -251,6 +258,23 @@ export class AppComponent implements OnInit, OnDestroy {
       return 'neutral';
     }
     return value > 0 ? 'positive' : 'negative';
+  }
+
+  private async initializePushNotifications(): Promise<void> {
+    try {
+      const status = await this.pushNotifications.initialize();
+      this.pushStatus.set(status);
+
+      const dismissed =
+        sessionStorage.getItem('coinmind-notification-onboarding-dismissed') === '1';
+
+      this.showNotificationOnboarding.set(
+        status === 'permission-required' && !dismissed
+      );
+    } catch {
+      this.pushStatus.set('error');
+      this.showNotificationOnboarding.set(false);
+    }
   }
 
   private startMarketFeedHealthCheck(): void {

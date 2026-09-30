@@ -8321,3 +8321,46 @@ main {
     font-size: 11px;
   }
 }
+
+
+/* ===== Navigation interaction hardening ===== */
+.dashboard-nav a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dashboard-nav a:not(.active),
+.dashboard-nav a:not(.active):hover,
+.dashboard-nav a:not(.active):focus,
+.dashboard-nav a:not(.active):focus-visible,
+.dashboard-nav a:not(.active):active {
+  background: transparent;
+  box-shadow: none;
+}
+
+.dashboard-nav a:not(.active):focus-visible {
+  outline: 2px solid rgba(109, 93, 252, .28);
+  outline-offset: -2px;
+}
+
+.dashboard-nav a.active,
+.dashboard-nav a.active:hover,
+.dashboard-nav a.active:focus,
+.dashboard-nav a.active:focus-visible,
+.dashboard-nav a.active:active {
+  color: #594bd4;
+  background: #f2f0ff;
+  box-shadow: inset 0 0 0 1px rgba(109, 93, 252, .12);
+  outline: none;
+}
+
+@media (max-width: 760px) {
+  .mobile-sticky-dashboard-nav {
+    justify-content: stretch;
+  }
+
+  .mobile-sticky-dashboard-nav a {
+    flex: 1 1 20%;
+    min-width: 0;
+    font-size: 11px;
+  }
+}

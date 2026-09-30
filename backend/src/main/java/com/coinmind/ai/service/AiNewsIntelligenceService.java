@@ -7,13 +7,20 @@ import com.coinmind.news.service.NewsService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class AiNewsIntelligenceService {
 
+    private static final Duration FRESHNESS = Duration.ofHours(2);
+
     private final NewsService newsService;
     private final AiProvider aiProvider;
+    private final Map<String, AiNewsIntelligence> latestBySymbol = new ConcurrentHashMap<>();
 
     public AiNewsIntelligenceService(
             NewsService newsService,
@@ -42,6 +49,23 @@ public class AiNewsIntelligenceService {
             ));
         }
 
-        return aiProvider.analyzeNews(symbol.toUpperCase(), articles);
+        String normalized = symbol.toUpperCase();
+
+        return aiProvider.analyzeNews(normalized, articles)
+                .doOnNext(result -> latestBySymbol.put(normalized, result));
+    }
+
+    public AiNewsIntelligence latestFresh(String symbol) {
+        AiNewsIntelligence intelligence = latestBySymbol.get(symbol.toUpperCase());
+
+        if (intelligence == null || intelligence.analyzedAt() == null) {
+            return null;
+        }
+
+        return intelligence.analyzedAt()
+                .plus(FRESHNESS)
+                .isAfter(Instant.now())
+                ? intelligence
+                : null;
     }
 }

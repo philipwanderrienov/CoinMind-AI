@@ -51,6 +51,27 @@ export interface MarketMicrostructure {
 }
 
 
+export interface MarketActivityProfile {
+  symbol: string;
+  timezone: string;
+  sampleDays: number;
+  currentHour: number;
+  currentActivity: 'LOW' | 'MEDIUM' | 'HIGH' | 'VERY_HIGH';
+  currentScore: number;
+  peakHours: number[];
+  hours: Array<{
+    hour: number;
+    activityScore: number;
+    activityLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'VERY_HIGH';
+    averageQuoteVolume: number;
+    averageTradeCount: number;
+    averageVolatilityPct: number;
+    samples: number;
+  }>;
+  calculatedAt: string;
+}
+
+
 export interface TechnicalIndicators {
   symbol: string;
   interval: string;

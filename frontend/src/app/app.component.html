@@ -751,6 +751,57 @@
           </div>
         </article>
 
+        <article class="panel prediction-market-panel">
+          <div class="panel-header compact">
+            <div>
+              <p class="eyebrow">PREDICTION MARKET</p>
+              <h3>Polymarket signal</h3>
+            </div>
+            @if (polymarketIntelligence()) {
+              <span
+                class="prediction-bias"
+                [class.positive]="polymarketIntelligence()!.bias === 'BULLISH'"
+                [class.negative]="polymarketIntelligence()!.bias === 'BEARISH'">
+                {{ polymarketIntelligence()!.bias }}
+              </span>
+            }
+          </div>
+
+          @if (polymarketIntelligence()) {
+            <div class="prediction-market-grid">
+              <div>
+                <span>Confidence</span>
+                <strong>{{ polymarketIntelligence()!.confidence }}%</strong>
+              </div>
+              <div>
+                <span>Importance</span>
+                <strong>{{ polymarketIntelligence()!.importance }}%</strong>
+              </div>
+              <div>
+                <span>Markets</span>
+                <strong>{{ polymarketIntelligence()!.marketCount }}</strong>
+              </div>
+              <div>
+                <span>Avg 24h Δ</span>
+                <strong
+                  [class.positive]="polymarketIntelligence()!.averageProbabilityChange > 0"
+                  [class.negative]="polymarketIntelligence()!.averageProbabilityChange < 0">
+                  {{ (polymarketIntelligence()!.averageProbabilityChange * 100) | number:'1.1-2' }}%
+                </strong>
+              </div>
+            </div>
+
+            @if (polymarketIntelligence()!.topEvent) {
+              <div class="prediction-top-event">
+                <span>Top event</span>
+                <strong>{{ polymarketIntelligence()!.topEvent }}</strong>
+              </div>
+            }
+          } @else {
+            <div class="empty-usage">Menunggu data prediction market.</div>
+          }
+        </article>
+
         <article class="panel technical-context-panel">
           <div class="panel-header compact">
             <div>

@@ -91,6 +91,13 @@
         Signals
       </a>
       <a
+        href="#market-detail"
+        [class.active]="activeSection() === 'market-detail'"
+        [attr.aria-current]="activeSection() === 'market-detail' ? 'page' : null"
+        (click)="activateSection('market-detail')">
+        Market
+      </a>
+      <a
         href="#news"
         [class.active]="activeSection() === 'news'"
         [attr.aria-current]="activeSection() === 'news' ? 'page' : null"
@@ -774,7 +781,7 @@
         </article>
 
             <aside class="side-stack">
-        <section class="advanced-market-details market-details-expanded">
+        <section class="advanced-market-details market-details-expanded" id="market-detail">
           <div class="market-details-header">
             <div>
               <strong>Detail market</strong>

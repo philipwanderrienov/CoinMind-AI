@@ -859,6 +859,75 @@
             <div><span>Negative</span><strong class="negative">{{ newsSentiment()?.negativeCount ?? 0 }}</strong></div>
           </div>
 
+          <section class="news-ai-intelligence">
+            <div class="news-ai-head">
+              <div>
+                <span>AI NEWS INTELLIGENCE</span>
+                <strong>Impact berita ke {{ symbolLabel(selectedSymbol()) }}</strong>
+              </div>
+              <button
+                type="button"
+                [disabled]="aiNewsIntelligenceRunning() || !news().length"
+                (click)="runAiNewsIntelligence()">
+                {{ aiNewsIntelligenceRunning() ? 'Menganalisis…' : (aiNewsIntelligence() ? 'Analisis ulang' : 'Analisis dengan AI') }}
+              </button>
+            </div>
+
+            @if (aiNewsIntelligence()) {
+              <div class="news-ai-summary">
+                <div>
+                  <span>Direction</span>
+                  <strong
+                    [class.positive]="aiNewsIntelligence()!.direction === 'BULLISH'"
+                    [class.negative]="aiNewsIntelligence()!.direction === 'BEARISH'">
+                    {{ aiNewsIntelligence()!.direction }}
+                  </strong>
+                </div>
+                <div>
+                  <span>Importance</span>
+                  <strong>{{ aiNewsIntelligence()!.importance }}%</strong>
+                </div>
+                <div>
+                  <span>Confidence</span>
+                  <strong>{{ aiNewsIntelligence()!.confidence }}%</strong>
+                </div>
+                <div>
+                  <span>Horizon</span>
+                  <strong>{{ aiNewsIntelligence()!.horizon }}</strong>
+                </div>
+              </div>
+
+              <p class="news-ai-copy">{{ aiNewsIntelligence()!.summary }}</p>
+
+              @if (aiNewsIntelligence()!.articleImpacts.length) {
+                <div class="news-ai-impact-list">
+                  @for (impact of aiNewsIntelligence()!.articleImpacts; track impact.articleId) {
+                    <div>
+                      <div>
+                        <strong>{{ impact.title }}</strong>
+                        <small>{{ impact.horizon }} · importance {{ impact.importance }}%</small>
+                      </div>
+                      <span
+                        [class.positive]="impact.direction === 'BULLISH'"
+                        [class.negative]="impact.direction === 'BEARISH'">
+                        {{ impact.direction }}
+                      </span>
+                      <p>{{ impact.reason }}</p>
+                    </div>
+                  }
+                </div>
+              }
+
+              <div class="news-ai-meta">
+                {{ aiNewsIntelligence()!.model }} · {{ aiNewsIntelligence()!.analyzedAt | date:'HH:mm:ss' }}
+              </div>
+            } @else {
+              <p class="news-ai-empty">
+                Jalankan AI untuk menilai dampak, tingkat kepentingan, confidence, dan horizon berita paling relevan.
+              </p>
+            }
+          </section>
+
           <div class="headline-list">
             @for (article of news().slice(0, 5); track article.id) {
               <div class="headline">

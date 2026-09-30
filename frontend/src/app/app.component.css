@@ -6007,3 +6007,293 @@ main {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* ===== Mobile readability pass v2 ===== */
+@media (max-width: 760px) {
+  body,
+  .app-shell {
+    font-size: 15px;
+  }
+
+  .dashboard-nav {
+    gap: 4px;
+    padding: 5px;
+  }
+
+  .dashboard-nav a {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 38px;
+    padding: 10px 6px;
+    font-size: 13px;
+    line-height: 1;
+  }
+
+  .status-item {
+    font-size: 12px !important;
+    font-weight: 700;
+  }
+
+  .secondary-details > summary {
+    min-height: 64px;
+    padding: 14px 16px;
+  }
+
+  .secondary-details > summary strong,
+  .advanced-market-details > summary strong {
+    font-size: 14px;
+  }
+
+  .secondary-details > summary span,
+  .advanced-market-details > summary span,
+  .details-hint {
+    font-size: 12px !important;
+    line-height: 1.35;
+  }
+
+  .sticky-control-shell .ticker-card {
+    min-height: 76px;
+    padding: 10px;
+  }
+
+  .sticky-control-shell .ticker-head strong {
+    font-size: 14px;
+  }
+
+  .sticky-control-shell .ticker-head small {
+    font-size: 11px;
+  }
+
+  .sticky-control-shell .ticker-price {
+    margin: 6px 0 3px;
+    font-size: 16px;
+    line-height: 1.15;
+  }
+
+  .sticky-control-shell .ticker-meta {
+    font-size: 11px;
+    line-height: 1.2;
+  }
+
+  .panel-header h2,
+  .panel-header h3,
+  .market-title h2,
+  .news-panel h3,
+  .ai-insight-panel h3,
+  .usage-panel h3 {
+    font-size: 19px;
+    line-height: 1.25;
+  }
+
+  .eyebrow {
+    font-size: 12px !important;
+    line-height: 1.2;
+  }
+
+  .sentiment-badge,
+  .insight-bias {
+    padding: 6px 9px;
+    font-size: 12px;
+  }
+
+  .news-summary {
+    gap: 8px;
+    padding: 10px 14px 16px;
+  }
+
+  .news-summary > div {
+    min-height: 72px;
+    padding: 12px 8px;
+    display: grid;
+    align-content: center;
+  }
+
+  .news-summary span {
+    font-size: 12px;
+    margin-bottom: 5px;
+  }
+
+  .news-summary strong {
+    font-size: 18px;
+  }
+
+  .headline-list {
+    padding: 0 14px 16px;
+  }
+
+  .headline {
+    gap: 10px;
+    padding: 15px 0;
+    align-items: start;
+  }
+
+  .headline strong {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .headline span {
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .headline-scores {
+    gap: 5px;
+    font-size: 12px;
+  }
+
+  .headline-scores span,
+  .headline-scores .relevance-score {
+    font-size: 12px;
+  }
+
+  .ai-insight-body {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 10px 14px 14px;
+  }
+
+  .ai-insight-confidence {
+    min-width: 0;
+    padding: 13px;
+  }
+
+  .ai-insight-confidence span {
+    font-size: 12px;
+  }
+
+  .ai-insight-confidence strong {
+    font-size: 22px;
+  }
+
+  .ai-insight-body p,
+  .ai-insight-body small,
+  .ai-advanced-details summary,
+  .analysis-result > p,
+  .analysis-factors small {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .analysis-result-head span,
+  .analysis-factors > span {
+    font-size: 12px;
+  }
+
+  .analysis-result-head strong {
+    font-size: 18px;
+  }
+
+  .chart-market-condition-head > span,
+  .activity-now {
+    font-size: 11px;
+  }
+
+  .chart-condition-grid span,
+  .activity-summary span,
+  .decision-context-summary span,
+  .decision-context-summary small,
+  .decision-timeframe span,
+  .decision-timeframe small,
+  .trade-price-main span,
+  .trade-price-status span,
+  .trade-price-main small,
+  .trade-price-status small,
+  .trade-levels span,
+  .trade-levels small {
+    font-size: 12px;
+  }
+
+  .chart-condition-grid strong,
+  .activity-summary strong,
+  .decision-timeframe strong,
+  .trade-price-status strong {
+    font-size: 15px;
+  }
+
+  .activity-note,
+  .chart-condition-empty,
+  .chart-footer {
+    font-size: 12px;
+  }
+
+  .trade-overview span {
+    font-size: 12px;
+  }
+
+  .trade-overview strong {
+    font-size: 18px;
+  }
+
+  .ai-decision-review-head span,
+  .ai-review-summary span,
+  .ai-review-factors > div > span,
+  .ai-review-verdict span,
+  .ai-review-verdict small,
+  .ai-review-meta {
+    font-size: 12px;
+  }
+
+  .ai-review-summary strong,
+  .ai-review-verdict strong {
+    font-size: 16px;
+  }
+
+  .ai-review-copy,
+  .ai-review-placeholder,
+  .ai-review-result > p,
+  .ai-review-factors small,
+  .ai-review-empty {
+    font-size: 14px;
+  }
+
+  .timeframe-context-head span,
+  .technical-context-head span,
+  .timeframe-change,
+  .timeframe-range,
+  .timeframe-empty,
+  .technical-key-grid span,
+  .technical-secondary,
+  .timeframe-guide span,
+  .technical-guide span {
+    font-size: 12px;
+  }
+
+  .timeframe-context-head strong,
+  .technical-context-head strong,
+  .timeframe-close {
+    font-size: 15px;
+  }
+
+  .technical-key-grid strong {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 390px) {
+  .sticky-control-shell .ticker-card {
+    min-height: 72px;
+    padding: 9px 8px;
+  }
+
+  .sticky-control-shell .ticker-head strong {
+    font-size: 13px;
+  }
+
+  .sticky-control-shell .ticker-price {
+    font-size: 15px;
+  }
+
+  .sticky-control-shell .ticker-meta {
+    font-size: 10.5px;
+  }
+
+  .panel-header h2,
+  .panel-header h3,
+  .market-title h2,
+  .news-panel h3,
+  .ai-insight-panel h3 {
+    font-size: 18px;
+  }
+}

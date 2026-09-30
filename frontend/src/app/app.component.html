@@ -223,6 +223,65 @@
           }
         </div>
 
+        <section class="chart-market-condition">
+          <div class="chart-market-condition-head">
+            <div>
+              <p class="eyebrow">MARKET CONDITION</p>
+              <strong>Kondisi {{ symbolLabel(selectedSymbol()) }} saat ini</strong>
+            </div>
+            <span>{{ selectedInterval() }} context</span>
+          </div>
+
+          @if (marketContext()) {
+            <div class="condition-grid chart-condition-grid">
+              <div>
+                <span>Trend</span>
+                <strong [class]="(marketContext()!.technical.trendScore ?? 0) > 20 ? 'positive' : (marketContext()!.technical.trendScore ?? 0) < -20 ? 'negative' : 'neutral'">
+                  @if ((marketContext()!.technical.trendScore ?? 0) > 20) {
+                    Bullish
+                  } @else if ((marketContext()!.technical.trendScore ?? 0) < -20) {
+                    Bearish
+                  } @else {
+                    Neutral
+                  }
+                </strong>
+              </div>
+              <div>
+                <span>Momentum</span>
+                <strong>
+                  @if (Math.abs(marketContext()!.technical.momentumScore ?? 0) >= 60) {
+                    Strong
+                  } @else if (Math.abs(marketContext()!.technical.momentumScore ?? 0) >= 30) {
+                    Moderate
+                  } @else {
+                    Weak
+                  }
+                </strong>
+              </div>
+              <div>
+                <span>Risk</span>
+                <strong>{{ tradeSetup()?.riskLevel ?? marketContext()!.signal.riskLevel }}</strong>
+              </div>
+              <div>
+                <span>News mood</span>
+                <strong [class]="(marketContext()!.news.averageSentiment ?? 0) > 0.15 ? 'positive' : (marketContext()!.news.averageSentiment ?? 0) < -0.15 ? 'negative' : 'neutral'">
+                  @if ((marketContext()!.news.averageSentiment ?? 0) > 0.15) {
+                    Positive
+                  } @else if ((marketContext()!.news.averageSentiment ?? 0) < -0.15) {
+                    Negative
+                  } @else {
+                    Neutral
+                  }
+                </strong>
+              </div>
+            </div>
+          } @else {
+            <div class="chart-condition-empty">
+              Menunggu data {{ symbolLabel(selectedSymbol()) }} untuk merangkum kondisi.
+            </div>
+          }
+        </section>
+
         <div class="chart-footer">
           <span>
             Session candles
@@ -496,63 +555,7 @@
           }
         </article>
 
-      <article class="panel market-condition-panel">
-        <div class="panel-header compact">
-          <div>
-            <p class="eyebrow">MARKET CONDITION</p>
-            <h3>Kondisi market saat ini</h3>
-          </div>
-        </div>
-
-        @if (marketContext()) {
-          <div class="condition-grid">
-            <div>
-              <span>Trend</span>
-              <strong [class]="(marketContext()!.technical.trendScore ?? 0) > 20 ? 'positive' : (marketContext()!.technical.trendScore ?? 0) < -20 ? 'negative' : 'neutral'">
-                @if ((marketContext()!.technical.trendScore ?? 0) > 20) {
-                  Bullish
-                } @else if ((marketContext()!.technical.trendScore ?? 0) < -20) {
-                  Bearish
-                } @else {
-                  Neutral
-                }
-              </strong>
-            </div>
-            <div>
-              <span>Momentum</span>
-              <strong>
-                @if (Math.abs(marketContext()!.technical.momentumScore ?? 0) >= 60) {
-                  Strong
-                } @else if (Math.abs(marketContext()!.technical.momentumScore ?? 0) >= 30) {
-                  Moderate
-                } @else {
-                  Weak
-                }
-              </strong>
-            </div>
-            <div>
-              <span>Risk</span>
-              <strong>{{ tradeSetup()?.riskLevel ?? marketContext()!.signal.riskLevel }}</strong>
-            </div>
-            <div>
-              <span>News mood</span>
-              <strong [class]="(marketContext()!.news.averageSentiment ?? 0) > 0.15 ? 'positive' : (marketContext()!.news.averageSentiment ?? 0) < -0.15 ? 'negative' : 'neutral'">
-                @if ((marketContext()!.news.averageSentiment ?? 0) > 0.15) {
-                  Positive
-                } @else if ((marketContext()!.news.averageSentiment ?? 0) < -0.15) {
-                  Negative
-                } @else {
-                  Neutral
-                }
-              </strong>
-            </div>
-          </div>
-        } @else {
-          <div class="empty-usage">Menunggu data market untuk merangkum kondisi.</div>
-        }
-      </article>
-
-      <aside class="side-stack">
+            <aside class="side-stack">
         <details class="advanced-market-details">
           <summary>
             <div>

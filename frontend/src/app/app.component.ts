@@ -95,12 +95,16 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly showRsi = signal(false);
   readonly showMacd = signal(false);
   readonly floatingCoinPosition = signal<{ x: number; y: number } | null>(null);
+  readonly floatingCoinMenuOpen = signal(false);
   private floatingCoinDrag: {
     pointerId: number;
     offsetX: number;
     offsetY: number;
     width: number;
     height: number;
+    startX: number;
+    startY: number;
+    moved: boolean;
   } | null = null;
 
   readonly selectedTicker = computed(() => this.tickers()[this.selectedSymbol()] ?? null);
@@ -255,7 +259,10 @@ export class AppComponent implements OnInit, OnDestroy {
       offsetX: event.clientX - rect.left,
       offsetY: event.clientY - rect.top,
       width: rect.width,
-      height: rect.height
+      height: rect.height,
+      startX: event.clientX,
+      startY: event.clientY,
+      moved: false
     };
 
     this.floatingCoinPosition.set({ x: rect.left, y: rect.top });
@@ -274,6 +281,14 @@ export class AppComponent implements OnInit, OnDestroy {
     const maxX = Math.max(margin, window.innerWidth - drag.width - margin);
     const maxY = Math.max(margin, window.innerHeight - drag.height - margin);
 
+    if (
+      Math.abs(event.clientX - drag.startX) > 6
+      || Math.abs(event.clientY - drag.startY) > 6
+    ) {
+      drag.moved = true;
+      this.floatingCoinMenuOpen.set(false);
+    }
+
     const x = Math.min(
       maxX,
       Math.max(margin, event.clientX - drag.offsetX)
@@ -290,21 +305,51 @@ export class AppComponent implements OnInit, OnDestroy {
   endFloatingCoinDrag(event: PointerEvent): void {
     const drag = this.floatingCoinDrag;
 
-    if (!drag || drag.pointerId !== event.pointerId) {
+    if (!drag || drag.pointerId !== event.pointerId || typeof window === 'undefined') {
       return;
     }
 
-    const handle = event.currentTarget as HTMLElement;
-    handle.releasePointerCapture?.(event.pointerId);
-    this.floatingCoinDrag = null;
+    const target = event.currentTarget as HTMLElement;
+    target.releasePointerCapture?.(event.pointerId);
 
-    const position = this.floatingCoinPosition();
-    if (position && typeof localStorage !== 'undefined') {
-      localStorage.setItem(
-        'coinmind-floating-coin-position',
-        JSON.stringify(position)
+    const margin = 8;
+    const current = this.floatingCoinPosition();
+    const y = current?.y ?? Math.max(
+      margin,
+      window.innerHeight - drag.height - 14
+    );
+
+    if (drag.moved) {
+      const currentX = current?.x ?? event.clientX - drag.offsetX;
+      const leftX = margin;
+      const rightX = Math.max(
+        margin,
+        window.innerWidth - drag.width - margin
       );
+      const snappedX = currentX + (drag.width / 2) < window.innerWidth / 2
+        ? leftX
+        : rightX;
+
+      const snapped = { x: snappedX, y };
+      this.floatingCoinPosition.set(snapped);
+
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(
+          'coinmind-floating-coin-position',
+          JSON.stringify(snapped)
+        );
+      }
+    } else {
+      this.floatingCoinMenuOpen.update(open => !open);
     }
+
+    this.floatingCoinDrag = null;
+    event.preventDefault();
+  }
+
+  chooseFloatingCoin(symbol: string): void {
+    this.selectSymbol(symbol);
+    this.floatingCoinMenuOpen.set(false);
   }
 
   resetFloatingCoinPosition(): void {
@@ -346,8 +391,11 @@ export class AppComponent implements OnInit, OnDestroy {
         const maxX = Math.max(margin, window.innerWidth - rect.width - margin);
         const maxY = Math.max(margin, window.innerHeight - rect.height - margin);
 
+        const restoredX = Math.min(maxX, Math.max(margin, parsed.x as number));
         this.floatingCoinPosition.set({
-          x: Math.min(maxX, Math.max(margin, parsed.x as number)),
+          x: restoredX + (rect.width / 2) < window.innerWidth / 2
+            ? margin
+            : maxX,
           y: Math.min(maxY, Math.max(margin, parsed.y as number))
         });
       });

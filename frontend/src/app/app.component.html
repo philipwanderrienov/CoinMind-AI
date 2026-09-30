@@ -629,14 +629,14 @@
         </article>
 
             <aside class="side-stack">
-        <details class="advanced-market-details">
-          <summary>
+        <section class="advanced-market-details market-details-expanded">
+          <div class="market-details-header">
             <div>
               <strong>Detail market</strong>
               <span>Candle, order flow, dan indikator teknikal</span>
             </div>
-            <span class="details-hint">Lihat detail</span>
-          </summary>
+            <span class="market-details-priority">Data utama</span>
+          </div>
           <div class="advanced-market-grid">
 <article class="panel timeframe-context-panel">
           <div class="panel-header compact">
@@ -788,9 +788,18 @@
           </div>
         </article>
           </div>
-        </details>
+        </section>
 
-        <article class="panel news-panel" id="news">
+        <details class="secondary-details news-details" id="news">
+          <summary>
+            <div>
+              <strong>News sentiment</strong>
+              <span>{{ symbolLabel(selectedSymbol()) }} · berita & sentimen terbaru</span>
+            </div>
+            <span class="details-hint">Buka</span>
+          </summary>
+          <div class="secondary-details-content">
+        <article class="panel news-panel">
           <div class="panel-header compact">
             <div>
               <p class="eyebrow">NEWS SENTIMENT</p>
@@ -833,6 +842,8 @@
             }
           </div>
         </article>
+          </div>
+        </details>
 
         <article class="panel ai-insight-panel">
           <div class="panel-header compact">

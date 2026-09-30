@@ -96,6 +96,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly showMacd = signal(false);
   readonly floatingCoinPosition = signal<{ x: number; y: number } | null>(null);
   readonly floatingCoinMenuOpen = signal(false);
+  readonly floatingCoinDragging = signal(false);
   private floatingCoinDrag: {
     pointerId: number;
     offsetX: number;
@@ -265,6 +266,7 @@ export class AppComponent implements OnInit, OnDestroy {
       moved: false
     };
 
+    this.floatingCoinDragging.set(true);
     this.floatingCoinPosition.set({ x: rect.left, y: rect.top });
     handle.setPointerCapture?.(event.pointerId);
     event.preventDefault();
@@ -344,6 +346,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     this.floatingCoinDrag = null;
+    this.floatingCoinDragging.set(false);
     event.preventDefault();
   }
 

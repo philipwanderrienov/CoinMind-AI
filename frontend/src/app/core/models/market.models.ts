@@ -391,3 +391,26 @@ export interface AiNewsIntelligence {
   model: string;
   analyzedAt: string;
 }
+
+
+export interface PolymarketIntelligence {
+  symbol: string;
+  bias: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
+  confidence: number;
+  importance: number;
+  marketCount: number;
+  averageProbabilityChange: number;
+  topEvent: string;
+  signals: Array<{
+    eventId: string;
+    marketId: string;
+    question: string;
+    yesProbability: number;
+    oneDayProbabilityChange: number;
+    liquidity: number;
+    volume24h: number;
+    directionalBias: 'BULLISH' | 'BEARISH';
+    relevanceScore: number;
+  }>;
+  updatedAt: string;
+}

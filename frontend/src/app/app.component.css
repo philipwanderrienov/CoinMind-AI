@@ -8163,3 +8163,17 @@ main {
     }
   }
 }
+
+
+/* ===== Adaptive floating coin dropdown direction ===== */
+@media (max-width: 760px) {
+  .mobile-floating-coin.menu-below .mobile-floating-coin-menu {
+    bottom: auto;
+    top: calc(100% + 7px);
+  }
+
+  .mobile-floating-coin.menu-below.menu-open .mobile-floating-chevron {
+    top: 22px;
+    transform: rotate(45deg);
+  }
+}

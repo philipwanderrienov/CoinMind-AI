@@ -432,10 +432,39 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  activateSection(
-    section: 'dashboard' | 'signals' | 'market-detail' | 'news' | 'performance'
+  navigateToSection(
+    section: 'dashboard' | 'signals' | 'market-detail' | 'news' | 'performance',
+    event?: MouseEvent
   ): void {
+    event?.preventDefault();
+
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      this.activeSection.set(section);
+      return;
+    }
+
+    const element = document.getElementById(section);
+    if (!element) {
+      return;
+    }
+
     this.activeSection.set(section);
+
+    const stickyOffset = window.innerWidth <= 760 ? 70 : 96;
+    const targetTop = Math.max(
+      0,
+      window.scrollY + element.getBoundingClientRect().top - stickyOffset
+    );
+
+    window.history.replaceState(null, '', `#${section}`);
+
+    window.scrollTo({
+      top: targetTop,
+      behavior: 'smooth'
+    });
+
+    const target = event?.currentTarget as HTMLElement | null;
+    target?.blur();
   }
 
   private startSectionTracking(): void {
@@ -443,13 +472,17 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const sections = ['dashboard', 'signals', 'market-detail', 'news', 'performance'] as const;
+    const sections = [
+      'dashboard',
+      'signals',
+      'market-detail',
+      'news',
+      'performance'
+    ] as const;
 
     const update = () => {
-      const viewportAnchor = Math.min(
-        180,
-        Math.max(96, window.innerHeight * 0.22)
-      );
+      const stickyOffset = window.innerWidth <= 760 ? 82 : 108;
+      const currentY = window.scrollY + stickyOffset;
 
       let active: typeof sections[number] = 'dashboard';
 
@@ -459,10 +492,12 @@ export class AppComponent implements OnInit, OnDestroy {
           continue;
         }
 
-        const rect = element.getBoundingClientRect();
+        const sectionTop = window.scrollY + element.getBoundingClientRect().top;
 
-        if (rect.top <= viewportAnchor) {
+        if (sectionTop <= currentY) {
           active = section;
+        } else {
+          break;
         }
       }
 
@@ -480,13 +515,13 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.subscriptions.add(
       fromEvent(window, 'scroll')
-        .pipe(auditTime(80))
+        .pipe(auditTime(60))
         .subscribe(update)
     );
 
     this.subscriptions.add(
       fromEvent(window, 'resize')
-        .pipe(auditTime(120))
+        .pipe(auditTime(100))
         .subscribe(update)
     );
   }

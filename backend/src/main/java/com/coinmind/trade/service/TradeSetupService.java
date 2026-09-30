@@ -1,6 +1,8 @@
 package com.coinmind.trade.service;
 
+import com.coinmind.ai.model.AiNewsIntelligence;
 import com.coinmind.ai.model.MarketContext;
+import com.coinmind.ai.service.AiNewsIntelligenceService;
 import com.coinmind.ai.service.MarketContextBuilder;
 import com.coinmind.market.model.MarketActivityProfile;
 import com.coinmind.market.service.MarketActivityProfileService;
@@ -38,24 +40,33 @@ public class TradeSetupService {
 
     private final MarketContextBuilder contextBuilder;
     private final MarketActivityProfileService activityProfileService;
+    private final AiNewsIntelligenceService aiNewsIntelligenceService;
 
     public TradeSetupService(
             MarketContextBuilder contextBuilder,
-            MarketActivityProfileService activityProfileService
+            MarketActivityProfileService activityProfileService,
+            AiNewsIntelligenceService aiNewsIntelligenceService
     ) {
         this.contextBuilder = contextBuilder;
         this.activityProfileService = activityProfileService;
+        this.aiNewsIntelligenceService = aiNewsIntelligenceService;
     }
 
     public Mono<TradeSetup> build(String symbol, String interval) {
         return activityProfileService.build(symbol)
-                .map(activity -> build(symbol, interval, activity));
+                .map(activity -> build(
+                        symbol,
+                        interval,
+                        activity,
+                        aiNewsIntelligenceService.latestFresh(symbol)
+                ));
     }
 
     private TradeSetup build(
             String symbol,
             String interval,
-            MarketActivityProfile activity
+            MarketActivityProfile activity,
+            AiNewsIntelligence newsIntelligence
     ) {
         Map<String, MarketContext> contexts = new LinkedHashMap<>();
 
@@ -89,6 +100,7 @@ public class TradeSetupService {
                 regime,
                 activity.currentActivity(),
                 activity.currentScore(),
+                newsIntelligence,
                 timeframeSignals(contexts)
         );
     }
@@ -107,6 +119,7 @@ public class TradeSetupService {
                 singleContextRegime(context),
                 "UNKNOWN",
                 BigDecimal.ZERO,
+                null,
                 List.of(toTimeframeSignal(context, 100))
         );
     }
@@ -121,6 +134,7 @@ public class TradeSetupService {
             String regime,
             String marketActivity,
             BigDecimal marketActivityScore,
+            AiNewsIntelligence newsIntelligence,
             List<TradeSetup.TimeframeSignal> timeframes
     ) {
         BigDecimal strength = score.abs();
@@ -133,14 +147,17 @@ public class TradeSetupService {
                 side,
                 alignmentScore,
                 regime,
-                marketActivity
+                marketActivity,
+                newsIntelligence
         );
         int confidence = confidence(
                 context,
                 strength,
                 alignmentScore,
                 regime,
-                marketActivity
+                marketActivity,
+                newsIntelligence,
+                side
         );
 
         List<String> reasons = reasons(
@@ -150,11 +167,13 @@ public class TradeSetupService {
                 regime,
                 marketActivity,
                 marketActivityScore,
+                newsIntelligence,
+                side,
                 timeframes
         );
         List<String> warnings = "WAIT".equals(action)
-                ? waitWarnings(context, alignmentScore, regime, marketActivity)
-                : setupWarnings(context, action, alignmentScore, regime, marketActivity);
+                ? waitWarnings(context, alignmentScore, regime, marketActivity, newsIntelligence, side)
+                : setupWarnings(context, action, alignmentScore, regime, marketActivity, newsIntelligence, side);
 
         if ("WAIT".equals(action)) {
             return new TradeSetup(
@@ -378,7 +397,8 @@ public class TradeSetupService {
             String side,
             int alignmentScore,
             String regime,
-            String marketActivity
+            String marketActivity,
+            AiNewsIntelligence newsIntelligence
     ) {
         if ("NONE".equals(side)
                 || strength.compareTo(WATCH_THRESHOLD) < 0
@@ -395,7 +415,8 @@ public class TradeSetupService {
                 && alignmentScore >= 70
                 && !extremeRsi
                 && !highRisk) {
-            if ("LOW".equals(marketActivity)) {
+            if ("LOW".equals(marketActivity)
+                    || strongNewsContradiction(newsIntelligence, side)) {
                 return "LONG".equals(side) ? "WATCH_BUY" : "WATCH_SELL";
             }
             return "LONG".equals(side) ? "BUY" : "SELL";
@@ -409,7 +430,9 @@ public class TradeSetupService {
             BigDecimal strength,
             int alignmentScore,
             String regime,
-            String marketActivity
+            String marketActivity,
+            AiNewsIntelligence newsIntelligence,
+            String side
     ) {
         int value = 30
                 + strength.divide(BigDecimal.valueOf(2), MC).intValue()
@@ -439,6 +462,9 @@ public class TradeSetupService {
             value -= 8;
         }
 
+        int newsAdjustment = newsConfidenceAdjustment(newsIntelligence, side);
+        value += newsAdjustment;
+
         return Math.max(25, Math.min(95, value));
     }
 
@@ -449,6 +475,8 @@ public class TradeSetupService {
             String regime,
             String marketActivity,
             BigDecimal marketActivityScore,
+            AiNewsIntelligence newsIntelligence,
+            String side,
             List<TradeSetup.TimeframeSignal> timeframes
     ) {
         List<String> reasons = new ArrayList<>();
@@ -470,7 +498,21 @@ public class TradeSetupService {
             reasons.add("Volume is above its recent baseline");
         }
 
-        return reasons.stream().limit(6).toList();
+        if (newsIntelligence != null) {
+            String relation = newsSupportsSide(newsIntelligence, side)
+                    ? "supports"
+                    : newsOpposesSide(newsIntelligence, side)
+                    ? "opposes"
+                    : "is neutral to";
+            reasons.add(
+                    "AI news intelligence " + relation + " the setup: "
+                            + newsIntelligence.direction().toLowerCase()
+                            + ", importance " + newsIntelligence.importance()
+                            + "%, " + newsIntelligence.horizon().toLowerCase()
+            );
+        }
+
+        return reasons.stream().limit(7).toList();
     }
 
     private List<String> setupWarnings(
@@ -478,7 +520,9 @@ public class TradeSetupService {
             String action,
             int alignmentScore,
             String regime,
-            String marketActivity
+            String marketActivity,
+            AiNewsIntelligence newsIntelligence,
+            String side
     ) {
         List<String> warnings = new ArrayList<>();
 
@@ -500,6 +544,10 @@ public class TradeSetupService {
             warnings.add("Current trading hour has low relative activity; wait for stronger participation before active entry");
         }
 
+        if (strongNewsContradiction(newsIntelligence, side)) {
+            warnings.add("High-importance AI news intelligence conflicts with the technical setup; active entry is downgraded to watch");
+        }
+
         if (context.technical().rsi14().compareTo(BigDecimal.valueOf(70)) > 0) {
             warnings.add("RSI is elevated; avoid chasing price");
         } else if (context.technical().rsi14().compareTo(BigDecimal.valueOf(30)) < 0) {
@@ -513,7 +561,9 @@ public class TradeSetupService {
             MarketContext context,
             int alignmentScore,
             String regime,
-            String marketActivity
+            String marketActivity,
+            AiNewsIntelligence newsIntelligence,
+            String side
     ) {
         List<String> warnings = new ArrayList<>();
         warnings.add("No multi-timeframe setup currently meets the minimum threshold");
@@ -528,6 +578,10 @@ public class TradeSetupService {
 
         if ("LOW".equals(marketActivity)) {
             warnings.add("Current trading hour has low relative activity");
+        }
+
+        if (newsOpposesSide(newsIntelligence, side)) {
+            warnings.add("AI news intelligence currently conflicts with the weighted market direction");
         }
 
         return List.copyOf(warnings);

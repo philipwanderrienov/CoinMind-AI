@@ -7798,3 +7798,126 @@ main {
     font-size: 10px;
   }
 }
+
+
+/* ===== Mobile floating coin selector ===== */
+.mobile-floating-coin {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  /* The desktop-style ticker row is redundant on mobile. */
+  .sticky-control-shell .ticker-grid {
+    display: none !important;
+  }
+
+  .sticky-controls-inner {
+    padding-bottom: 8px;
+  }
+
+  /* Use one persistent selector on mobile; avoid duplicate selector in chart header. */
+  .chart-header .coin-selector {
+    display: none;
+  }
+
+  .chart-header .market-selector-block {
+    grid-template-columns: auto auto;
+    justify-content: start;
+    gap: 4px 8px;
+  }
+
+  .mobile-floating-coin {
+    position: fixed;
+    z-index: 120;
+    right: 12px;
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    width: min(184px, calc(100vw - 24px));
+    min-height: 58px;
+    padding: 8px 34px 8px 11px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      "symbol price"
+      "symbol change";
+    align-items: center;
+    column-gap: 10px;
+    border: 1px solid rgba(100, 88, 230, .24);
+    border-radius: 15px;
+    background: rgba(255, 255, 255, .96);
+    box-shadow:
+      0 12px 34px rgba(38, 50, 77, .18),
+      0 2px 8px rgba(38, 50, 77, .08);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    cursor: pointer;
+  }
+
+  .mobile-floating-coin::after {
+    content: '';
+    position: absolute;
+    right: 13px;
+    top: 24px;
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid #6e7890;
+    border-bottom: 2px solid #6e7890;
+    transform: rotate(45deg);
+    pointer-events: none;
+  }
+
+  .mobile-floating-coin select {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .mobile-floating-coin-symbol {
+    grid-area: symbol;
+    color: #27364d;
+    font-size: 15px;
+    font-weight: 850;
+    letter-spacing: .01em;
+  }
+
+  .mobile-floating-coin-price {
+    grid-area: price;
+    min-width: 0;
+    color: #2c3b52;
+    font-size: 12px;
+    font-weight: 750;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .mobile-floating-coin-change {
+    grid-area: change;
+    font-size: 10.5px;
+    font-weight: 750;
+    text-align: right;
+  }
+
+  /* Prevent the floating control from covering the final content. */
+  main {
+    padding-bottom: 104px;
+  }
+}
+
+@media (max-width: 390px) {
+  .mobile-floating-coin {
+    right: 9px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    width: 168px;
+    min-height: 54px;
+  }
+
+  .mobile-floating-coin-symbol {
+    font-size: 14px;
+  }
+
+  .mobile-floating-coin-price {
+    font-size: 11.5px;
+  }
+}

@@ -368,3 +368,26 @@ export interface TradeSetup {
   warnings: string[];
   generatedAt: string;
 }
+
+
+export interface AiNewsIntelligence {
+  symbol: string;
+  direction: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
+  importance: number;
+  confidence: number;
+  horizon: 'IMMEDIATE' | 'INTRADAY' | 'MULTIDAY' | 'NONE';
+  summary: string;
+  catalysts: string[];
+  risks: string[];
+  articleImpacts: Array<{
+    articleId: string;
+    title: string;
+    direction: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
+    importance: number;
+    confidence: number;
+    horizon: 'IMMEDIATE' | 'INTRADAY' | 'MULTIDAY' | 'NONE';
+    reason: string;
+  }>;
+  model: string;
+  analyzedAt: string;
+}

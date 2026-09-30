@@ -487,10 +487,21 @@ export class AppComponent implements OnInit, OnDestroy {
           })
         )
         .subscribe(result => {
-          this.backendState.set(result.ok ? 'up' : 'down');
+          const previousState = this.backendState();
+          const nextState = result.ok ? 'up' : 'down';
+
+          this.backendState.set(nextState);
           this.backendLatencyMs.set(result.latency);
           this.backendLastCheckedAt.set(new Date());
           this.backendError.set(result.error);
+
+          if (nextState === 'up' && previousState !== 'up') {
+            this.loadMarketContext();
+            this.loadTradeSetup();
+            this.loadIndicators();
+            this.loadMicrostructure();
+            this.loadNews();
+          }
         })
     );
   }

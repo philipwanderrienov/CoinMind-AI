@@ -345,6 +345,8 @@ export interface TradeSetup {
   alignmentScore: number;
   alignmentLabel: 'STRONG' | 'GOOD' | 'MIXED' | 'WEAK';
   marketRegime: 'TRENDING_BULLISH' | 'TRENDING_BEARISH' | 'SIDEWAYS' | 'HIGH_VOLATILITY' | 'MIXED';
+  marketActivity: 'LOW' | 'MEDIUM' | 'HIGH' | 'VERY_HIGH' | 'UNKNOWN';
+  marketActivityScore: number;
   timeframes: Array<{
     interval: string;
     weight: number;

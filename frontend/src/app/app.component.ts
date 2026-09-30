@@ -96,6 +96,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly showMacd = signal(false);
   readonly floatingCoinPosition = signal<{ x: number; y: number } | null>(null);
   readonly floatingCoinMenuOpen = signal(false);
+  readonly floatingCoinMenuDirection = signal<'up' | 'down'>('up');
   readonly floatingCoinDragging = signal(false);
   private floatingCoinDrag: {
     pointerId: number;
@@ -342,12 +343,34 @@ export class AppComponent implements OnInit, OnDestroy {
         );
       }
     } else {
+      this.updateFloatingCoinMenuDirection();
       this.floatingCoinMenuOpen.update(open => !open);
     }
 
     this.floatingCoinDrag = null;
     this.floatingCoinDragging.set(false);
     event.preventDefault();
+  }
+
+  private updateFloatingCoinMenuDirection(): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const position = this.floatingCoinPosition();
+    const estimatedMenuHeight = 170;
+    const floatingHeight = 56;
+    const margin = 8;
+
+    const top = position?.y ?? (window.innerHeight - floatingHeight - 14);
+    const spaceAbove = top - margin;
+    const spaceBelow = window.innerHeight - (top + floatingHeight) - margin;
+
+    if (spaceBelow >= estimatedMenuHeight || spaceAbove < estimatedMenuHeight / 2) {
+      this.floatingCoinMenuDirection.set('down');
+    } else {
+      this.floatingCoinMenuDirection.set('up');
+    }
   }
 
   chooseFloatingCoin(symbol: string): void {

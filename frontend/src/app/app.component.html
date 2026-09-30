@@ -121,6 +121,7 @@
     class="mobile-floating-coin"
     [class.dragged]="floatingCoinPosition()"
     [class.menu-open]="floatingCoinMenuOpen()"
+    [class.menu-below]="floatingCoinMenuDirection() === 'down'"
     [class.dragging]="floatingCoinDragging()"
     [style.left.px]="floatingCoinPosition()?.x"
     [style.top.px]="floatingCoinPosition()?.y"

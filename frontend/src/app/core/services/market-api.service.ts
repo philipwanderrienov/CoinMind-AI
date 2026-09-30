@@ -18,6 +18,7 @@ import {
   MarketFeedHealth,
   NewsArticle,
   NewsSentimentSummary,
+  PolymarketIntelligence,
   OrderBookSnapshot,
   TechnicalIndicators,
   TickerSnapshot,
@@ -68,6 +69,12 @@ export class MarketApiService {
   getNewsSentiment(symbol: string): Observable<NewsSentimentSummary> {
     return this.http.get<NewsSentimentSummary>(
       `/api/v1/news/${symbol}/sentiment?hours=6&limit=20`
+    );
+  }
+
+  getPolymarketIntelligence(symbol: string): Observable<PolymarketIntelligence> {
+    return this.http.get<PolymarketIntelligence>(
+      `/api/v1/polymarket/${symbol}`
     );
   }
 

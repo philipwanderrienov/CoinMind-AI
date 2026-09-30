@@ -2796,6 +2796,7 @@ main {
 
 #dashboard,
 #signals,
+#market-detail,
 #news,
 #performance {
   scroll-margin-top: 130px;
@@ -3114,6 +3115,7 @@ main {
 
   #dashboard,
   #signals,
+  #market-detail,
   #news,
   #performance {
     scroll-margin-top: 16px;
@@ -8308,5 +8310,14 @@ main {
 
   .mobile-sticky-dashboard-nav {
     display: none !important;
+  }
+}
+
+
+/* ===== Section navigation follows page structure ===== */
+@media (max-width: 760px) {
+  .mobile-sticky-dashboard-nav a {
+    flex: 1 1 20%;
+    font-size: 11px;
   }
 }

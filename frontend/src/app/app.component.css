@@ -8136,3 +8136,30 @@ main {
     left: 0;
   }
 }
+
+
+/* ===== Smooth edge snap for mobile coin selector ===== */
+@media (max-width: 760px) {
+  .mobile-floating-coin {
+    transition:
+      left 220ms cubic-bezier(.22, .61, .36, 1),
+      top 180ms cubic-bezier(.22, .61, .36, 1),
+      box-shadow 160ms ease,
+      transform 160ms ease;
+    will-change: left, top;
+  }
+
+  .mobile-floating-coin.dragging {
+    transition: none;
+    transform: scale(1.015);
+    box-shadow:
+      0 16px 38px rgba(38, 50, 77, .22),
+      0 4px 12px rgba(38, 50, 77, .10);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-floating-coin {
+      transition: none;
+    }
+  }
+}

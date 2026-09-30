@@ -2739,11 +2739,16 @@ main {
   font-weight: 750;
 }
 
-.dashboard-nav a:hover,
+.dashboard-nav a:hover {
+  color: #594bd4;
+  background: #f7f5ff;
+}
+
 .dashboard-nav a:focus-visible {
   color: #594bd4;
-  background: #f2f0ff;
-  outline: none;
+  background: transparent;
+  outline: 2px solid rgba(109, 93, 252, .35);
+  outline-offset: -2px;
 }
 
 .secondary-details {
@@ -8209,4 +8214,31 @@ main {
     width: 16px;
     margin-top: 3px;
   }
+}
+
+
+/* ===== Single selected state for dashboard navigation ===== */
+.dashboard-nav a:not(.active)[aria-current="page"] {
+  background: transparent;
+  box-shadow: none;
+}
+
+.dashboard-nav a:not(.active)::after {
+  content: none;
+}
+
+.dashboard-nav a.active {
+  color: #594bd4;
+  background: #f2f0ff;
+  box-shadow: inset 0 0 0 1px rgba(109, 93, 252, .12);
+}
+
+.dashboard-nav a.active::after {
+  content: '';
+  display: block;
+  width: 18px;
+  height: 2px;
+  margin: 4px auto -2px;
+  border-radius: 999px;
+  background: currentColor;
 }

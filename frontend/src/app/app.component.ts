@@ -19,6 +19,7 @@ import {
   MarketFeedHealth,
   NewsArticle,
   NewsSentimentSummary,
+  PolymarketIntelligence,
   OrderBookSnapshot,
   TechnicalIndicators,
   TickerSnapshot,
@@ -84,6 +85,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly aiGuardrails = signal<AiGuardrailStatus | null>(null);
   readonly news = signal<NewsArticle[]>([]);
   readonly newsSentiment = signal<NewsSentimentSummary | null>(null);
+  readonly polymarketIntelligence = signal<PolymarketIntelligence | null>(null);
   readonly aiUsage = signal<AiUsageSummary | null>(null);
   readonly billingStatus = signal<BillingStatus | null>(null);
   readonly aiRunning = signal(false);
@@ -212,6 +214,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.startAiStatusMonitoring();
     this.loadAiGuardrails();
     this.loadNews();
+    this.loadPolymarketIntelligence();
     this.startAiUsageMonitoring();
     this.loadBillingStatus();
     this.initializePushNotifications();
@@ -241,6 +244,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadAiHistory();
     this.loadAiEvaluationSummary();
     this.loadNews();
+    this.loadPolymarketIntelligence();
   }
 
   selectInterval(interval: string): void {
@@ -548,6 +552,7 @@ export class AppComponent implements OnInit, OnDestroy {
             this.loadMicrostructure();
             this.loadMarketActivity();
             this.loadNews();
+            this.loadPolymarketIntelligence();
           }
         })
     );
@@ -616,6 +621,15 @@ export class AppComponent implements OnInit, OnDestroy {
         error: () => {
           this.historyLoading.set(false);
         }
+      })
+    );
+  }
+
+  private loadPolymarketIntelligence(): void {
+    this.subscriptions.add(
+      this.marketApi.getPolymarketIntelligence(this.selectedSymbol()).subscribe({
+        next: intelligence => this.polymarketIntelligence.set(intelligence),
+        error: () => this.polymarketIntelligence.set(null)
       })
     );
   }

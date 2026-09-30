@@ -7120,3 +7120,125 @@ main {
     font-size: 11px;
   }
 }
+
+
+/* ===== Quick trade decision in chart header ===== */
+.chart-header {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: stretch;
+}
+
+.chart-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.quick-decision {
+  flex: 0 0 auto;
+  min-width: 142px;
+  padding: 9px 12px;
+  border: 1px solid #e1e7ef;
+  border-radius: 12px;
+  background: #f8fafc;
+  text-align: right;
+}
+
+.quick-decision span,
+.quick-decision small {
+  display: block;
+  color: #8491a3;
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+.quick-decision strong {
+  display: block;
+  margin: 2px 0;
+  color: #34445c;
+  font-size: 15px;
+  line-height: 1.15;
+}
+
+.quick-decision.buy {
+  border-color: #cdebe1;
+  background: #f1fbf7;
+}
+
+.quick-decision.buy strong {
+  color: #087d60;
+}
+
+.quick-decision.sell {
+  border-color: #f0d8dd;
+  background: #fff6f7;
+}
+
+.quick-decision.sell strong {
+  color: #c94159;
+}
+
+.quick-decision.watch {
+  border-color: #efdfb8;
+  background: #fffaf0;
+}
+
+.quick-decision.watch strong {
+  color: #8a6420;
+}
+
+.quick-decision.wait {
+  border-color: #e2e8f0;
+  background: #f8fafc;
+}
+
+@media (max-width: 760px) {
+  .chart-header {
+    padding: 14px 16px 12px !important;
+  }
+
+  .chart-header-top {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .chart-header-top > div:first-child {
+    min-width: 0;
+  }
+
+  .quick-decision {
+    min-width: 118px;
+    padding: 8px 10px;
+    border-radius: 10px;
+  }
+
+  .quick-decision span,
+  .quick-decision small {
+    font-size: 9px;
+  }
+
+  .quick-decision strong {
+    font-size: 13.5px;
+  }
+
+  .chart-header .timeframes {
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 390px) {
+  .quick-decision {
+    min-width: 108px;
+    padding: 7px 9px;
+  }
+
+  .quick-decision strong {
+    font-size: 12.5px;
+  }
+
+  .quick-decision small {
+    font-size: 8.5px;
+  }
+}

@@ -8014,3 +8014,125 @@ main {
     min-height: 54px;
   }
 }
+
+
+/* ===== Chat-head style mobile coin selector ===== */
+@media (max-width: 760px) {
+  .mobile-floating-coin {
+    width: min(176px, calc(100vw - 16px));
+    min-height: 56px;
+    padding: 0;
+    display: block;
+    overflow: visible;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    cursor: grab;
+  }
+
+  .mobile-floating-coin:active {
+    cursor: grabbing;
+  }
+
+  .mobile-floating-coin-content {
+    position: relative;
+    min-height: 56px;
+    padding: 8px 28px 8px 12px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "symbol price"
+      "symbol change";
+    align-items: center;
+    column-gap: 10px;
+    border-radius: 15px;
+    background: rgba(255,255,255,.97);
+  }
+
+  .mobile-floating-coin-symbol {
+    grid-area: symbol;
+  }
+
+  .mobile-floating-coin-price {
+    grid-area: price;
+  }
+
+  .mobile-floating-coin-change {
+    grid-area: change;
+  }
+
+  .mobile-floating-chevron {
+    position: absolute;
+    right: 11px;
+    top: 22px;
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid #6e7890;
+    border-bottom: 2px solid #6e7890;
+    transform: rotate(45deg);
+    transition: transform .16s ease, top .16s ease;
+  }
+
+  .mobile-floating-coin.menu-open .mobile-floating-chevron {
+    top: 25px;
+    transform: rotate(225deg);
+  }
+
+  .mobile-floating-drag-handle,
+  .mobile-floating-select-content {
+    display: none !important;
+  }
+
+  .mobile-floating-coin-menu {
+    position: absolute;
+    z-index: 2;
+    right: 0;
+    bottom: calc(100% + 7px);
+    width: min(220px, calc(100vw - 16px));
+    padding: 6px;
+    border: 1px solid #dfe5ed;
+    border-radius: 13px;
+    background: rgba(255,255,255,.98);
+    box-shadow: 0 14px 34px rgba(38,50,77,.18);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    touch-action: auto;
+  }
+
+  .mobile-floating-coin-menu button {
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: #34445c;
+    font: inherit;
+    text-align: left;
+  }
+
+  .mobile-floating-coin-menu button.active {
+    background: #f2f0ff;
+    color: #5c4dd1;
+  }
+
+  .mobile-floating-coin-menu button span {
+    font-size: 12px;
+    font-weight: 750;
+  }
+
+  .mobile-floating-coin-menu button strong {
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  /* If snapped to the left, align the dropdown to the left edge too. */
+  .mobile-floating-coin.dragged[style*="left: 8px"] .mobile-floating-coin-menu {
+    right: auto;
+    left: 0;
+  }
+}

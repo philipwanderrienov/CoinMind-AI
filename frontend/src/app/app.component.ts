@@ -4,6 +4,7 @@ import { Subscription, catchError, fromEvent, map, of, retry, switchMap, timer }
 import {
   AiAnalysisResult,
   AiDecisionReview,
+  AiNewsIntelligence,
   AiAnalysisHistoryItem,
   AiEngineStatus,
   AiEvaluationSummary,
@@ -75,6 +76,8 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly aiAnalysis = signal<AiAnalysisResult | null>(null);
   readonly aiDecisionReview = signal<AiDecisionReview | null>(null);
   readonly aiDecisionReviewRunning = signal(false);
+  readonly aiNewsIntelligence = signal<AiNewsIntelligence | null>(null);
+  readonly aiNewsIntelligenceRunning = signal(false);
   readonly aiHistory = signal<AiAnalysisHistoryItem[]>([]);
   readonly aiEvaluationSummary = signal<AiEvaluationSummary | null>(null);
   readonly aiStatus = signal<AiEngineStatus | null>(null);
@@ -225,6 +228,7 @@ export class AppComponent implements OnInit, OnDestroy {
   selectSymbol(symbol: string): void {
     this.selectedSymbol.set(symbol);
     this.aiDecisionReview.set(null);
+    this.aiNewsIntelligence.set(null);
     this.loadHistory();
     this.loadDecisionCandles();
     this.loadTimeframeIndicators();
@@ -260,6 +264,29 @@ export class AppComponent implements OnInit, OnDestroy {
 
   toggleMacd(): void {
     this.showMacd.update(value => !value);
+  }
+
+  runAiNewsIntelligence(): void {
+    if (this.aiNewsIntelligenceRunning()) {
+      return;
+    }
+
+    this.aiNewsIntelligenceRunning.set(true);
+
+    this.subscriptions.add(
+      this.marketApi.analyzeNewsIntelligence(this.selectedSymbol()).subscribe({
+        next: result => {
+          this.aiNewsIntelligence.set(result);
+          this.aiNewsIntelligenceRunning.set(false);
+          this.loadAiUsage();
+          this.loadAiStatus();
+        },
+        error: () => {
+          this.aiNewsIntelligenceRunning.set(false);
+          this.loadAiStatus();
+        }
+      })
+    );
   }
 
   runAiDecisionReview(): void {

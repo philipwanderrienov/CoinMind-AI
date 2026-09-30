@@ -94,6 +94,14 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly showEma = signal(false);
   readonly showRsi = signal(false);
   readonly showMacd = signal(false);
+  readonly floatingCoinPosition = signal<{ x: number; y: number } | null>(null);
+  private floatingCoinDrag: {
+    pointerId: number;
+    offsetX: number;
+    offsetY: number;
+    width: number;
+    height: number;
+  } | null = null;
 
   readonly selectedTicker = computed(() => this.tickers()[this.selectedSymbol()] ?? null);
 
@@ -197,6 +205,7 @@ export class AppComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
+    this.restoreFloatingCoinPosition();
     this.startBackendHealthCheck();
     this.startMarketFeedHealthCheck();
     this.loadSnapshots();
@@ -226,6 +235,125 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.realtimeSubscriptions.unsubscribe();
     this.subscriptions.unsubscribe();
+  }
+
+  startFloatingCoinDrag(event: PointerEvent): void {
+    if (typeof window === 'undefined' || window.innerWidth > 760) {
+      return;
+    }
+
+    const handle = event.currentTarget as HTMLElement;
+    const container = handle.closest('.mobile-floating-coin') as HTMLElement | null;
+
+    if (!container) {
+      return;
+    }
+
+    const rect = container.getBoundingClientRect();
+    this.floatingCoinDrag = {
+      pointerId: event.pointerId,
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top,
+      width: rect.width,
+      height: rect.height
+    };
+
+    this.floatingCoinPosition.set({ x: rect.left, y: rect.top });
+    handle.setPointerCapture?.(event.pointerId);
+    event.preventDefault();
+  }
+
+  moveFloatingCoinDrag(event: PointerEvent): void {
+    const drag = this.floatingCoinDrag;
+
+    if (!drag || drag.pointerId !== event.pointerId || typeof window === 'undefined') {
+      return;
+    }
+
+    const margin = 8;
+    const maxX = Math.max(margin, window.innerWidth - drag.width - margin);
+    const maxY = Math.max(margin, window.innerHeight - drag.height - margin);
+
+    const x = Math.min(
+      maxX,
+      Math.max(margin, event.clientX - drag.offsetX)
+    );
+    const y = Math.min(
+      maxY,
+      Math.max(margin, event.clientY - drag.offsetY)
+    );
+
+    this.floatingCoinPosition.set({ x, y });
+    event.preventDefault();
+  }
+
+  endFloatingCoinDrag(event: PointerEvent): void {
+    const drag = this.floatingCoinDrag;
+
+    if (!drag || drag.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const handle = event.currentTarget as HTMLElement;
+    handle.releasePointerCapture?.(event.pointerId);
+    this.floatingCoinDrag = null;
+
+    const position = this.floatingCoinPosition();
+    if (position && typeof localStorage !== 'undefined') {
+      localStorage.setItem(
+        'coinmind-floating-coin-position',
+        JSON.stringify(position)
+      );
+    }
+  }
+
+  resetFloatingCoinPosition(): void {
+    this.floatingCoinPosition.set(null);
+
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('coinmind-floating-coin-position');
+    }
+  }
+
+  private restoreFloatingCoinPosition(): void {
+    if (
+      typeof window === 'undefined'
+      || typeof document === 'undefined'
+      || typeof localStorage === 'undefined'
+    ) {
+      return;
+    }
+
+    const stored = localStorage.getItem('coinmind-floating-coin-position');
+    if (!stored) {
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(stored) as { x?: number; y?: number };
+      if (!Number.isFinite(parsed.x) || !Number.isFinite(parsed.y)) {
+        return;
+      }
+
+      window.setTimeout(() => {
+        const element = document.querySelector('.mobile-floating-coin') as HTMLElement | null;
+        if (!element) {
+          return;
+        }
+
+        const rect = element.getBoundingClientRect();
+        const margin = 8;
+        const maxX = Math.max(margin, window.innerWidth - rect.width - margin);
+        const maxY = Math.max(margin, window.innerHeight - rect.height - margin);
+
+        this.floatingCoinPosition.set({
+          x: Math.min(maxX, Math.max(margin, parsed.x as number)),
+          y: Math.min(maxY, Math.max(margin, parsed.y as number))
+        });
+      });
+    } catch {
+      localStorage.removeItem('coinmind-floating-coin-position');
+    }
   }
 
   selectSymbol(symbol: string): void {

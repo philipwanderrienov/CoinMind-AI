@@ -4779,3 +4779,97 @@ main {
     font-size: 8px;
   }
 }
+
+
+/* ===== Market condition embedded in chart ===== */
+.chart-market-condition {
+  border-top: 1px solid #e7ecf3;
+  background: #fbfcfe;
+}
+
+.chart-market-condition-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 18px 0;
+}
+
+.chart-market-condition-head > div {
+  display: grid;
+  gap: 2px;
+}
+
+.chart-market-condition-head strong {
+  color: #26364f;
+  font-size: 11px;
+}
+
+.chart-market-condition-head > span {
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: #f2efff;
+  color: #6757dc;
+  font-size: 7px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.chart-condition-grid {
+  padding-top: 8px;
+  padding-bottom: 12px;
+}
+
+.chart-condition-grid > div {
+  background: #fff;
+}
+
+.chart-condition-empty {
+  padding: 10px 18px 14px;
+  color: #7d899a;
+  font-size: 9px;
+}
+
+.market-condition-panel {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .chart-market-condition-head {
+    padding: 8px 10px 0;
+  }
+
+  .chart-market-condition-head strong {
+    font-size: 10px;
+  }
+
+  .chart-market-condition-head > span {
+    font-size: 6.5px;
+  }
+
+  .chart-condition-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+    padding: 7px 10px 9px;
+  }
+
+  .chart-condition-grid > div {
+    min-width: 0;
+    padding: 7px;
+    border-radius: 8px;
+  }
+
+  .chart-condition-grid span {
+    font-size: 6.5px;
+    margin-bottom: 3px;
+  }
+
+  .chart-condition-grid strong {
+    font-size: 9px;
+  }
+
+  .chart-condition-empty {
+    padding: 8px 10px 10px;
+    font-size: 8px;
+  }
+}

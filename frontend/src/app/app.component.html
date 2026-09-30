@@ -282,6 +282,79 @@
           }
         </section>
 
+        <section class="chart-market-activity">
+          <div class="chart-market-activity-head">
+            <div>
+              <p class="eyebrow">HOURLY ACTIVITY</p>
+              <strong>Jam ramai {{ symbolLabel(selectedSymbol()) }}</strong>
+            </div>
+
+            @if (marketActivity()) {
+              <span
+                class="activity-now"
+                [class.high]="marketActivity()!.currentActivity === 'HIGH' || marketActivity()!.currentActivity === 'VERY_HIGH'"
+                [class.medium]="marketActivity()!.currentActivity === 'MEDIUM'">
+                {{ activityLabel(marketActivity()!.currentActivity) }} sekarang
+              </span>
+            }
+          </div>
+
+          @if (marketActivity()) {
+            <div class="activity-summary">
+              <div>
+                <span>Jam sekarang</span>
+                <strong>{{ formatActivityHour(marketActivity()!.currentHour) }} WIB</strong>
+              </div>
+              <div>
+                <span>Activity score</span>
+                <strong>{{ marketActivity()!.currentScore | number:'1.0-0' }}/100</strong>
+              </div>
+              <div>
+                <span>Jam tersibuk</span>
+                <strong>
+                  @for (hour of marketActivity()!.peakHours; track hour; let last = $last) {
+                    {{ formatActivityHour(hour) }}{{ last ? '' : ', ' }}
+                  }
+                </strong>
+              </div>
+              <div>
+                <span>Data sample</span>
+                <strong>{{ marketActivity()!.sampleDays }} hari</strong>
+              </div>
+            </div>
+
+            <div class="activity-hours" aria-label="Aktivitas transaksi per jam WIB">
+              @for (item of marketActivity()!.hours; track item.hour) {
+                <div
+                  class="activity-hour"
+                  [class.current]="item.hour === marketActivity()!.currentHour"
+                  [class.peak]="marketActivity()!.peakHours.includes(item.hour)"
+                  [title]="formatActivityHour(item.hour) + ' WIB · ' + activityLabel(item.activityLevel) + ' · score ' + (item.activityScore | number:'1.0-0')">
+                  <div class="activity-bar-track">
+                    <span
+                      class="activity-bar"
+                      [style.height.%]="Math.max(5, item.activityScore)">
+                    </span>
+                  </div>
+                  @if (item.hour % 4 === 0) {
+                    <small>{{ item.hour.toString().padStart(2, '0') }}</small>
+                  } @else {
+                    <small>&nbsp;</small>
+                  }
+                </div>
+              }
+            </div>
+
+            <div class="activity-note">
+              Pola dihitung dari candle 1H historis berdasarkan volume, trade count, dan volatilitas. Jam menggunakan WIB.
+            </div>
+          } @else {
+            <div class="chart-condition-empty">
+              Menunggu data historis untuk menghitung jam aktivitas {{ symbolLabel(selectedSymbol()) }}.
+            </div>
+          }
+        </section>
+
         <div class="chart-footer">
           <span>
             Session candles

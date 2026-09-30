@@ -20,6 +20,7 @@ infrastructure/database/init/003_news_archive.sql
 infrastructure/database/init/004_news_relevance.sql
 infrastructure/database/init/005_ai_usage_billing_push.sql
 infrastructure/database/init/006_ai_analysis_evaluation.sql
+infrastructure/database/init/007_trade_outcomes.sql
 ```
 
 ## Candle persistence
@@ -93,6 +94,7 @@ Persisted:
 - historical candles
 - finalized realtime candles
 - normalized news articles
+- generated trade setups and their observed outcomes
 
 In memory / derived on request:
 - ticker snapshots
@@ -107,3 +109,25 @@ In memory / derived on request:
 - Add retention/compression policy after observing real candle storage growth.
 - Add persistent AI analysis history once a real AI provider is enabled.
 - Consider aggregated microstructure snapshots instead of persisting every raw tick.
+
+
+## Trade outcome tracking
+
+Trade setups with actionable states (`BUY`, `SELL`, `WATCH_BUY`, `WATCH_SELL`)
+are persisted with a 15-minute deduplication window. The tracker evaluates finalized
+1-minute candles once per minute and advances each setup through:
+
+`PENDING -> ENTRY_HIT -> TP1_HIT -> TP2_HIT`
+
+or terminates it as `STOPPED` or `EXPIRED`. Entry opportunities expire after
+24 hours if the configured entry area is never touched. When stop and target are
+both touched inside the same 1-minute candle, the evaluator uses the conservative
+assumption and records the setup as stopped.
+
+Endpoints:
+
+`GET /api/v1/trade/outcomes/{symbol}?limit=20`
+
+`GET /api/v1/trade/outcomes/{symbol}/summary`
+
+`POST /api/v1/trade/outcomes/evaluate`

@@ -98,7 +98,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly floatingCoinMenuOpen = signal(false);
   readonly floatingCoinMenuDirection = signal<'up' | 'down'>('up');
   readonly floatingCoinDragging = signal(false);
-  readonly activeSection = signal<'dashboard' | 'signals' | 'news' | 'performance'>('dashboard');
+  readonly activeSection = signal<'dashboard' | 'signals' | 'market-detail' | 'news' | 'performance'>('dashboard');
   private floatingCoinDrag: {
     pointerId: number;
     offsetX: number;
@@ -433,7 +433,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   activateSection(
-    section: 'dashboard' | 'signals' | 'news' | 'performance'
+    section: 'dashboard' | 'signals' | 'market-detail' | 'news' | 'performance'
   ): void {
     this.activeSection.set(section);
   }
@@ -443,7 +443,7 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const sections = ['dashboard', 'signals', 'news', 'performance'] as const;
+    const sections = ['dashboard', 'signals', 'market-detail', 'news', 'performance'] as const;
 
     const update = () => {
       const viewportAnchor = Math.min(

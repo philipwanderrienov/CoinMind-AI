@@ -6628,3 +6628,90 @@ main {
     min-height: 124px;
   }
 }
+
+
+/* ===== Mobile typography rebalance v4 ===== */
+@media (max-width: 760px) {
+  .timeframe-context-panel .eyebrow,
+  .technical-context-panel .eyebrow,
+  .news-panel .eyebrow,
+  .ai-insight-panel .eyebrow,
+  .trade-setup-panel .eyebrow {
+    font-size: 10.5px !important;
+    letter-spacing: .08em;
+  }
+
+  .timeframe-context-panel h3,
+  .technical-context-panel h3,
+  .news-panel h3,
+  .ai-insight-panel h3,
+  .trade-setup-panel h3 {
+    font-size: 17px !important;
+    line-height: 1.25;
+  }
+
+  .timeframe-focus-label {
+    font-size: 11px !important;
+    padding: 5px 8px;
+  }
+
+  .timeframe-context-head strong,
+  .technical-context-head strong {
+    font-size: 15px !important;
+    line-height: 1.1;
+  }
+
+  .timeframe-context-head span,
+  .technical-context-head span {
+    font-size: 12px !important;
+    line-height: 1.25;
+  }
+
+  .candle-state,
+  .technical-bias {
+    font-size: 11px !important;
+    padding: 4px 7px;
+  }
+
+  .timeframe-close {
+    font-size: 17px !important;
+    line-height: 1.2;
+    margin-top: 10px;
+  }
+
+  .timeframe-change {
+    font-size: 13px !important;
+    line-height: 1.2;
+  }
+
+  .timeframe-range {
+    font-size: 11.5px !important;
+    line-height: 1.3;
+    gap: 8px;
+  }
+
+  .timeframe-guide span,
+  .technical-guide span {
+    font-size: 11.5px !important;
+  }
+
+  .technical-key-grid span,
+  .technical-secondary {
+    font-size: 11.5px !important;
+  }
+
+  .technical-key-grid strong {
+    font-size: 13.5px !important;
+  }
+
+  .timeframe-context-card,
+  .technical-context-card {
+    min-height: auto;
+    padding: 12px;
+  }
+
+  .timeframe-context-grid,
+  .technical-context-grid {
+    gap: 10px;
+  }
+}

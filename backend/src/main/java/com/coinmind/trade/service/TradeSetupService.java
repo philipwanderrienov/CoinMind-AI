@@ -587,6 +587,65 @@ public class TradeSetupService {
         return List.copyOf(warnings);
     }
 
+    private boolean strongNewsContradiction(
+            AiNewsIntelligence intelligence,
+            String side
+    ) {
+        return intelligence != null
+                && intelligence.importance() >= 70
+                && intelligence.confidence() >= 65
+                && newsOpposesSide(intelligence, side);
+    }
+
+    private int newsConfidenceAdjustment(
+            AiNewsIntelligence intelligence,
+            String side
+    ) {
+        if (intelligence == null || intelligence.importance() < 40) {
+            return 0;
+        }
+
+        if (newsSupportsSide(intelligence, side)) {
+            return intelligence.importance() >= 70
+                    && intelligence.confidence() >= 65
+                    ? 4
+                    : 2;
+        }
+
+        if (newsOpposesSide(intelligence, side)) {
+            return intelligence.importance() >= 70
+                    && intelligence.confidence() >= 65
+                    ? -6
+                    : -3;
+        }
+
+        return 0;
+    }
+
+    private boolean newsSupportsSide(
+            AiNewsIntelligence intelligence,
+            String side
+    ) {
+        if (intelligence == null) {
+            return false;
+        }
+
+        return ("LONG".equals(side) && "BULLISH".equals(intelligence.direction()))
+                || ("SHORT".equals(side) && "BEARISH".equals(intelligence.direction()));
+    }
+
+    private boolean newsOpposesSide(
+            AiNewsIntelligence intelligence,
+            String side
+    ) {
+        if (intelligence == null) {
+            return false;
+        }
+
+        return ("LONG".equals(side) && "BEARISH".equals(intelligence.direction()))
+                || ("SHORT".equals(side) && "BULLISH".equals(intelligence.direction()));
+    }
+
     private BigDecimal safeAtr(BigDecimal atr, BigDecimal price) {
         BigDecimal fallback = price.multiply(BigDecimal.valueOf(0.005), MC);
 

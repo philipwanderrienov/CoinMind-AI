@@ -15,6 +15,8 @@ public record TradeSetup(
         int alignmentScore,
         String alignmentLabel,
         String marketRegime,
+        String marketActivity,
+        BigDecimal marketActivityScore,
         List<TimeframeSignal> timeframes,
         BigDecimal marketPrice,
         BigDecimal entryLow,

@@ -157,8 +157,19 @@
           <div class="chart-header-top">
             <div>
               <p class="eyebrow">LIVE MARKET</p>
-              <div class="market-title">
-                <h2>{{ symbolLabel(selectedSymbol()) }} / USDT</h2>
+              <div class="market-title market-selector-block">
+                <label class="coin-selector" aria-label="Pilih coin">
+                  <span class="coin-selector-label">Coin</span>
+                  <select
+                    [value]="selectedSymbol()"
+                    (change)="selectSymbol($any($event.target).value)">
+                    @for (symbol of symbols; track symbol) {
+                      <option [value]="symbol">
+                        {{ symbolLabel(symbol) }} / USDT
+                      </option>
+                    }
+                  </select>
+                </label>
                 @if (selectedTicker()) {
                   <span class="selected-price">
                     {{ formatPrice(selectedTicker()?.closePrice) }}

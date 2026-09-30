@@ -3,7 +3,9 @@ package com.coinmind.ai.provider;
 import com.coinmind.ai.config.AiProperties;
 import com.coinmind.ai.model.AiAnalysisResult;
 import com.coinmind.ai.model.AiDecisionReview;
+import com.coinmind.ai.model.AiNewsIntelligence;
 import com.coinmind.ai.model.MarketContext;
+import com.coinmind.news.model.NewsArticle;
 import com.coinmind.ai.usage.AiUsageService;
 import com.coinmind.trade.model.TradeSetup;
 import com.coinmind.ai.status.AiStatusService;
@@ -159,6 +161,264 @@ public class OpenAiLunaProvider implements AiProvider {
                 )
                 .map(body -> parseDecisionReview(body, setup))
                 .doOnNext(ignored -> statusService.markReady());
+    }
+
+    @Override
+    public Mono<AiNewsIntelligence> analyzeNews(
+            String symbol,
+            List<NewsArticle> articles
+    ) {
+        if (properties.apiKey() == null || properties.apiKey().isBlank()) {
+            return Mono.just(new AiNewsIntelligence(
+                    symbol,
+                    "NEUTRAL",
+                    0,
+                    0,
+                    "NONE",
+                    "AI engine is not configured yet.",
+                    List.of(),
+                    List.of("OpenAI API key is missing"),
+                    List.of(),
+                    properties.model(),
+                    Instant.now()
+            ));
+        }
+
+        return Mono.fromCallable(() -> buildNewsIntelligenceRequest(symbol, articles))
+                .flatMap(request ->
+                        webClient.post()
+                                .uri("/v1/responses")
+                                .bodyValue(request)
+                                .retrieve()
+                                .bodyToMono(String.class)
+                )
+                .map(body -> parseNewsIntelligence(body, symbol, articles))
+                .doOnNext(ignored -> statusService.markReady())
+                .doOnError(error -> log.warn(
+                        "Luna news intelligence failed. symbol={}, articleCount={}",
+                        symbol,
+                        articles.size(),
+                        error
+                ));
+    }
+
+    private Map<String, Object> buildNewsIntelligenceRequest(
+            String symbol,
+            List<NewsArticle> articles
+    ) throws Exception {
+        String payload = objectMapper.writeValueAsString(
+                articles.stream()
+                        .limit(5)
+                        .map(article -> Map.of(
+                                "id", article.id(),
+                                "title", article.title(),
+                                "source", article.source(),
+                                "summary", article.summary() == null ? "" : article.summary(),
+                                "publishedAt", article.publishedAt().toString(),
+                                "relevanceScore", article.relevanceScore(),
+                                "ruleSentimentScore", article.sentimentScore()
+                        ))
+                        .toList()
+        );
+
+        String prompt = """
+                Analyze the supplied cryptocurrency news for market impact on %s.
+                Use only the supplied articles. Do not invent events or facts.
+                Distinguish news importance from directional impact.
+                Return an overall directional impact plus an assessment for each article.
+                Horizon meanings:
+                IMMEDIATE = minutes to a few hours,
+                INTRADAY = primarily within the current trading day,
+                MULTIDAY = likely relevant for multiple days,
+                NONE = no meaningful directional impact.
+                Keep reasons short and concrete.
+
+                Articles:
+                %s
+                """.formatted(symbol, payload);
+
+        Map<String, Object> articleSchema = Map.of(
+                "type", "object",
+                "properties", Map.of(
+                        "articleId", Map.of("type", "string"),
+                        "direction", Map.of(
+                                "type", "string",
+                                "enum", List.of("BULLISH", "BEARISH", "NEUTRAL")
+                        ),
+                        "importance", Map.of(
+                                "type", "integer",
+                                "minimum", 0,
+                                "maximum", 100
+                        ),
+                        "confidence", Map.of(
+                                "type", "integer",
+                                "minimum", 0,
+                                "maximum", 100
+                        ),
+                        "horizon", Map.of(
+                                "type", "string",
+                                "enum", List.of("IMMEDIATE", "INTRADAY", "MULTIDAY", "NONE")
+                        ),
+                        "reason", Map.of("type", "string")
+                ),
+                "required", List.of(
+                        "articleId",
+                        "direction",
+                        "importance",
+                        "confidence",
+                        "horizon",
+                        "reason"
+                ),
+                "additionalProperties", false
+        );
+
+        Map<String, Object> schema = Map.of(
+                "type", "object",
+                "properties", Map.of(
+                        "direction", Map.of(
+                                "type", "string",
+                                "enum", List.of("BULLISH", "BEARISH", "NEUTRAL")
+                        ),
+                        "importance", Map.of(
+                                "type", "integer",
+                                "minimum", 0,
+                                "maximum", 100
+                        ),
+                        "confidence", Map.of(
+                                "type", "integer",
+                                "minimum", 0,
+                                "maximum", 100
+                        ),
+                        "horizon", Map.of(
+                                "type", "string",
+                                "enum", List.of("IMMEDIATE", "INTRADAY", "MULTIDAY", "NONE")
+                        ),
+                        "summary", Map.of("type", "string"),
+                        "catalysts", Map.of(
+                                "type", "array",
+                                "items", Map.of("type", "string"),
+                                "maxItems", 4
+                        ),
+                        "risks", Map.of(
+                                "type", "array",
+                                "items", Map.of("type", "string"),
+                                "maxItems", 4
+                        ),
+                        "articleImpacts", Map.of(
+                                "type", "array",
+                                "items", articleSchema,
+                                "maxItems", 5
+                        )
+                ),
+                "required", List.of(
+                        "direction",
+                        "importance",
+                        "confidence",
+                        "horizon",
+                        "summary",
+                        "catalysts",
+                        "risks",
+                        "articleImpacts"
+                ),
+                "additionalProperties", false
+        );
+
+        return Map.of(
+                "model", properties.model(),
+                "input", prompt,
+                "reasoning", Map.of("effort", properties.reasoningEffort()),
+                "max_output_tokens", properties.maxOutputTokens(),
+                "text", Map.of(
+                        "format", Map.of(
+                                "type", "json_schema",
+                                "name", "coinmind_news_intelligence",
+                                "strict", true,
+                                "schema", schema
+                        )
+                )
+        );
+    }
+
+    private AiNewsIntelligence parseNewsIntelligence(
+            String body,
+            String symbol,
+            List<NewsArticle> articles
+    ) {
+        try {
+            JsonNode response = objectMapper.readTree(body);
+            JsonNode usage = response.path("usage");
+
+            long inputTokens = usage.path("input_tokens").asLong(0);
+            long cachedInputTokens = usage.path("input_tokens_details")
+                    .path("cached_tokens")
+                    .asLong(0);
+            long outputTokens = usage.path("output_tokens").asLong(0);
+            long reasoningTokens = usage.path("output_tokens_details")
+                    .path("reasoning_tokens")
+                    .asLong(0);
+            long totalTokens = usage.path("total_tokens").asLong(
+                    inputTokens + outputTokens
+            );
+
+            usageService.record(
+                    response.path("id").asText(""),
+                    symbol,
+                    "news",
+                    "NEWS_INTELLIGENCE",
+                    properties.model(),
+                    inputTokens,
+                    cachedInputTokens,
+                    outputTokens,
+                    reasoningTokens,
+                    totalTokens
+            );
+
+            String outputText = extractOutputText(response);
+            JsonNode analysis = objectMapper.readTree(cleanJson(outputText));
+
+            Map<String, NewsArticle> byId = articles.stream()
+                    .collect(java.util.stream.Collectors.toMap(
+                            NewsArticle::id,
+                            article -> article,
+                            (left, right) -> left
+                    ));
+
+            List<AiNewsIntelligence.ArticleImpact> impacts = new ArrayList<>();
+            JsonNode impactNodes = analysis.path("articleImpacts");
+
+            if (impactNodes.isArray()) {
+                for (JsonNode item : impactNodes) {
+                    String articleId = item.path("articleId").asText("");
+                    NewsArticle article = byId.get(articleId);
+
+                    impacts.add(new AiNewsIntelligence.ArticleImpact(
+                            articleId,
+                            article == null ? "" : article.title(),
+                            item.path("direction").asText("NEUTRAL"),
+                            Math.max(0, Math.min(100, item.path("importance").asInt(0))),
+                            Math.max(0, Math.min(100, item.path("confidence").asInt(0))),
+                            item.path("horizon").asText("NONE"),
+                            item.path("reason").asText("")
+                    ));
+                }
+            }
+
+            return new AiNewsIntelligence(
+                    symbol,
+                    analysis.path("direction").asText("NEUTRAL"),
+                    Math.max(0, Math.min(100, analysis.path("importance").asInt(0))),
+                    Math.max(0, Math.min(100, analysis.path("confidence").asInt(0))),
+                    analysis.path("horizon").asText("NONE"),
+                    analysis.path("summary").asText(""),
+                    stringList(analysis.path("catalysts")),
+                    stringList(analysis.path("risks")),
+                    List.copyOf(impacts),
+                    properties.model(),
+                    Instant.now()
+            );
+        } catch (Exception ex) {
+            throw new IllegalStateException("Unable to parse AI news intelligence", ex);
+        }
     }
 
     private Map<String, Object> buildDecisionReviewRequest(

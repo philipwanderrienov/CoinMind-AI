@@ -170,11 +170,15 @@ public class TradeOutcomeRepository {
                 SELECT
                     COUNT(*) AS total,
                     COUNT(*) FILTER (WHERE status = 'PENDING') AS pending,
-                    COUNT(*) FILTER (WHERE status = 'ENTRY_HIT') AS entry_hit,
-                    COUNT(*) FILTER (WHERE status = 'TP1_HIT') AS target1_hit,
-                    COUNT(*) FILTER (WHERE status = 'TP2_HIT') AS target2_hit,
-                    COUNT(*) FILTER (WHERE status = 'STOPPED') AS stopped,
-                    COUNT(*) FILTER (WHERE status = 'EXPIRED') AS expired
+                    COUNT(*) FILTER (
+                        WHERE entry_hit_at IS NOT NULL
+                          AND target1_hit_at IS NULL
+                          AND stopped_at IS NULL
+                    ) AS entry_hit,
+                    COUNT(*) FILTER (WHERE target1_hit_at IS NOT NULL) AS target1_hit,
+                    COUNT(*) FILTER (WHERE target2_hit_at IS NOT NULL) AS target2_hit,
+                    COUNT(*) FILTER (WHERE stopped_at IS NOT NULL) AS stopped,
+                    COUNT(*) FILTER (WHERE expired_at IS NOT NULL) AS expired
                 FROM trade_outcomes
                 WHERE symbol = :symbol
                 """)
@@ -188,8 +192,7 @@ public class TradeOutcomeRepository {
                     int stopped = intValue(row.get("stopped", Long.class));
                     int expired = intValue(row.get("expired", Long.class));
 
-                    int entered = entryHit + target1Hit + target2Hit + stopped;
-                    int resolvedEntered = target1Hit + target2Hit + stopped;
+                    int entered = entryHit + target1Hit + stopped;
 
                     return new TradeOutcomeSummary(
                             symbol.toUpperCase(),
@@ -203,7 +206,7 @@ public class TradeOutcomeRepository {
                             pct(entered, total),
                             pct(target1Hit + target2Hit, entered),
                             pct(target2Hit, entered),
-                            pct(stopped, Math.max(1, resolvedEntered))
+                            pct(stopped, entered)
                     );
                 })
                 .one()

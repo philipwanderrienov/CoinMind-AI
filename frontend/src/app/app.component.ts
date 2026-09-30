@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
-import { Subscription, catchError, fromEvent, map, of, retry, switchMap, timer } from 'rxjs';
+import { Subscription, auditTime, catchError, fromEvent, map, of, retry, switchMap, timer } from 'rxjs';
 import {
   AiAnalysisResult,
   AiDecisionReview,
@@ -98,6 +98,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly floatingCoinMenuOpen = signal(false);
   readonly floatingCoinMenuDirection = signal<'up' | 'down'>('up');
   readonly floatingCoinDragging = signal(false);
+  readonly activeSection = signal<'dashboard' | 'signals' | 'news' | 'performance'>('dashboard');
   private floatingCoinDrag: {
     pointerId: number;
     offsetX: number;
@@ -212,6 +213,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.restoreFloatingCoinPosition();
+    this.startSectionTracking();
     this.startBackendHealthCheck();
     this.startMarketFeedHealthCheck();
     this.loadSnapshots();
@@ -428,6 +430,65 @@ export class AppComponent implements OnInit, OnDestroy {
     } catch {
       localStorage.removeItem('coinmind-floating-coin-position');
     }
+  }
+
+  activateSection(
+    section: 'dashboard' | 'signals' | 'news' | 'performance'
+  ): void {
+    this.activeSection.set(section);
+  }
+
+  private startSectionTracking(): void {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
+
+    const sections = ['dashboard', 'signals', 'news', 'performance'] as const;
+
+    const update = () => {
+      const viewportAnchor = Math.min(
+        180,
+        Math.max(96, window.innerHeight * 0.22)
+      );
+
+      let active: typeof sections[number] = 'dashboard';
+
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (!element) {
+          continue;
+        }
+
+        const rect = element.getBoundingClientRect();
+
+        if (rect.top <= viewportAnchor) {
+          active = section;
+        }
+      }
+
+      this.activeSection.set(active);
+    };
+
+    const hash = window.location.hash.replace('#', '');
+    if (sections.includes(hash as typeof sections[number])) {
+      this.activeSection.set(hash as typeof sections[number]);
+    } else {
+      this.activeSection.set('dashboard');
+    }
+
+    window.setTimeout(update, 0);
+
+    this.subscriptions.add(
+      fromEvent(window, 'scroll')
+        .pipe(auditTime(80))
+        .subscribe(update)
+    );
+
+    this.subscriptions.add(
+      fromEvent(window, 'resize')
+        .pipe(auditTime(120))
+        .subscribe(update)
+    );
   }
 
   selectSymbol(symbol: string): void {

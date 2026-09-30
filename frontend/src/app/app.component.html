@@ -76,10 +76,34 @@
 
     <div class="sticky-controls-inner">
     <nav class="dashboard-nav" aria-label="CoinMind sections">
-      <a href="#dashboard">Dashboard</a>
-      <a href="#signals">Signals</a>
-      <a href="#news">News</a>
-      <a href="#performance">History</a>
+      <a
+        href="#dashboard"
+        [class.active]="activeSection() === 'dashboard'"
+        [attr.aria-current]="activeSection() === 'dashboard' ? 'page' : null"
+        (click)="activateSection('dashboard')">
+        Dashboard
+      </a>
+      <a
+        href="#signals"
+        [class.active]="activeSection() === 'signals'"
+        [attr.aria-current]="activeSection() === 'signals' ? 'page' : null"
+        (click)="activateSection('signals')">
+        Signals
+      </a>
+      <a
+        href="#news"
+        [class.active]="activeSection() === 'news'"
+        [attr.aria-current]="activeSection() === 'news' ? 'page' : null"
+        (click)="activateSection('news')">
+        News
+      </a>
+      <a
+        href="#performance"
+        [class.active]="activeSection() === 'performance'"
+        [attr.aria-current]="activeSection() === 'performance' ? 'page' : null"
+        (click)="activateSection('performance')">
+        History
+      </a>
     </nav>
     <section class="ticker-grid">
       @for (symbol of symbols; track symbol) {

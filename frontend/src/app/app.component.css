@@ -7035,3 +7035,88 @@ main {
     font-size: 9.5px !important;
   }
 }
+
+
+/* ===== Information hierarchy: market details first ===== */
+.market-details-expanded {
+  overflow: hidden;
+}
+
+.market-details-header {
+  min-height: 64px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #e7ecf3;
+}
+
+.market-details-header > div {
+  display: grid;
+  gap: 3px;
+}
+
+.market-details-header strong {
+  color: #2b3950;
+  font-size: 14px;
+}
+
+.market-details-header span {
+  color: #7f8c9f;
+  font-size: 12px;
+}
+
+.market-details-priority {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border-radius: 999px;
+  color: #5d4fd2 !important;
+  background: #f3f0ff;
+  font-size: 10px !important;
+  font-weight: 800;
+}
+
+.news-details > summary {
+  min-height: 58px;
+}
+
+.news-details .secondary-details-content {
+  padding-top: 0;
+}
+
+.news-details .news-panel {
+  border-radius: 12px;
+}
+
+@media (max-width: 760px) {
+  .market-details-header {
+    min-height: 62px;
+    padding: 13px 14px;
+  }
+
+  .market-details-header strong {
+    font-size: 15px;
+  }
+
+  .market-details-header span {
+    font-size: 12px;
+  }
+
+  .market-details-priority {
+    font-size: 9.5px !important;
+  }
+
+  .news-details > summary {
+    min-height: 58px;
+    padding: 13px 14px;
+  }
+
+  .news-details > summary strong {
+    font-size: 14px;
+  }
+
+  .news-details > summary span {
+    font-size: 11px;
+  }
+}

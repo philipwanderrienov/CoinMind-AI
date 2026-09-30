@@ -30,7 +30,7 @@ public class AiAnalysisService {
     }
 
     public Mono<AiDecisionReview> reviewDecision(String symbol) {
-        return Mono.fromSupplier(() -> tradeSetupService.build(symbol, "1h"))
+        return tradeSetupService.build(symbol, "1h")
                 .flatMap(setup ->
                         Mono.fromSupplier(() -> contextBuilder.build(symbol, "1h"))
                                 .flatMap(context -> aiProvider.reviewDecision(setup, context))

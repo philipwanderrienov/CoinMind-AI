@@ -5,6 +5,7 @@ import {
   Candlestick,
   AiAnalysisResult,
   AiDecisionReview,
+  AiNewsIntelligence,
   AiAnalysisHistoryItem,
   AiEngineStatus,
   AiEvaluationSummary,
@@ -85,6 +86,13 @@ export class MarketApiService {
   triggerAiAnalysis(symbol: string, interval: string): Observable<AiAnalysisResult> {
     return this.http.post<AiAnalysisResult>(
       `/api/v1/ai/analysis/${symbol}/${interval}`,
+      {}
+    );
+  }
+
+  analyzeNewsIntelligence(symbol: string): Observable<AiNewsIntelligence> {
+    return this.http.post<AiNewsIntelligence>(
+      `/api/v1/ai/news-intelligence/${symbol}`,
       {}
     );
   }

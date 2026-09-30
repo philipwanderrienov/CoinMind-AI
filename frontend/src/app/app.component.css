@@ -6297,3 +6297,334 @@ main {
     font-size: 18px;
   }
 }
+
+
+/* ===== Proportional layout pass v3 ===== */
+@media (max-width: 760px) {
+  /* Do not make the whole control stack consume the viewport while scrolling. */
+  .sticky-control-shell {
+    position: static;
+    box-shadow: none;
+    border-bottom: 0;
+    background: transparent;
+    backdrop-filter: none;
+  }
+
+  .sticky-control-shell .topbar {
+    min-height: 56px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e7ecf3;
+    background: rgba(255,255,255,.98);
+  }
+
+  .brand {
+    gap: 9px;
+  }
+
+  .brand-mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  .brand-tagline {
+    display: none;
+  }
+
+  .status-strip {
+    border-bottom: 0;
+    background: #fff;
+  }
+
+  .status-strip-inner {
+    width: calc(100% - 20px);
+    min-height: 46px;
+    padding: 7px 0;
+    gap: 8px;
+  }
+
+  .status-item {
+    min-height: 32px;
+    padding: 0 11px;
+    border-radius: 10px;
+  }
+
+  .sticky-controls-inner {
+    width: 100%;
+    padding: 0 10px 12px;
+    background: #f6f8fc;
+    border-bottom: 1px solid #e7ecf3;
+  }
+
+  .dashboard-nav {
+    position: static;
+    margin: 0 0 10px;
+    padding: 4px;
+    border-radius: 12px;
+    box-shadow: none;
+    background: #fff;
+  }
+
+  .dashboard-nav a {
+    min-height: 40px;
+    display: grid;
+    place-items: center;
+    padding: 0 6px;
+    border-radius: 9px;
+  }
+
+  /* Give price cards enough horizontal room instead of squeezing three cards. */
+  .sticky-control-shell .ticker-grid {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    padding: 0 1px 2px;
+    scrollbar-width: none;
+  }
+
+  .sticky-control-shell .ticker-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sticky-control-shell .ticker-card {
+    flex: 0 0 142px;
+    min-width: 142px;
+    min-height: 82px;
+    scroll-snap-align: start;
+    padding: 11px;
+    border-radius: 12px;
+  }
+
+  .sticky-control-shell .ticker-head {
+    gap: 7px;
+  }
+
+  .sticky-control-shell .asset-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+  }
+
+  .sticky-control-shell .ticker-price {
+    margin: 8px 0 4px;
+    font-size: 17px;
+  }
+
+  .sticky-control-shell .ticker-meta {
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+  main {
+    width: 100%;
+    padding: 12px 10px 36px;
+  }
+
+  .workspace-grid,
+  .side-stack {
+    gap: 14px;
+  }
+
+  .panel,
+  .secondary-details,
+  .advanced-market-details,
+  .ai-advanced-details {
+    border-radius: 16px;
+  }
+
+  .panel-header,
+  .panel-header.compact {
+    padding: 16px;
+  }
+
+  .panel-header.compact {
+    padding-bottom: 12px;
+  }
+
+  .secondary-details > summary,
+  .advanced-market-details > summary {
+    min-height: 68px;
+    padding: 15px 16px;
+  }
+
+  /* Chart header should breathe, controls on a separate line. */
+  .chart-panel .panel-header {
+    padding: 15px 16px 12px;
+    gap: 12px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .market-title {
+    gap: 8px;
+  }
+
+  .market-title h2 {
+    font-size: 18px;
+  }
+
+  .selected-price {
+    font-size: 15px;
+  }
+
+  .timeframes {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(44px, 1fr));
+    overflow-x: auto;
+    padding: 4px;
+    gap: 3px;
+  }
+
+  .timeframes button {
+    min-width: 44px;
+    min-height: 38px;
+    padding: 0 8px;
+  }
+
+  .indicator-toolbar {
+    padding: 9px 14px;
+    gap: 7px;
+  }
+
+  .indicator-toolbar button {
+    min-height: 36px;
+    padding: 0 12px;
+  }
+
+  .chart-wrap {
+    height: 320px;
+    min-height: 320px;
+  }
+
+  .chart-wrap.with-one-indicator {
+    height: 430px;
+  }
+
+  .chart-wrap.with-two-indicators {
+    height: 540px;
+  }
+
+  .chart-market-condition,
+  .chart-market-activity {
+    padding-bottom: 2px;
+  }
+
+  .chart-condition-grid,
+  .activity-summary {
+    gap: 10px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .chart-condition-grid > div,
+  .activity-summary > div {
+    min-height: 76px;
+    padding: 13px;
+    border-radius: 11px;
+  }
+
+  .activity-hours {
+    height: 92px;
+    padding: 0 16px;
+  }
+
+  .activity-bar-track {
+    min-height: 64px;
+  }
+
+  /* News reads like content, not a statistics dashboard. */
+  .news-panel .panel-header,
+  .ai-insight-panel .panel-header {
+    padding: 16px;
+  }
+
+  .news-summary {
+    gap: 10px;
+    padding: 4px 16px 16px;
+  }
+
+  .news-summary > div {
+    min-height: 76px;
+    border-radius: 12px;
+  }
+
+  .headline-list {
+    padding: 0 16px 8px;
+  }
+
+  .headline {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 16px 0;
+  }
+
+  .headline-scores {
+    min-width: 48px;
+    align-self: start;
+  }
+
+  .ai-insight-body {
+    padding: 4px 16px 16px;
+  }
+
+  /* Trade section: information first, metrics second. */
+  .trade-setup-panel .panel-header {
+    padding: 16px;
+  }
+
+  .trade-overview {
+    padding: 4px 16px 14px;
+    gap: 10px;
+  }
+
+  .trade-overview > div {
+    min-height: 74px;
+    padding: 13px;
+    border-radius: 11px;
+  }
+
+  .trade-price-card,
+  .decision-context,
+  .ai-decision-review {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+
+  .trade-levels.actionable {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .trade-wait {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+}
+
+/* Desktop / large tablets: keep content comfortable instead of excessively wide. */
+@media (min-width: 761px) {
+  main,
+  .sticky-controls-inner,
+  .status-strip-inner {
+    width: min(1280px, calc(100vw - 48px));
+  }
+
+  .workspace-grid,
+  .side-stack {
+    gap: 18px;
+  }
+
+  .panel-header {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .chart-wrap {
+    height: clamp(420px, 42vw, 560px);
+  }
+
+  .ticker-card {
+    min-height: 124px;
+  }
+}

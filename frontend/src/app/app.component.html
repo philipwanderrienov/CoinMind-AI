@@ -196,38 +196,50 @@
             }
           </div>
 
-          <div class="timeframes">
-            @for (interval of intervals; track interval) {
-              <button
-                type="button"
-                [class.active]="selectedInterval() === interval"
-                (click)="selectInterval(interval)">
-                {{ interval }}
-              </button>
-            }
+          <div class="chart-control-row">
+            <label class="compact-control">
+              <span>Timeframe</span>
+              <select
+                [value]="selectedInterval()"
+                (change)="selectInterval($any($event.target).value)">
+                @for (interval of intervals; track interval) {
+                  <option [value]="interval">{{ interval }}</option>
+                }
+              </select>
+            </label>
+
+            <details class="indicator-dropdown">
+              <summary>
+                <span>Indicators</span>
+                <strong>
+                  {{ (showEma() ? 'EMA ' : '') + (showRsi() ? 'RSI ' : '') + (showMacd() ? 'MACD' : '') || 'Off' }}
+                </strong>
+              </summary>
+              <div class="indicator-dropdown-menu">
+                <label>
+                  <input type="checkbox" [checked]="showEma()" (change)="toggleEma()">
+                  <span>EMA</span>
+                </label>
+                <label>
+                  <input type="checkbox" [checked]="showRsi()" (change)="toggleRsi()">
+                  <span>RSI</span>
+                </label>
+                <label>
+                  <input type="checkbox" [checked]="showMacd()" (change)="toggleMacd()">
+                  <span>MACD</span>
+                </label>
+              </div>
+            </details>
           </div>
         </div>
 
-        <div class="indicator-toolbar">
-          <span>Indicators</span>
-          <button type="button" [class.active]="showEma()" (click)="toggleEma()">
-            EMA
-          </button>
-          <button type="button" [class.active]="showRsi()" (click)="toggleRsi()">
-            RSI
-          </button>
-          <button type="button" [class.active]="showMacd()" (click)="toggleMacd()">
-            MACD
-          </button>
-
-          @if (showEma()) {
-            <div class="indicator-legend">
-              <span class="ema20">EMA 20</span>
-              <span class="ema50">EMA 50</span>
-              <span class="ema200">EMA 200</span>
-            </div>
-          }
-        </div>
+        @if (showEma()) {
+          <div class="indicator-legend compact-indicator-legend">
+            <span class="ema20">EMA 20</span>
+            <span class="ema50">EMA 50</span>
+            <span class="ema200">EMA 200</span>
+          </div>
+        }
 
         <div class="chart-wrap"
              [class.with-one-indicator]="showRsi() !== showMacd()"

@@ -117,28 +117,50 @@
     </div>
   </div>
 
-  <label class="mobile-floating-coin" aria-label="Pilih coin cepat">
-    <span class="mobile-floating-coin-symbol">{{ symbolLabel(selectedSymbol()) }}</span>
-    <select
-      [value]="selectedSymbol()"
-      (change)="selectSymbol($any($event.target).value)">
-      @for (symbol of symbols; track symbol) {
-        <option [value]="symbol">{{ symbolLabel(symbol) }} / USDT</option>
-      }
-    </select>
+  <div
+    class="mobile-floating-coin"
+    [class.dragged]="floatingCoinPosition()"
+    [style.left.px]="floatingCoinPosition()?.x"
+    [style.top.px]="floatingCoinPosition()?.y"
+    aria-label="Pilih coin cepat">
+    <button
+      type="button"
+      class="mobile-floating-drag-handle"
+      aria-label="Geser posisi coin selector"
+      title="Geser"
+      (pointerdown)="startFloatingCoinDrag($event)"
+      (pointermove)="moveFloatingCoinDrag($event)"
+      (pointerup)="endFloatingCoinDrag($event)"
+      (pointercancel)="endFloatingCoinDrag($event)"
+      (dblclick)="resetFloatingCoinPosition()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
 
-    @if (selectedTicker()) {
-      <span class="mobile-floating-coin-price">
-        {{ formatPrice(selectedTicker()?.closePrice) }}
-      </span>
-      <span
-        class="mobile-floating-coin-change"
-        [class]="changeClass(dailyChange())">
-        {{ (dailyChange() ?? 0) >= 0 ? '+' : '' }}
-        {{ dailyChange() | number:'1.2-2' }}%
-      </span>
-    }
-  </label>
+    <label class="mobile-floating-select-content">
+      <span class="mobile-floating-coin-symbol">{{ symbolLabel(selectedSymbol()) }}</span>
+      <select
+        [value]="selectedSymbol()"
+        (change)="selectSymbol($any($event.target).value)">
+        @for (symbol of symbols; track symbol) {
+          <option [value]="symbol">{{ symbolLabel(symbol) }} / USDT</option>
+        }
+      </select>
+
+      @if (selectedTicker()) {
+        <span class="mobile-floating-coin-price">
+          {{ formatPrice(selectedTicker()?.closePrice) }}
+        </span>
+        <span
+          class="mobile-floating-coin-change"
+          [class]="changeClass(dailyChange())">
+          {{ (dailyChange() ?? 0) >= 0 ? '+' : '' }}
+          {{ dailyChange() | number:'1.2-2' }}%
+        </span>
+      }
+    </label>
+  </div>
 
   @if (showNotificationOnboarding()) {
     <div class="notification-onboarding-backdrop">

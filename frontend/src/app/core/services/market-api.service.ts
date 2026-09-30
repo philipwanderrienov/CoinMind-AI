@@ -12,6 +12,7 @@ import {
   AiUsageSummary,
   BillingStatus,
   MarketContext,
+  MarketActivityProfile,
   MarketMicrostructure,
   MarketFeedHealth,
   NewsArticle,
@@ -153,6 +154,13 @@ export class MarketApiService {
   getMicrostructure(symbol: string): Observable<MarketMicrostructure> {
     return this.http.get<MarketMicrostructure>(
       `${this.baseUrl}/microstructure/${symbol}/summary`
+    );
+  }
+
+
+  getMarketActivity(symbol: string): Observable<MarketActivityProfile> {
+    return this.http.get<MarketActivityProfile>(
+      `${this.baseUrl}/activity/${symbol}`
     );
   }
 

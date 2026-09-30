@@ -7921,3 +7921,96 @@ main {
     font-size: 11.5px;
   }
 }
+
+
+/* ===== Draggable mobile coin selector ===== */
+@media (max-width: 760px) {
+  .mobile-floating-coin {
+    padding: 0;
+    grid-template-columns: 30px minmax(0, 1fr);
+    grid-template-areas: none;
+    column-gap: 0;
+    overflow: hidden;
+    touch-action: auto;
+  }
+
+  .mobile-floating-coin.dragged {
+    right: auto;
+    bottom: auto;
+  }
+
+  .mobile-floating-drag-handle {
+    width: 30px;
+    height: 100%;
+    min-height: 58px;
+    padding: 0;
+    border: 0;
+    border-right: 1px solid #e5e9f0;
+    background: #f7f8fc;
+    display: grid;
+    place-content: center;
+    gap: 3px;
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .mobile-floating-drag-handle:active {
+    cursor: grabbing;
+  }
+
+  .mobile-floating-drag-handle span {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #8a94a6;
+    display: block;
+  }
+
+  .mobile-floating-select-content {
+    position: relative;
+    min-width: 0;
+    min-height: 58px;
+    padding: 8px 30px 8px 10px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      "symbol price"
+      "symbol change";
+    align-items: center;
+    column-gap: 10px;
+    cursor: pointer;
+  }
+
+  .mobile-floating-select-content::after {
+    content: '';
+    position: absolute;
+    right: 11px;
+    top: 23px;
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid #6e7890;
+    border-bottom: 2px solid #6e7890;
+    transform: rotate(45deg);
+    pointer-events: none;
+  }
+
+  .mobile-floating-select-content select {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .mobile-floating-coin::after {
+    display: none;
+  }
+}
+
+@media (max-width: 390px) {
+  .mobile-floating-drag-handle,
+  .mobile-floating-select-content {
+    min-height: 54px;
+  }
+}

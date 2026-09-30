@@ -153,21 +153,36 @@
 
 
       <article class="panel chart-panel" id="dashboard">
-        <div class="panel-header">
-          <div>
-            <p class="eyebrow">LIVE MARKET</p>
-            <div class="market-title">
-              <h2>{{ symbolLabel(selectedSymbol()) }} / USDT</h2>
-              @if (selectedTicker()) {
-                <span class="selected-price">
-                  {{ formatPrice(selectedTicker()?.closePrice) }}
-                </span>
-                <span [class]="changeClass(dailyChange())">
-                  {{ (dailyChange() ?? 0) >= 0 ? '+' : '' }}
-                  {{ dailyChange() | number:'1.2-2' }}%
-                </span>
-              }
+        <div class="panel-header chart-header">
+          <div class="chart-header-top">
+            <div>
+              <p class="eyebrow">LIVE MARKET</p>
+              <div class="market-title">
+                <h2>{{ symbolLabel(selectedSymbol()) }} / USDT</h2>
+                @if (selectedTicker()) {
+                  <span class="selected-price">
+                    {{ formatPrice(selectedTicker()?.closePrice) }}
+                  </span>
+                  <span [class]="changeClass(dailyChange())">
+                    {{ (dailyChange() ?? 0) >= 0 ? '+' : '' }}
+                    {{ dailyChange() | number:'1.2-2' }}%
+                  </span>
+                }
+              </div>
             </div>
+
+            @if (tradeSetup()) {
+              <div
+                class="quick-decision"
+                [class.buy]="tradeSetup()!.action === 'BUY'"
+                [class.sell]="tradeSetup()!.action === 'SELL'"
+                [class.watch]="tradeSetup()!.action === 'WATCH_BUY' || tradeSetup()!.action === 'WATCH_SELL'"
+                [class.wait]="tradeSetup()!.action === 'WAIT'">
+                <span>Sekarang</span>
+                <strong>{{ tradeSetup()!.action.replace('_', ' ') }}</strong>
+                <small>{{ tradeSetup()!.confidence }}% confidence</small>
+              </div>
+            }
           </div>
 
           <div class="timeframes">

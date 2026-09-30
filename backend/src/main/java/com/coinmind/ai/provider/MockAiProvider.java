@@ -2,7 +2,9 @@ package com.coinmind.ai.provider;
 
 import com.coinmind.ai.model.AiAnalysisResult;
 import com.coinmind.ai.model.AiDecisionReview;
+import com.coinmind.ai.model.AiNewsIntelligence;
 import com.coinmind.ai.model.MarketContext;
+import com.coinmind.news.model.NewsArticle;
 import com.coinmind.trade.model.TradeSetup;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
@@ -82,6 +84,42 @@ public class MockAiProvider implements AiProvider {
                 "Mock AI review mirrors the deterministic engine. Use live Luna for production review.",
                 setup.reasons().stream().limit(3).toList(),
                 setup.warnings().stream().limit(3).toList(),
+                name(),
+                Instant.now()
+        ));
+    }
+
+    @Override
+    public Mono<AiNewsIntelligence> analyzeNews(
+            String symbol,
+            List<NewsArticle> articles
+    ) {
+        var first = articles.get(0);
+        String direction = first.sentimentScore().signum() > 0
+                ? "BULLISH"
+                : first.sentimentScore().signum() < 0
+                ? "BEARISH"
+                : "NEUTRAL";
+
+        return Mono.just(new AiNewsIntelligence(
+                symbol,
+                direction,
+                Math.max(20, first.relevanceScore().multiply(java.math.BigDecimal.valueOf(100)).intValue()),
+                55,
+                "INTRADAY",
+                "Mock news intelligence based on the highest-relevance article.",
+                List.of(first.title()),
+                List.of("Mock provider: use Luna for production news intelligence"),
+                articles.stream().limit(3).map(article -> new AiNewsIntelligence.ArticleImpact(
+                        article.id(),
+                        article.title(),
+                        article.sentimentScore().signum() > 0 ? "BULLISH" :
+                                article.sentimentScore().signum() < 0 ? "BEARISH" : "NEUTRAL",
+                        article.relevanceScore().multiply(java.math.BigDecimal.valueOf(100)).intValue(),
+                        50,
+                        "INTRADAY",
+                        "Mock impact derived from deterministic news sentiment."
+                )).toList(),
                 name(),
                 Instant.now()
         ));

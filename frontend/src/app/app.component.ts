@@ -99,6 +99,11 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly floatingCoinMenuDirection = signal<'up' | 'down'>('up');
   readonly floatingCoinDragging = signal(false);
   readonly activeSection = signal<'dashboard' | 'signals' | 'market-detail' | 'news' | 'performance'>('dashboard');
+  private sectionNavigationLock: {
+    section: 'dashboard' | 'signals' | 'market-detail' | 'news' | 'performance';
+    until: number;
+  } | null = null;
+
   private floatingCoinDrag: {
     pointerId: number;
     offsetX: number;
@@ -449,6 +454,10 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     this.activeSection.set(section);
+    this.sectionNavigationLock = {
+      section,
+      until: Date.now() + 900
+    };
 
     const stickyOffset = window.innerWidth <= 760 ? 70 : 96;
     const targetTop = Math.max(
@@ -462,6 +471,13 @@ export class AppComponent implements OnInit, OnDestroy {
       top: targetTop,
       behavior: 'smooth'
     });
+
+    window.setTimeout(() => {
+      if (this.sectionNavigationLock?.section === section) {
+        this.sectionNavigationLock = null;
+        this.activeSection.set(section);
+      }
+    }, 950);
 
     const target = event?.currentTarget as HTMLElement | null;
     target?.blur();
@@ -481,6 +497,21 @@ export class AppComponent implements OnInit, OnDestroy {
     ] as const;
 
     const update = () => {
+      if (
+        this.sectionNavigationLock
+        && Date.now() < this.sectionNavigationLock.until
+      ) {
+        this.activeSection.set(this.sectionNavigationLock.section);
+        return;
+      }
+
+      if (
+        this.sectionNavigationLock
+        && Date.now() >= this.sectionNavigationLock.until
+      ) {
+        this.sectionNavigationLock = null;
+      }
+
       const stickyOffset = window.innerWidth <= 760 ? 82 : 108;
       const currentY = window.scrollY + stickyOffset;
 

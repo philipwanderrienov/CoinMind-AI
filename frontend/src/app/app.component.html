@@ -117,6 +117,29 @@
     </div>
   </div>
 
+  <label class="mobile-floating-coin" aria-label="Pilih coin cepat">
+    <span class="mobile-floating-coin-symbol">{{ symbolLabel(selectedSymbol()) }}</span>
+    <select
+      [value]="selectedSymbol()"
+      (change)="selectSymbol($any($event.target).value)">
+      @for (symbol of symbols; track symbol) {
+        <option [value]="symbol">{{ symbolLabel(symbol) }} / USDT</option>
+      }
+    </select>
+
+    @if (selectedTicker()) {
+      <span class="mobile-floating-coin-price">
+        {{ formatPrice(selectedTicker()?.closePrice) }}
+      </span>
+      <span
+        class="mobile-floating-coin-change"
+        [class]="changeClass(dailyChange())">
+        {{ (dailyChange() ?? 0) >= 0 ? '+' : '' }}
+        {{ dailyChange() | number:'1.2-2' }}%
+      </span>
+    }
+  </label>
+
   @if (showNotificationOnboarding()) {
     <div class="notification-onboarding-backdrop">
       <section class="notification-onboarding" role="dialog" aria-modal="true">

@@ -13,6 +13,7 @@ import {
   Candlestick,
   ConnectionState,
   MarketContext,
+  MarketActivityProfile,
   MarketMicrostructure,
   MarketFeedHealth,
   NewsArticle,
@@ -67,6 +68,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly historyLoading = signal(false);
   readonly orderBooks = signal<Record<string, OrderBookSnapshot>>({});
   readonly microstructure = signal<MarketMicrostructure | null>(null);
+  readonly marketActivity = signal<MarketActivityProfile | null>(null);
   readonly indicators = signal<TechnicalIndicators | null>(null);
   readonly tradeSetup = signal<TradeSetup | null>(null);
   readonly marketContext = signal<MarketContext | null>(null);
@@ -197,6 +199,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadDecisionCandles();
     this.loadTimeframeIndicators();
     this.loadMicrostructure();
+    this.loadMarketActivity();
     this.loadIndicators();
     this.loadMarketContext();
     this.loadTradeSetup();
@@ -226,6 +229,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadDecisionCandles();
     this.loadTimeframeIndicators();
     this.loadMicrostructure();
+    this.loadMarketActivity();
     this.loadIndicators();
     this.loadMarketContext();
     this.loadTradeSetup();
@@ -402,6 +406,21 @@ export class AppComponent implements OnInit, OnDestroy {
     return 'waiting';
   }
 
+
+  activityLabel(level: MarketActivityProfile['currentActivity'] | undefined): string {
+    switch (level) {
+      case 'VERY_HIGH': return 'Very high';
+      case 'HIGH': return 'High';
+      case 'MEDIUM': return 'Medium';
+      case 'LOW': return 'Low';
+      default: return 'Waiting';
+    }
+  }
+
+  formatActivityHour(hour: number): string {
+    return `${hour.toString().padStart(2, '0')}:00`;
+  }
+
   private async initializePushNotifications(
     allowOnboarding = true
   ): Promise<void> {
@@ -500,6 +519,7 @@ export class AppComponent implements OnInit, OnDestroy {
             this.loadTradeSetup();
             this.loadIndicators();
             this.loadMicrostructure();
+            this.loadMarketActivity();
             this.loadNews();
           }
         })
@@ -726,6 +746,16 @@ export class AppComponent implements OnInit, OnDestroy {
       this.marketApi.getMicrostructure(this.selectedSymbol()).subscribe({
         next: summary => this.microstructure.set(summary),
         error: () => this.microstructure.set(null)
+      })
+    );
+  }
+
+
+  private loadMarketActivity(): void {
+    this.subscriptions.add(
+      this.marketApi.getMarketActivity(this.selectedSymbol()).subscribe({
+        next: profile => this.marketActivity.set(profile),
+        error: () => this.marketActivity.set(null)
       })
     );
   }

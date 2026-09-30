@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TradeSetupServiceTest {
 
-    private final TradeSetupService service = new TradeSetupService(null, null, null);
+    private final TradeSetupService service = new TradeSetupService(null, null, null, null);
 
     @Test
     void createsBuySetupForStrongBullishContext() {

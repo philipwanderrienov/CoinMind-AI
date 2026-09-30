@@ -2,6 +2,8 @@ package com.coinmind.trade.service;
 
 import com.coinmind.ai.model.MarketContext;
 import com.coinmind.ai.service.MarketContextBuilder;
+import com.coinmind.market.model.MarketActivityProfile;
+import com.coinmind.market.service.MarketActivityProfileService;
 import com.coinmind.trade.model.TradeSetup;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import reactor.core.publisher.Mono;
 
 @Service
 public class TradeSetupService {
@@ -33,12 +37,26 @@ public class TradeSetupService {
             List.of("1m", "15m", "1h", "4h", "1d");
 
     private final MarketContextBuilder contextBuilder;
+    private final MarketActivityProfileService activityProfileService;
 
-    public TradeSetupService(MarketContextBuilder contextBuilder) {
+    public TradeSetupService(
+            MarketContextBuilder contextBuilder,
+            MarketActivityProfileService activityProfileService
+    ) {
         this.contextBuilder = contextBuilder;
+        this.activityProfileService = activityProfileService;
     }
 
-    public TradeSetup build(String symbol, String interval) {
+    public Mono<TradeSetup> build(String symbol, String interval) {
+        return activityProfileService.build(symbol)
+                .map(activity -> build(symbol, interval, activity));
+    }
+
+    private TradeSetup build(
+            String symbol,
+            String interval,
+            MarketActivityProfile activity
+    ) {
         Map<String, MarketContext> contexts = new LinkedHashMap<>();
 
         for (String decisionInterval : DECISION_INTERVALS) {
@@ -69,6 +87,8 @@ public class TradeSetupService {
                 alignmentScore,
                 alignmentLabel,
                 regime,
+                activity.currentActivity(),
+                activity.currentScore(),
                 timeframeSignals(contexts)
         );
     }
@@ -85,6 +105,8 @@ public class TradeSetupService {
                 alignment,
                 alignmentLabel(alignment),
                 singleContextRegime(context),
+                "UNKNOWN",
+                BigDecimal.ZERO,
                 List.of(toTimeframeSignal(context, 100))
         );
     }
@@ -97,19 +119,42 @@ public class TradeSetupService {
             int alignmentScore,
             String alignmentLabel,
             String regime,
+            String marketActivity,
+            BigDecimal marketActivityScore,
             List<TradeSetup.TimeframeSignal> timeframes
     ) {
         BigDecimal strength = score.abs();
         BigDecimal price = context.price().lastPrice();
         BigDecimal atr = safeAtr(context.technical().atr14(), price);
 
-        String action = action(context, strength, side, alignmentScore, regime);
-        int confidence = confidence(context, strength, alignmentScore, regime);
+        String action = action(
+                context,
+                strength,
+                side,
+                alignmentScore,
+                regime,
+                marketActivity
+        );
+        int confidence = confidence(
+                context,
+                strength,
+                alignmentScore,
+                regime,
+                marketActivity
+        );
 
-        List<String> reasons = reasons(context, alignmentScore, alignmentLabel, regime, timeframes);
+        List<String> reasons = reasons(
+                context,
+                alignmentScore,
+                alignmentLabel,
+                regime,
+                marketActivity,
+                marketActivityScore,
+                timeframes
+        );
         List<String> warnings = "WAIT".equals(action)
-                ? waitWarnings(context, alignmentScore, regime)
-                : setupWarnings(context, action, alignmentScore, regime);
+                ? waitWarnings(context, alignmentScore, regime, marketActivity)
+                : setupWarnings(context, action, alignmentScore, regime, marketActivity);
 
         if ("WAIT".equals(action)) {
             return new TradeSetup(
@@ -123,6 +168,8 @@ public class TradeSetupService {
                     alignmentScore,
                     alignmentLabel,
                     regime,
+                    marketActivity,
+                    scale(marketActivityScore),
                     timeframes,
                     scale(price),
                     null,
@@ -182,6 +229,8 @@ public class TradeSetupService {
                 alignmentScore,
                 alignmentLabel,
                 regime,
+                marketActivity,
+                scale(marketActivityScore),
                 timeframes,
                 scale(price),
                 scale(entryLow),
@@ -328,7 +377,8 @@ public class TradeSetupService {
             BigDecimal strength,
             String side,
             int alignmentScore,
-            String regime
+            String regime,
+            String marketActivity
     ) {
         if ("NONE".equals(side)
                 || strength.compareTo(WATCH_THRESHOLD) < 0
@@ -345,6 +395,9 @@ public class TradeSetupService {
                 && alignmentScore >= 70
                 && !extremeRsi
                 && !highRisk) {
+            if ("LOW".equals(marketActivity)) {
+                return "LONG".equals(side) ? "WATCH_BUY" : "WATCH_SELL";
+            }
             return "LONG".equals(side) ? "BUY" : "SELL";
         }
 
@@ -355,7 +408,8 @@ public class TradeSetupService {
             MarketContext context,
             BigDecimal strength,
             int alignmentScore,
-            String regime
+            String regime,
+            String marketActivity
     ) {
         int value = 30
                 + strength.divide(BigDecimal.valueOf(2), MC).intValue()
@@ -379,6 +433,12 @@ public class TradeSetupService {
             value -= 5;
         }
 
+        if ("VERY_HIGH".equals(marketActivity) || "HIGH".equals(marketActivity)) {
+            value += 5;
+        } else if ("LOW".equals(marketActivity)) {
+            value -= 8;
+        }
+
         return Math.max(25, Math.min(95, value));
     }
 
@@ -387,11 +447,18 @@ public class TradeSetupService {
             int alignmentScore,
             String alignmentLabel,
             String regime,
+            String marketActivity,
+            BigDecimal marketActivityScore,
             List<TradeSetup.TimeframeSignal> timeframes
     ) {
         List<String> reasons = new ArrayList<>();
         reasons.add("Timeframe alignment " + alignmentLabel + " (" + alignmentScore + "%)");
         reasons.add("Market regime: " + regime.replace('_', ' ').toLowerCase());
+        reasons.add(
+                "Current market activity: "
+                        + marketActivity.toLowerCase().replace('_', ' ')
+                        + " (" + scale(marketActivityScore) + "/100)"
+        );
 
         timeframes.stream()
                 .filter(item -> "1h".equals(item.interval()) || "4h".equals(item.interval()))
@@ -410,7 +477,8 @@ public class TradeSetupService {
             MarketContext context,
             String action,
             int alignmentScore,
-            String regime
+            String regime,
+            String marketActivity
     ) {
         List<String> warnings = new ArrayList<>();
 
@@ -428,6 +496,10 @@ public class TradeSetupService {
             warnings.add("Market is sideways; breakout confirmation is more important");
         }
 
+        if ("LOW".equals(marketActivity)) {
+            warnings.add("Current trading hour has low relative activity; wait for stronger participation before active entry");
+        }
+
         if (context.technical().rsi14().compareTo(BigDecimal.valueOf(70)) > 0) {
             warnings.add("RSI is elevated; avoid chasing price");
         } else if (context.technical().rsi14().compareTo(BigDecimal.valueOf(30)) < 0) {
@@ -440,7 +512,8 @@ public class TradeSetupService {
     private List<String> waitWarnings(
             MarketContext context,
             int alignmentScore,
-            String regime
+            String regime,
+            String marketActivity
     ) {
         List<String> warnings = new ArrayList<>();
         warnings.add("No multi-timeframe setup currently meets the minimum threshold");
@@ -451,6 +524,10 @@ public class TradeSetupService {
 
         if ("HIGH_VOLATILITY".equals(regime)) {
             warnings.add("Volatility is elevated");
+        }
+
+        if ("LOW".equals(marketActivity)) {
+            warnings.add("Current trading hour has low relative activity");
         }
 
         return List.copyOf(warnings);

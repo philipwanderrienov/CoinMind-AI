@@ -6844,3 +6844,96 @@ main {
     border-radius: 6px;
   }
 }
+
+
+/* ===== Mobile timeframe compact 2-grid v6 ===== */
+@media (max-width: 760px) {
+  .timeframe-context-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 8px 12px 10px;
+  }
+
+  .timeframe-context-card,
+  .timeframe-context-card.execution {
+    grid-column: auto;
+    min-height: 118px;
+    padding: 10px;
+    display: block;
+    border-radius: 10px;
+  }
+
+  .timeframe-context-card:last-child {
+    grid-column: 1 / -1;
+    min-height: 104px;
+  }
+
+  .timeframe-context-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+  .timeframe-context-head > div {
+    min-width: 0;
+    display: grid;
+    gap: 1px;
+  }
+
+  .timeframe-context-head strong {
+    font-size: 13.5px !important;
+  }
+
+  .timeframe-context-head span:not(.candle-state) {
+    font-size: 10px !important;
+  }
+
+  .candle-state {
+    flex: 0 0 auto;
+    padding: 3px 6px;
+    font-size: 9px !important;
+  }
+
+  .timeframe-close {
+    margin-top: 8px;
+    text-align: left;
+    font-size: 14.5px !important;
+    line-height: 1.15;
+  }
+
+  .timeframe-change {
+    margin-top: 2px;
+    text-align: left;
+    font-size: 11px !important;
+  }
+
+  .timeframe-range {
+    margin-top: 7px;
+    padding-top: 6px;
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+    font-size: 9.5px !important;
+    line-height: 1.2;
+  }
+
+  .timeframe-range span {
+    min-width: 0;
+  }
+
+  .timeframe-range span:last-child {
+    text-align: right;
+  }
+
+  .timeframe-guide {
+    gap: 4px;
+    padding: 0 12px 12px;
+  }
+
+  .timeframe-guide span {
+    padding: 4px 6px;
+    font-size: 9.5px !important;
+  }
+}

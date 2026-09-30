@@ -5070,3 +5070,940 @@ main {
     font-size: 6.5px;
   }
 }
+
+
+/* ===== Natural responsive typography & layout =====
+   Keeps the dashboard information-dense without shrinking text below
+   comfortable mobile/web reading sizes. */
+:host {
+  --cm-text-xs: clamp(11px, .72vw, 12px);
+  --cm-text-sm: clamp(12px, .82vw, 14px);
+  --cm-text-md: clamp(14px, .95vw, 16px);
+  --cm-text-lg: clamp(17px, 1.25vw, 21px);
+  --cm-value: clamp(15px, 1.1vw, 19px);
+  --cm-panel-pad: clamp(16px, 1.5vw, 24px);
+}
+
+.app-shell {
+  font-size: var(--cm-text-md);
+}
+
+main {
+  width: min(1440px, calc(100vw - 40px));
+  padding: clamp(22px, 3vw, 42px) 0 clamp(48px, 5vw, 72px);
+}
+
+.panel {
+  border-radius: clamp(14px, 1.2vw, 18px);
+}
+
+.panel-header,
+.panel-header.compact {
+  padding: clamp(16px, 1.5vw, 22px) var(--cm-panel-pad);
+  gap: 14px;
+}
+
+.panel-header.compact {
+  padding-bottom: 12px;
+}
+
+.panel-header h2,
+.panel-header h3,
+.market-title h2,
+.market-stats h3,
+.usage-panel h3 {
+  font-size: var(--cm-text-lg);
+  line-height: 1.25;
+}
+
+.eyebrow {
+  margin-bottom: 7px;
+  font-size: var(--cm-text-xs);
+  line-height: 1.25;
+  letter-spacing: .09em;
+}
+
+.brand-name {
+  font-size: clamp(16px, 1vw, 18px);
+}
+
+.brand-tagline,
+.connection small,
+.ticker-head small,
+.hero-status small {
+  font-size: var(--cm-text-xs);
+}
+
+.connection strong {
+  font-size: var(--cm-text-sm);
+}
+
+.status-item,
+.state-pill,
+.live-pill,
+.usage-live,
+.timeframe-focus-label,
+.candle-state,
+.technical-bias {
+  font-size: var(--cm-text-xs) !important;
+}
+
+.sticky-control-shell .ticker-head strong {
+  font-size: var(--cm-text-sm);
+}
+
+.sticky-control-shell .ticker-price {
+  font-size: clamp(18px, 1.35vw, 22px);
+}
+
+.ticker-meta {
+  font-size: var(--cm-text-xs);
+}
+
+.selected-price {
+  font-size: var(--cm-text-md);
+}
+
+.timeframes {
+  gap: 5px;
+  padding: 5px;
+}
+
+.timeframes button {
+  min-width: 44px;
+  min-height: 34px;
+  height: auto;
+  padding: 7px 10px;
+  font-size: var(--cm-text-sm);
+}
+
+.indicator-toolbar {
+  min-height: 50px;
+  padding: 10px var(--cm-panel-pad);
+  gap: 8px;
+}
+
+.indicator-toolbar > span:first-child,
+.indicator-toolbar button,
+.indicator-legend {
+  font-size: var(--cm-text-xs);
+}
+
+.indicator-toolbar button {
+  min-height: 34px;
+  height: auto;
+  padding: 7px 12px;
+}
+
+.chart-footer,
+.chart-condition-empty,
+.activity-note,
+.empty-news,
+.empty-usage,
+.push-note {
+  font-size: var(--cm-text-xs);
+  line-height: 1.5;
+}
+
+.chart-footer {
+  padding: 12px var(--cm-panel-pad);
+}
+
+.stat-list,
+.score-grid,
+.news-summary,
+.headline-list,
+.usage-grid,
+.usage-cost,
+.usage-days {
+  padding-left: var(--cm-panel-pad);
+  padding-right: var(--cm-panel-pad);
+}
+
+.stat-list > div {
+  min-height: 48px;
+  font-size: var(--cm-text-sm);
+}
+
+.stat-list strong {
+  font-size: var(--cm-text-md);
+}
+
+.score-grid span,
+.news-summary span,
+.usage-grid span,
+.usage-cost span,
+.billing-status-card span {
+  font-size: var(--cm-text-xs);
+}
+
+.score-grid strong,
+.news-summary strong,
+.usage-grid strong,
+.usage-cost strong {
+  font-size: var(--cm-value);
+}
+
+.headline {
+  padding: 14px 0;
+}
+
+.headline strong {
+  font-size: var(--cm-text-md);
+  line-height: 1.45;
+}
+
+.headline span,
+.usage-days > div:not(.empty-usage),
+.usage-days strong {
+  font-size: var(--cm-text-xs);
+}
+
+/* Multi-timeframe cards */
+.timeframe-context-grid,
+.technical-context-grid {
+  gap: 10px;
+  padding: 12px var(--cm-panel-pad) 16px;
+}
+
+.timeframe-context-card,
+.technical-context-card {
+  padding: 13px;
+}
+
+.timeframe-context-head strong,
+.technical-context-head strong,
+.timeframe-close {
+  font-size: var(--cm-text-md);
+}
+
+.timeframe-context-head span,
+.technical-context-head span,
+.timeframe-change,
+.timeframe-range,
+.timeframe-empty,
+.technical-key-grid span,
+.technical-secondary,
+.timeframe-guide span,
+.technical-guide span {
+  font-size: var(--cm-text-xs);
+}
+
+.technical-key-grid strong {
+  font-size: var(--cm-text-sm);
+}
+
+.technical-key-grid > div {
+  padding: 10px;
+}
+
+/* Chart context */
+.chart-market-condition-head,
+.chart-market-activity-head {
+  padding: 14px var(--cm-panel-pad) 0;
+}
+
+.chart-market-condition-head strong,
+.chart-market-activity-head strong {
+  font-size: var(--cm-text-md);
+}
+
+.chart-market-condition-head > span,
+.activity-now {
+  padding: 6px 9px;
+  font-size: var(--cm-text-xs);
+}
+
+.chart-condition-grid {
+  gap: 8px;
+  padding: 12px var(--cm-panel-pad) 16px;
+}
+
+.chart-condition-grid > div {
+  padding: 12px;
+}
+
+.chart-condition-grid span {
+  font-size: var(--cm-text-xs);
+}
+
+.chart-condition-grid strong {
+  font-size: var(--cm-text-md);
+}
+
+.activity-summary {
+  gap: 8px;
+  padding: 12px var(--cm-panel-pad) 14px;
+}
+
+.activity-summary > div {
+  padding: 11px 12px;
+}
+
+.activity-summary span,
+.activity-note {
+  font-size: var(--cm-text-xs);
+}
+
+.activity-summary strong {
+  font-size: var(--cm-text-sm);
+}
+
+.activity-hours {
+  height: 96px;
+  padding: 0 var(--cm-panel-pad);
+}
+
+.activity-bar-track {
+  min-height: 70px;
+}
+
+.activity-hour small {
+  font-size: 9px;
+}
+
+.activity-note {
+  padding: 10px var(--cm-panel-pad) 15px;
+}
+
+/* Trade decision */
+.trade-action {
+  padding: 7px 11px;
+  font-size: var(--cm-text-xs);
+}
+
+.trade-overview,
+.trade-levels {
+  gap: 10px;
+  padding: 8px var(--cm-panel-pad) 14px;
+}
+
+.trade-overview > div,
+.trade-levels > div {
+  padding: 13px;
+}
+
+.trade-overview span,
+.trade-levels span,
+.trade-detail-grid > div > span,
+.trade-price-main span,
+.trade-price-status span {
+  font-size: var(--cm-text-xs);
+}
+
+.trade-overview strong,
+.trade-levels strong {
+  font-size: var(--cm-value);
+}
+
+.trade-levels small,
+.trade-price-main small,
+.trade-price-status small,
+.actionable-wait span {
+  font-size: var(--cm-text-xs);
+  line-height: 1.45;
+}
+
+.trade-price-card {
+  gap: 10px;
+  margin: 0 var(--cm-panel-pad) 14px;
+}
+
+.trade-price-main,
+.trade-price-status {
+  padding: 14px;
+}
+
+.trade-price-main strong {
+  font-size: clamp(21px, 1.7vw, 28px);
+}
+
+.trade-price-status strong {
+  font-size: var(--cm-text-md);
+}
+
+.decision-context {
+  margin: 0 var(--cm-panel-pad) 14px;
+  padding: 13px;
+}
+
+.decision-context-summary {
+  gap: 10px;
+}
+
+.decision-context-summary > div {
+  padding: 12px;
+}
+
+.decision-context-summary span,
+.decision-context-summary small,
+.decision-timeframe span,
+.decision-timeframe small {
+  font-size: var(--cm-text-xs);
+}
+
+.decision-context-summary strong {
+  font-size: var(--cm-value);
+}
+
+.decision-timeframes {
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.decision-timeframe {
+  padding: 10px;
+}
+
+.decision-timeframe strong {
+  font-size: var(--cm-text-sm);
+}
+
+.trade-wait {
+  margin: 0 var(--cm-panel-pad) 14px;
+  padding: 14px;
+  font-size: var(--cm-text-sm);
+}
+
+.actionable-wait strong {
+  font-size: var(--cm-text-md);
+}
+
+/* AI review / administration */
+.ai-decision-review {
+  margin: 0 var(--cm-panel-pad) 14px;
+  padding: 14px;
+}
+
+.ai-decision-review-head span,
+.ai-review-summary span,
+.ai-review-factors > div > span,
+.ai-review-verdict span,
+.ai-review-verdict small,
+.ai-review-meta {
+  font-size: var(--cm-text-xs);
+}
+
+.ai-decision-review-head strong,
+.ai-decision-review-head h4,
+.ai-review-summary strong,
+.ai-review-verdict strong {
+  font-size: var(--cm-text-md);
+}
+
+.ai-decision-review-head button,
+.ai-review-button,
+.ai-actions button {
+  min-height: 40px;
+  padding: 8px 13px;
+  font-size: var(--cm-text-sm);
+}
+
+.ai-review-empty,
+.ai-review-copy,
+.ai-review-placeholder,
+.ai-review-result > p,
+.ai-review-factors small {
+  font-size: var(--cm-text-sm);
+  line-height: 1.5;
+}
+
+.ai-panel > p:not(.eyebrow),
+.analysis-result > p,
+.ai-admin-status p {
+  font-size: var(--cm-text-sm);
+}
+
+.ai-context-grid span,
+.provider-status span,
+.analysis-factors > span,
+.analysis-factors small,
+.ai-admin-status span,
+.ai-admin-status small {
+  font-size: var(--cm-text-xs);
+}
+
+.ai-context-grid strong,
+.analysis-result-head strong {
+  font-size: var(--cm-value);
+}
+
+.pipeline > div {
+  padding: 11px 12px;
+  font-size: var(--cm-text-sm);
+}
+
+.pipeline span {
+  font-size: var(--cm-text-xs);
+}
+
+/* Tablet: preserve readable cards instead of over-compressing. */
+@media (max-width: 1050px) {
+  main {
+    width: min(960px, calc(100vw - 28px));
+  }
+
+  .timeframe-context-grid,
+  .technical-context-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .decision-timeframes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Mobile app-like scale */
+@media (max-width: 760px) {
+  :host {
+    --cm-text-xs: 11px;
+    --cm-text-sm: 13px;
+    --cm-text-md: 15px;
+    --cm-text-lg: 18px;
+    --cm-value: 16px;
+    --cm-panel-pad: 14px;
+  }
+
+  main {
+    width: calc(100vw - 20px);
+    padding-top: 12px;
+    padding-bottom: 36px;
+  }
+
+  .workspace-grid,
+  .side-stack {
+    gap: 12px;
+  }
+
+  .panel {
+    border-radius: 14px;
+  }
+
+  .sticky-control-shell .topbar {
+    min-height: 60px;
+    padding: 10px 12px 8px;
+  }
+
+  .brand-mark {
+    width: 36px;
+    height: 36px;
+    font-size: 12px;
+  }
+
+  .brand-name {
+    font-size: 16px;
+  }
+
+  .status-strip-inner {
+    min-height: 42px;
+  }
+
+  .status-item {
+    min-height: 32px;
+    padding: 0 10px;
+  }
+
+  .sticky-controls-inner {
+    width: calc(100% - 20px);
+    padding: 7px 0 9px;
+  }
+
+  .sticky-control-shell .ticker-grid {
+    gap: 6px;
+  }
+
+  .sticky-control-shell .ticker-card {
+    min-height: 62px;
+    padding: 8px 9px;
+    border-radius: 10px;
+  }
+
+  .sticky-control-shell .asset-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .sticky-control-shell .ticker-head strong {
+    font-size: 12px;
+  }
+
+  .sticky-control-shell .ticker-head small {
+    font-size: 10px;
+  }
+
+  .sticky-control-shell .ticker-price {
+    margin: 5px 0 2px;
+    font-size: 14px;
+  }
+
+  .sticky-control-shell .ticker-meta {
+    font-size: 10px;
+  }
+
+  .panel-header,
+  .panel-header.compact,
+  .trade-setup-panel .panel-header,
+  .timeframe-context-panel .panel-header,
+  .technical-context-panel .panel-header {
+    padding: 14px;
+    align-items: flex-start;
+  }
+
+  .trade-setup-panel .panel-header,
+  .timeframe-context-panel .panel-header,
+  .technical-context-panel .panel-header {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .trade-setup-panel .eyebrow {
+    margin-bottom: 5px;
+    font-size: 11px;
+  }
+
+  .trade-setup-panel h3,
+  .timeframe-context-panel h3,
+  .technical-context-panel h3 {
+    font-size: 17px;
+    line-height: 1.3;
+  }
+
+  .timeframes {
+    width: 100%;
+    gap: 4px;
+  }
+
+  .timeframes button {
+    flex: 0 0 auto;
+    min-width: 48px;
+    min-height: 40px;
+    padding: 8px 11px;
+    font-size: 13px;
+  }
+
+  .indicator-toolbar {
+    min-height: 54px;
+    padding: 10px 14px;
+  }
+
+  .indicator-toolbar button {
+    min-height: 38px;
+    font-size: 12px;
+  }
+
+  .indicator-toolbar > span:first-child,
+  .indicator-legend {
+    font-size: 11px;
+  }
+
+  .chart-wrap {
+    height: min(58vh, 470px);
+    min-height: 360px;
+  }
+
+  .chart-wrap.with-one-indicator {
+    height: min(70vh, 580px);
+  }
+
+  .chart-wrap.with-two-indicators {
+    height: min(82vh, 690px);
+  }
+
+  .chart-market-condition-head,
+  .chart-market-activity-head {
+    padding: 14px 14px 0;
+  }
+
+  .chart-market-condition-head strong,
+  .chart-market-activity-head strong {
+    font-size: 15px;
+  }
+
+  .chart-condition-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 12px 14px 14px;
+  }
+
+  .chart-condition-grid > div {
+    padding: 12px;
+    min-height: 68px;
+  }
+
+  .chart-condition-grid span,
+  .activity-summary span {
+    font-size: 11px;
+  }
+
+  .chart-condition-grid strong,
+  .activity-summary strong {
+    font-size: 14px;
+  }
+
+  .activity-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 12px 14px;
+  }
+
+  .activity-summary > div {
+    padding: 11px;
+  }
+
+  .activity-hours {
+    height: 88px;
+    padding: 0 14px;
+    gap: 2px;
+  }
+
+  .activity-bar-track {
+    min-height: 62px;
+  }
+
+  .activity-hour small {
+    font-size: 8px;
+  }
+
+  .activity-note {
+    padding: 10px 14px 14px;
+    font-size: 11px;
+  }
+
+  .timeframe-context-grid,
+  .technical-context-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 10px 14px 14px;
+  }
+
+  .timeframe-context-card,
+  .technical-context-card {
+    padding: 12px;
+  }
+
+  .timeframe-context-head strong,
+  .technical-context-head strong,
+  .timeframe-close {
+    font-size: 14px;
+  }
+
+  .timeframe-context-head span,
+  .technical-context-head span,
+  .timeframe-change,
+  .timeframe-range,
+  .timeframe-empty,
+  .technical-key-grid span,
+  .technical-secondary,
+  .timeframe-guide span,
+  .technical-guide span {
+    font-size: 11px;
+  }
+
+  .technical-key-grid strong {
+    font-size: 13px;
+  }
+
+  .timeframe-guide,
+  .technical-guide {
+    padding: 0 14px 14px;
+    gap: 6px;
+  }
+
+  .timeframe-guide span,
+  .technical-guide span {
+    padding: 6px 8px;
+  }
+
+  .trade-overview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 8px 14px 12px;
+  }
+
+  .trade-overview > div {
+    padding: 12px;
+    min-height: 66px;
+  }
+
+  .trade-overview span,
+  .trade-levels span {
+    font-size: 11px;
+  }
+
+  .trade-overview strong,
+  .trade-levels strong {
+    font-size: 16px;
+  }
+
+  .trade-price-card {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin: 0 14px 12px;
+  }
+
+  .trade-price-main,
+  .trade-price-status {
+    padding: 13px;
+  }
+
+  .trade-price-main strong {
+    font-size: 22px;
+  }
+
+  .trade-price-status strong {
+    font-size: 15px;
+  }
+
+  .trade-price-main span,
+  .trade-price-status span,
+  .trade-price-main small,
+  .trade-price-status small {
+    font-size: 11px;
+  }
+
+  .decision-context {
+    margin: 0 14px 12px;
+    padding: 12px;
+  }
+
+  .decision-context-summary {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .decision-context-summary > div {
+    padding: 11px;
+  }
+
+  .decision-context-summary span,
+  .decision-context-summary small,
+  .decision-timeframe span,
+  .decision-timeframe small {
+    font-size: 11px;
+  }
+
+  .decision-context-summary strong {
+    font-size: 16px;
+  }
+
+  .decision-timeframes {
+    grid-template-columns: repeat(5, minmax(92px, 1fr));
+    gap: 7px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+  }
+
+  .decision-timeframe {
+    padding: 10px;
+  }
+
+  .decision-timeframe strong {
+    font-size: 12px;
+  }
+
+  .trade-levels.actionable {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 0 14px 12px;
+  }
+
+  .trade-levels.actionable > div {
+    min-height: 92px;
+    padding: 12px;
+  }
+
+  .trade-levels small {
+    font-size: 11px;
+  }
+
+  .trade-wait {
+    margin: 0 14px 12px;
+    padding: 13px;
+    font-size: 13px;
+  }
+
+  .actionable-wait strong {
+    font-size: 15px;
+  }
+
+  .actionable-wait span {
+    font-size: 12px;
+  }
+
+  .ai-decision-review {
+    margin: 0 14px 12px;
+    padding: 13px;
+  }
+
+  .ai-decision-review-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ai-decision-review-head strong,
+  .ai-decision-review-head h4 {
+    font-size: 15px;
+  }
+
+  .ai-decision-review-head button,
+  .ai-review-button {
+    width: 100%;
+    min-height: 44px;
+    font-size: 13px;
+  }
+
+  .ai-review-summary,
+  .ai-review-factors {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .ai-review-summary > div,
+  .ai-review-factors > div {
+    padding: 11px;
+  }
+
+  .ai-review-copy,
+  .ai-review-placeholder,
+  .ai-review-result > p,
+  .ai-review-factors small,
+  .ai-review-empty {
+    font-size: 13px;
+  }
+
+  .chart-footer {
+    min-height: 42px;
+    padding: 10px 14px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 420px) {
+  main {
+    width: calc(100vw - 16px);
+  }
+
+  .sticky-controls-inner {
+    width: calc(100% - 16px);
+  }
+
+  .sticky-control-shell .ticker-card {
+    padding: 7px;
+  }
+
+  .sticky-control-shell .ticker-head small {
+    display: none;
+  }
+
+  .sticky-control-shell .ticker-price {
+    font-size: 13px;
+  }
+
+  .trade-levels.actionable {
+    grid-template-columns: 1fr;
+  }
+
+  .decision-context-summary {
+    grid-template-columns: 1fr;
+  }
+}

@@ -586,22 +586,15 @@ export class AppComponent implements OnInit, OnDestroy {
       this.activeSection.set(defaultSection);
       window.history.replaceState(null, '', `#${defaultSection}`);
 
-      window.setTimeout(() => {
-        const element = document.getElementById(defaultSection);
-        if (!element) {
-          return;
-        }
-
-        const targetTop = Math.max(
-          0,
-          window.scrollY + element.getBoundingClientRect().top - this.sectionScrollOffset()
-        );
-
+      // Keep the first viewport at the top of the app so the CoinMind header
+      // and status indicators remain visible. The hash only establishes the
+      // default active section; scrolling happens only after an explicit nav tap.
+      if (window.innerWidth <= 760) {
         window.scrollTo({
-          top: targetTop,
+          top: 0,
           behavior: 'auto'
         });
-      }, 0);
+      }
     }
 
     window.setTimeout(update, 40);

@@ -459,7 +459,7 @@ export class AppComponent implements OnInit, OnDestroy {
       until: Date.now() + 900
     };
 
-    const stickyOffset = window.innerWidth <= 760 ? 70 : 96;
+    const stickyOffset = this.sectionScrollOffset();
     const targetTop = Math.max(
       0,
       window.scrollY + element.getBoundingClientRect().top - stickyOffset
@@ -481,6 +481,26 @@ export class AppComponent implements OnInit, OnDestroy {
 
     const target = event?.currentTarget as HTMLElement | null;
     target?.blur();
+  }
+
+  private sectionScrollOffset(): number {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return 0;
+    }
+
+    if (window.innerWidth <= 760) {
+      const mobileNav = document.querySelector(
+        '.mobile-sticky-dashboard-nav'
+      ) as HTMLElement | null;
+
+      return (mobileNav?.getBoundingClientRect().height ?? 58) + 12;
+    }
+
+    const stickyShell = document.querySelector(
+      '.sticky-control-shell'
+    ) as HTMLElement | null;
+
+    return (stickyShell?.getBoundingClientRect().height ?? 150) + 14;
   }
 
   private startSectionTracking(): void {
@@ -512,7 +532,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.sectionNavigationLock = null;
       }
 
-      const stickyOffset = window.innerWidth <= 760 ? 82 : 108;
+      const stickyOffset = this.sectionScrollOffset();
       const currentY = window.scrollY + stickyOffset;
 
       let active: typeof sections[number] = 'dashboard';

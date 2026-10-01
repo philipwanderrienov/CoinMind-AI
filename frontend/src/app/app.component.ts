@@ -465,7 +465,13 @@ export class AppComponent implements OnInit, OnDestroy {
       window.scrollY + element.getBoundingClientRect().top - stickyOffset
     );
 
-    window.history.replaceState(null, '', `#${section}`);
+    window.history.replaceState(
+      null,
+      '',
+      section === 'market-detail' && window.innerWidth <= 760
+        ? '#market'
+        : `#${section}`
+    );
 
     window.scrollTo({
       top: targetTop,
@@ -576,20 +582,24 @@ export class AppComponent implements OnInit, OnDestroy {
       'performance'
     ] as const;
 
-    if (knownSections.includes(hash as typeof knownSections[number])) {
+    if (hash === 'market') {
+      // Logical mobile route: marks Market active without creating an anchor
+      // jump to #market-detail, so the app header remains visible on first load.
+      this.activeSection.set('market-detail');
+    } else if (knownSections.includes(hash as typeof knownSections[number])) {
       this.activeSection.set(hash as typeof knownSections[number]);
     } else {
-      const defaultSection = window.innerWidth <= 760
-        ? 'market-detail'
-        : 'dashboard';
+      const isMobile = window.innerWidth <= 760;
+      const defaultSection = isMobile ? 'market-detail' : 'dashboard';
 
       this.activeSection.set(defaultSection);
-      window.history.replaceState(null, '', `#${defaultSection}`);
+      window.history.replaceState(
+        null,
+        '',
+        isMobile ? '#market' : '#dashboard'
+      );
 
-      // Keep the first viewport at the top of the app so the CoinMind header
-      // and status indicators remain visible. The hash only establishes the
-      // default active section; scrolling happens only after an explicit nav tap.
-      if (window.innerWidth <= 760) {
+      if (isMobile) {
         window.scrollTo({
           top: 0,
           behavior: 'auto'

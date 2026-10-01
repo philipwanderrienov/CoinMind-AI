@@ -8390,3 +8390,200 @@ main {
   color: #69778b;
   background: transparent;
 }
+
+
+/* ===== Desktop proportional dashboard pass ===== */
+@media (min-width: 1024px) {
+  .sticky-control-shell .topbar {
+    height: 58px;
+    padding-left: max(32px, calc((100vw - 1380px) / 2));
+    padding-right: max(32px, calc((100vw - 1380px) / 2));
+  }
+
+  .sticky-control-shell .status-strip-inner,
+  .sticky-controls-inner,
+  main {
+    width: min(1380px, calc(100vw - 64px));
+  }
+
+  .sticky-control-shell .status-strip-inner {
+    min-height: 34px;
+  }
+
+  .sticky-controls-inner {
+    grid-template-columns: minmax(390px, 460px) minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    padding: 8px 0 10px;
+  }
+
+  .sticky-control-shell .desktop-dashboard-nav {
+    align-self: center;
+    height: 88px !important;
+    min-height: 88px;
+    margin: 0;
+    padding: 6px;
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px;
+    align-items: stretch;
+    border-radius: 13px;
+  }
+
+  .sticky-control-shell .desktop-dashboard-nav a {
+    min-width: 0;
+    height: auto;
+    padding: 8px 5px;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    border-radius: 9px;
+    font-size: 11px;
+    line-height: 1.1;
+  }
+
+  .sticky-control-shell .desktop-dashboard-nav a.active::after {
+    width: 18px;
+    margin: 5px auto 0;
+  }
+
+  .sticky-control-shell .ticker-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .sticky-control-shell .ticker-card,
+  .ticker-card {
+    min-height: 88px !important;
+    height: 88px;
+    padding: 10px 12px;
+    border-radius: 13px;
+  }
+
+  .sticky-control-shell .ticker-head {
+    min-height: 25px;
+  }
+
+  .sticky-control-shell .ticker-head strong {
+    font-size: 12px;
+  }
+
+  .sticky-control-shell .ticker-head small {
+    font-size: 10px;
+  }
+
+  .sticky-control-shell .ticker-price {
+    margin: 6px 0 2px;
+    font-size: 18px;
+    line-height: 1.05;
+  }
+
+  .sticky-control-shell .ticker-meta {
+    margin-top: 0;
+    font-size: 10px;
+  }
+
+  main {
+    padding-top: 28px;
+    padding-bottom: 64px;
+  }
+
+  .workspace-grid {
+    gap: 18px;
+  }
+
+  .chart-panel {
+    border-radius: 18px;
+  }
+
+  .chart-header {
+    padding: 18px 22px 16px !important;
+    gap: 14px;
+  }
+
+  .chart-header-top {
+    min-height: 60px;
+    align-items: center;
+  }
+
+  .market-selector-block {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+  }
+
+  .coin-selector {
+    min-width: 180px;
+    max-width: 210px;
+  }
+
+  .coin-selector select {
+    min-height: 42px;
+    font-size: 15px;
+  }
+
+  .market-selector-block .selected-price {
+    margin: 0 0 8px;
+    font-size: 15px;
+  }
+
+  .market-selector-block > span:last-child {
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+
+  .quick-decision {
+    min-width: 145px;
+    padding: 10px 14px;
+  }
+
+  .chart-control-row {
+    grid-template-columns: 180px 230px;
+    justify-content: start;
+    gap: 10px;
+    max-width: 430px;
+  }
+
+  .compact-control select,
+  .indicator-dropdown summary {
+    min-height: 42px;
+  }
+
+  .compact-control select {
+    font-size: 13px;
+  }
+
+  .indicator-dropdown summary strong {
+    font-size: 12px;
+  }
+
+  .chart-wrap,
+  .chart-wrap.with-one-indicator,
+  .chart-wrap.with-two-indicators {
+    height: clamp(500px, 48vh, 620px);
+    min-height: 500px;
+  }
+
+  .panel-header {
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .sticky-control-shell .status-strip-inner,
+  .sticky-controls-inner,
+  main {
+    width: min(1440px, calc(100vw - 80px));
+  }
+
+  .sticky-controls-inner {
+    grid-template-columns: 470px minmax(0, 1fr);
+  }
+
+  .chart-wrap,
+  .chart-wrap.with-one-indicator,
+  .chart-wrap.with-two-indicators {
+    height: 620px;
+  }
+}

@@ -508,7 +508,7 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const sections = [
+    const desktopSections = [
       'dashboard',
       'signals',
       'market-detail',
@@ -516,7 +516,18 @@ export class AppComponent implements OnInit, OnDestroy {
       'performance'
     ] as const;
 
+    const mobileSections = [
+      'market-detail',
+      'news',
+      'performance',
+      'dashboard',
+      'signals'
+    ] as const;
+
     const update = () => {
+      const sections = window.innerWidth <= 760
+        ? mobileSections
+        : desktopSections;
       if (
         this.sectionNavigationLock
         && Date.now() < this.sectionNavigationLock.until
@@ -535,7 +546,8 @@ export class AppComponent implements OnInit, OnDestroy {
       const stickyOffset = this.sectionScrollOffset();
       const currentY = window.scrollY + stickyOffset;
 
-      let active: typeof sections[number] = 'dashboard';
+      let active: 'dashboard' | 'signals' | 'market-detail' | 'news' | 'performance'
+        = window.innerWidth <= 760 ? 'market-detail' : 'dashboard';
 
       for (const section of sections) {
         const element = document.getElementById(section);
@@ -556,10 +568,20 @@ export class AppComponent implements OnInit, OnDestroy {
     };
 
     const hash = window.location.hash.replace('#', '');
-    if (sections.includes(hash as typeof sections[number])) {
-      this.activeSection.set(hash as typeof sections[number]);
+    const knownSections = [
+      'dashboard',
+      'signals',
+      'market-detail',
+      'news',
+      'performance'
+    ] as const;
+
+    if (knownSections.includes(hash as typeof knownSections[number])) {
+      this.activeSection.set(hash as typeof knownSections[number]);
     } else {
-      this.activeSection.set('dashboard');
+      this.activeSection.set(
+        window.innerWidth <= 760 ? 'market-detail' : 'dashboard'
+      );
     }
 
     window.setTimeout(update, 0);

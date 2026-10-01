@@ -448,7 +448,7 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const element = document.getElementById(section);
+    const element = document.getElementById(this.sectionElementId(section));
     if (!element) {
       return;
     }
@@ -487,6 +487,12 @@ export class AppComponent implements OnInit, OnDestroy {
 
     const target = event?.currentTarget as HTMLElement | null;
     target?.blur();
+  }
+
+  private sectionElementId(
+    section: 'dashboard' | 'signals' | 'market-detail' | 'news' | 'performance'
+  ): string {
+    return section === 'dashboard' ? 'dashboard-section' : section;
   }
 
   private sectionScrollOffset(): number {
@@ -556,7 +562,7 @@ export class AppComponent implements OnInit, OnDestroy {
         = window.innerWidth <= 760 ? 'market-detail' : 'dashboard';
 
       for (const section of sections) {
-        const element = document.getElementById(section);
+        const element = document.getElementById(this.sectionElementId(section));
         if (!element) {
           continue;
         }
@@ -586,6 +592,14 @@ export class AppComponent implements OnInit, OnDestroy {
       // Logical mobile route: marks Market active without creating an anchor
       // jump to #market-detail, so the app header remains visible on first load.
       this.activeSection.set('market-detail');
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    } else if (hash === 'dashboard') {
+      // Logical desktop route: Dashboard is active, but the initial viewport
+      // stays at the top so branding, status, navigation, and tickers remain visible.
+      this.activeSection.set('dashboard');
+      if (window.innerWidth > 760) {
+        window.scrollTo({ top: 0, behavior: 'auto' });
+      }
     } else if (knownSections.includes(hash as typeof knownSections[number])) {
       this.activeSection.set(hash as typeof knownSections[number]);
     } else {
@@ -599,12 +613,10 @@ export class AppComponent implements OnInit, OnDestroy {
         isMobile ? '#market' : '#dashboard'
       );
 
-      if (isMobile) {
-        window.scrollTo({
-          top: 0,
-          behavior: 'auto'
-        });
-      }
+      window.scrollTo({
+        top: 0,
+        behavior: 'auto'
+      });
     }
 
     window.setTimeout(update, 40);

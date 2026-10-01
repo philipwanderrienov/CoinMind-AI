@@ -9077,3 +9077,228 @@ main {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+
+/* ===== Desktop dashboard composition v2 ===== */
+@media (min-width: 1100px) {
+  main {
+    width: min(1440px, calc(100vw - 48px));
+    padding-top: 22px;
+  }
+
+  .workspace-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 18px;
+    align-items: start;
+  }
+
+  .workspace-grid > .chart-panel {
+    grid-column: span 8;
+  }
+
+  .workspace-grid > .trade-setup-panel {
+    grid-column: span 4;
+    position: sticky;
+    top: 18px;
+    align-self: start;
+  }
+
+  .workspace-grid > .side-stack {
+    grid-column: 1 / -1;
+  }
+
+  /* Make the chart panel use desktop width more intelligently. */
+  .chart-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    overflow: hidden;
+  }
+
+  .chart-panel > .chart-header,
+  .chart-panel > .compact-indicator-legend,
+  .chart-panel > .chart-wrap,
+  .chart-panel > .chart-footer {
+    grid-column: 1 / -1;
+  }
+
+  .chart-panel > .chart-market-condition {
+    grid-column: 1;
+    border-right: 1px solid #e8edf3;
+  }
+
+  .chart-panel > .chart-market-activity {
+    grid-column: 2;
+  }
+
+  .chart-wrap,
+  .chart-wrap.with-one-indicator,
+  .chart-wrap.with-two-indicators {
+    height: 500px;
+    min-height: 500px;
+  }
+
+  .chart-condition-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .activity-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .activity-hours {
+    height: 108px;
+  }
+
+  /* Signals becomes a useful desktop sidebar instead of a second full-width page. */
+  .trade-setup-panel {
+    overflow: hidden;
+  }
+
+  .trade-setup-panel .panel-header {
+    padding: 18px;
+  }
+
+  .trade-setup-panel h3 {
+    max-width: 240px;
+    font-size: 20px;
+    line-height: 1.2;
+  }
+
+  .trade-overview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0 18px 14px;
+    gap: 10px;
+  }
+
+  .trade-overview > div {
+    min-height: 82px;
+    padding: 12px;
+  }
+
+  .trade-price-card {
+    margin: 0 18px 14px;
+    grid-template-columns: 1fr;
+  }
+
+  .trade-price-main,
+  .trade-price-status {
+    min-height: 104px;
+  }
+
+  .decision-context {
+    margin: 0 18px 14px;
+  }
+
+  .decision-context-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .decision-timeframes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .trade-levels.actionable {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0 18px 14px;
+  }
+
+  .trade-wait {
+    margin: 0 18px 14px;
+  }
+
+  .ai-decision-review {
+    margin-left: 18px;
+    margin-right: 18px;
+  }
+
+  .trade-detail-grid {
+    grid-template-columns: 1fr;
+    margin-left: 18px;
+    margin-right: 18px;
+  }
+
+  /* Market detail: full-width primary context, compact secondary cards. */
+  .side-stack {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .side-stack > .advanced-market-details {
+    grid-column: 1 / -1;
+  }
+
+  .advanced-market-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .advanced-market-grid > .timeframe-context-panel,
+  .advanced-market-grid > .technical-context-panel {
+    grid-column: 1 / -1;
+  }
+
+  .advanced-market-grid > .market-stats,
+  .advanced-market-grid > .prediction-market-panel {
+    grid-column: span 6;
+  }
+
+  .market-stats .stat-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .timeframe-context-grid,
+  .technical-context-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .timeframe-context-card,
+  .technical-context-card {
+    min-height: 142px;
+  }
+
+  .side-stack > .news-details {
+    grid-column: span 7;
+  }
+
+  .side-stack > .ai-insight-panel {
+    grid-column: span 5;
+  }
+
+  .side-stack > #performance {
+    grid-column: 1 / -1;
+  }
+
+  .news-details,
+  .ai-insight-panel,
+  #performance {
+    align-self: start;
+  }
+
+  .ai-insight-body {
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+}
+
+/* Large desktop gets a little more breathing room without stretching cards. */
+@media (min-width: 1500px) {
+  main,
+  .sticky-control-shell .topbar,
+  .status-strip-inner,
+  .sticky-controls-inner {
+    width: min(1480px, calc(100vw - 72px));
+  }
+
+  .workspace-grid {
+    gap: 20px;
+  }
+
+  .chart-wrap,
+  .chart-wrap.with-one-indicator,
+  .chart-wrap.with-two-indicators {
+    height: 540px;
+  }
+}

@@ -8652,3 +8652,28 @@ main {
     scroll-margin-top: 0;
   }
 }
+
+
+/* ===== Mobile nav follows visual card order; active has no underline ===== */
+.dashboard-nav a::after,
+.dashboard-nav a.active::after,
+.dashboard-nav a[aria-current="page"]::after,
+.mobile-sticky-dashboard-nav a::after,
+.mobile-sticky-dashboard-nav a.active::after,
+.desktop-dashboard-nav a.active::after {
+  content: none !important;
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .mobile-sticky-dashboard-nav a {
+    flex: 1 1 20%;
+    min-width: 0;
+    font-size: 11px;
+  }
+
+  .mobile-sticky-dashboard-nav a.active {
+    background: #f2f0ff;
+    color: #594bd4;
+  }
+}

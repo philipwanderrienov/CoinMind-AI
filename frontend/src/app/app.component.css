@@ -2794,7 +2794,7 @@ main {
   padding: 0 10px 10px;
 }
 
-#dashboard,
+#dashboard-section,
 #signals,
 #market-detail,
 #news,
@@ -3113,7 +3113,7 @@ main {
     font-size: 9px;
   }
 
-  #dashboard,
+  #dashboard-section,
   #signals,
   #market-detail,
   #news,
@@ -8295,7 +8295,7 @@ main {
     margin-top: 2px;
   }
 
-  #dashboard,
+  #dashboard-section,
   #signals,
   #news,
   #performance {
@@ -8644,7 +8644,7 @@ main {
     margin: 5px 0 2px;
   }
 
-  #dashboard,
+  #dashboard-section,
   #signals,
   #market-detail,
   #news,
@@ -9027,7 +9027,7 @@ main {
     padding: 16px 22px;
   }
 
-  #dashboard,
+  #dashboard-section,
   #signals,
   #market-detail,
   #news,

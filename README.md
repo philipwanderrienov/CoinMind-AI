@@ -53,3 +53,14 @@ Angular Realtime Dashboard
 ```
 
 > Status: project foundation / Phase 1.
+
+
+## Current Development Handoff
+
+For the latest implementation state, UI decisions, deployment commands, open issues, and continuation notes, read:
+
+```text
+docs/development/current-state.md
+```
+
+This file should be checked first when continuing CoinMind development in a new conversation.

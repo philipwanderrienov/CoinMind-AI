@@ -579,12 +579,32 @@ export class AppComponent implements OnInit, OnDestroy {
     if (knownSections.includes(hash as typeof knownSections[number])) {
       this.activeSection.set(hash as typeof knownSections[number]);
     } else {
-      this.activeSection.set(
-        window.innerWidth <= 760 ? 'market-detail' : 'dashboard'
-      );
+      const defaultSection = window.innerWidth <= 760
+        ? 'market-detail'
+        : 'dashboard';
+
+      this.activeSection.set(defaultSection);
+      window.history.replaceState(null, '', `#${defaultSection}`);
+
+      window.setTimeout(() => {
+        const element = document.getElementById(defaultSection);
+        if (!element) {
+          return;
+        }
+
+        const targetTop = Math.max(
+          0,
+          window.scrollY + element.getBoundingClientRect().top - this.sectionScrollOffset()
+        );
+
+        window.scrollTo({
+          top: targetTop,
+          behavior: 'auto'
+        });
+      }, 0);
     }
 
-    window.setTimeout(update, 0);
+    window.setTimeout(update, 40);
 
     this.subscriptions.add(
       fromEvent(window, 'scroll')

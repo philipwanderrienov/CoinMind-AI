@@ -150,20 +150,6 @@
 
   <nav class="dashboard-nav mobile-sticky-dashboard-nav" aria-label="CoinMind sections">
     <a
-      href="#dashboard"
-      [class.active]="activeSection() === 'dashboard'"
-      [attr.aria-current]="activeSection() === 'dashboard' ? 'page' : null"
-      (click)="navigateToSection('dashboard', $event)">
-      Dashboard
-    </a>
-    <a
-      href="#signals"
-      [class.active]="activeSection() === 'signals'"
-      [attr.aria-current]="activeSection() === 'signals' ? 'page' : null"
-      (click)="navigateToSection('signals', $event)">
-      Signals
-    </a>
-    <a
       href="#market-detail"
       [class.active]="activeSection() === 'market-detail'"
       [attr.aria-current]="activeSection() === 'market-detail' ? 'page' : null"
@@ -183,6 +169,20 @@
       [attr.aria-current]="activeSection() === 'performance' ? 'page' : null"
       (click)="navigateToSection('performance', $event)">
       History
+    </a>
+    <a
+      href="#dashboard"
+      [class.active]="activeSection() === 'dashboard'"
+      [attr.aria-current]="activeSection() === 'dashboard' ? 'page' : null"
+      (click)="navigateToSection('dashboard', $event)">
+      Dashboard
+    </a>
+    <a
+      href="#signals"
+      [class.active]="activeSection() === 'signals'"
+      [attr.aria-current]="activeSection() === 'signals' ? 'page' : null"
+      (click)="navigateToSection('signals', $event)">
+      Signals
     </a>
   </nav>
 

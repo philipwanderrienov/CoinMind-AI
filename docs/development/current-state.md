@@ -108,66 +108,51 @@ Behavior:
 - dropdown opens downward if the selector is near the top and upward if near the bottom
 - desktop does not use the floating selector
 
-## Desktop UX state
+## Navigation / responsive shell
 
-Desktop is currently the main area still being refined.
+CoinMind now uses a view-based application sidebar instead of the old horizontal section navigator.
 
-The desktop first-load route uses logical:
+Primary views:
 
 ```text
-#section=dashboard
+Dashboard
+Trade Decision
+News
+AI & Usage
 ```
 
-Explicit menu links now map directly to semantic DOM ids:
+### Desktop
+
+- persistent left sidebar, 252px wide
+- horizontal section navigation has been removed
+- clicking a sidebar item switches the visible application view instead of smooth-scrolling through a long combined page
+- selected coin summary remains visible in the sidebar footer
+- Dashboard contains chart, market condition, hourly activity, and Detail Market context
+- Trade Decision focuses on the full deterministic decision explanation, entry/risk/targets, alignment, reasons, warnings, and AI review
+- News shows the configured coin news/sentiment area
+- AI & Usage shows AI Insight plus engine/model details, token usage, cost estimates, evaluation, and analysis history
+
+### Mobile
+
+- the sidebar becomes an off-canvas drawer opened from a hamburger button in the header
+- tapping a menu closes the drawer and switches view
+- the existing draggable floating coin selector remains available
+- the old sticky horizontal section navigation is removed
+
+Navigation is hash-based at the view level:
 
 ```text
 #dashboard
-#signals
-#market
+#trade
 #news
-#history
+#ai
 ```
 
-First load normalizes the URL to the viewport-specific logical hash before section ids render, including reloads of real anchors left by previous clicks. Menu clicks and hash changes during a running session target the real sections with the measured offset.
+This view-based model intentionally removes the previous section-anchor/scroll-tracking complexity.
 
-On first desktop access:
+### Validation status
 
-- Dashboard is active
-- viewport should remain at the top
-- header, status strip, navigation, and ticker cards should remain visible
-
-### Latest desktop implementation (2026-10-02)
-
-Desktop structure was simplified to remove the confusing right-side Signals sidebar and reduce scroll misalignment.
-
-Current desktop section flow is literal and matches navigation:
-
-```text
-Dashboard -> Signals -> Market -> News -> History
-```
-
-- Dashboard/chart is full-width.
-- Signals/Trade Decision is full-width directly below Dashboard.
-- Signals is explicitly forced to normal document flow; no sticky/right sidebar behavior.
-- Market remains full-width and contains timeframe, technical, microstructure, and Polymarket context.
-- News and AI Insight may still share desktop horizontal space inside the lower content stack.
-- History remains full-width.
-- Desktop section scrolling uses the measured desktop menu height + 18px; only the section menu persists at the viewport top.
-- Menu hrefs, active state names, and DOM ids are aligned to the same semantic section names.
-- Mobile visual order and floating selector behavior are preserved.
-
-### Navigation correction (local source, 2026-10-02)
-
-- Semantic hrefs and unique DOM ids already match Dashboard/chart, Signals/Trade Decision, Market/Detail market, News/News sentiment, and History/Performance & advanced.
-- First load stays at scroll position zero: Dashboard active on desktop, Market active on mobile. Incoming hashes are normalized to the corresponding logical entry hash, including real-anchor reloads.
-- Section tracking starts after the view exists and sorts rendered section positions instead of assuming responsive document order; a 2px tolerance covers scroll rounding.
-- Menu clicks and in-session hash changes share the same navigation handling. Desktop offset is measured menu height + 18px; mobile offset remains measured sticky-nav height + 12px. CSS anchor scroll margin shares that value.
-- Click selection stays stable during smooth scrolling and at a clamped document end; wheel/touch/keyboard/manual scrolling releases selection so tracking follows section positions. A cancellable finishing correction accounts for rendering movement during the scroll.
-- HTML/layout, mobile order/sticky navigation/floating selector, API, business logic, and backend remain unchanged.
-- Source simulation checks cover 390/760/761/1100/1440/1920 widths, all five menu targets, entry behavior, manual tracking, hash changes, rounding, and document-end clamping. Actual browser/visual verification is pending; no additional packages or browsers are authorized for the resumed task.
-- Production build passed with Node 22.23.2; existing Angular NG8102/NG8107 template warnings remain. Deployment, commit, and push are prohibited for this task; these corrections remain local. The earlier deployment attempt stopped at sudo authentication before any production files changed.
-
-Next check: verify actual desktop/mobile scrolling and asynchronous content behavior when browser access is available.
+The sidebar implementation is pushed to `main`. Angular production build is still required on `phive-server` before deployment/acceptance. Do not treat the current sidebar pass as visually accepted until desktop and mobile have both been rendered and checked.
 
 ## News and AI state
 

@@ -9803,3 +9803,202 @@ main {
     padding-top: 10px;
   }
 }
+
+
+/* ===== Mobile sidebar/header layout stabilization ===== */
+@media (max-width: 760px) {
+  .sticky-control-shell {
+    position: relative !important;
+    top: auto !important;
+    width: 100% !important;
+    background: #fff !important;
+    border-bottom: 1px solid #e6ebf2 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  .sticky-control-shell .topbar {
+    position: relative !important;
+    top: auto !important;
+    z-index: 20;
+    width: 100% !important;
+    height: 64px !important;
+    min-height: 64px !important;
+    margin: 0 !important;
+    padding: 0 16px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    border-bottom: 1px solid #edf0f5 !important;
+    background: rgba(255,255,255,.98) !important;
+    backdrop-filter: none !important;
+    box-sizing: border-box;
+  }
+
+  .mobile-sidebar-toggle {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    padding: 9px !important;
+    margin: 0 !important;
+    display: grid !important;
+    align-content: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    border: 1px solid #e3e8f0 !important;
+    border-radius: 11px !important;
+    background: #f6f8fb !important;
+    box-shadow: none !important;
+    flex: 0 0 40px !important;
+  }
+
+  .mobile-sidebar-toggle span {
+    width: 20px !important;
+    height: 2px !important;
+    margin: 0 !important;
+    border-radius: 999px;
+    background: #526075 !important;
+  }
+
+  .sticky-control-shell .topbar .brand {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 9px !important;
+  }
+
+  .sticky-control-shell .topbar .brand-mark {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    margin: 0 !important;
+    border-radius: 11px !important;
+    font-size: 13px !important;
+    flex: 0 0 38px !important;
+  }
+
+  .sticky-control-shell .topbar .brand > div:last-child {
+    min-width: 0 !important;
+  }
+
+  .sticky-control-shell .topbar .brand-name {
+    margin: 0 !important;
+    font-size: 19px !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+  }
+
+  .sticky-control-shell .topbar .brand-tagline {
+    display: none !important;
+  }
+
+  .status-strip {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    border: 0 !important;
+  }
+
+  .status-strip-inner {
+    width: 100% !important;
+    min-height: 54px !important;
+    margin: 0 !important;
+    padding: 7px 12px !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    box-sizing: border-box;
+    overflow: visible !important;
+  }
+
+  .status-item.backend-status {
+    display: none !important;
+  }
+
+  .status-item.market-status,
+  .status-item.notification-status {
+    width: auto !important;
+    min-width: 0 !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    padding: 7px 9px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 7px !important;
+    border-radius: 11px !important;
+    font-size: 11px !important;
+    line-height: 1.15 !important;
+    text-align: center !important;
+    white-space: normal !important;
+    overflow: hidden !important;
+    box-sizing: border-box;
+  }
+
+  .status-item .status-dot {
+    width: 8px !important;
+    height: 8px !important;
+    min-width: 8px !important;
+    flex: 0 0 8px !important;
+  }
+
+  .sticky-controls-inner {
+    display: none !important;
+  }
+
+  main {
+    width: calc(100vw - 20px) !important;
+    margin: 0 auto !important;
+    padding: 14px 0 100px !important;
+  }
+
+  .workspace-grid {
+    width: 100% !important;
+    margin: 0 !important;
+    gap: 12px !important;
+  }
+
+  .side-stack {
+    width: 100% !important;
+    margin: 0 !important;
+    gap: 12px !important;
+  }
+
+  .advanced-market-details,
+  .panel,
+  .secondary-details,
+  .ai-insight-panel,
+  .ai-usage-section {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .sticky-control-shell .topbar {
+    padding: 0 12px !important;
+  }
+
+  .sticky-control-shell .topbar .brand-name {
+    font-size: 17px !important;
+  }
+
+  .status-strip-inner {
+    padding-inline: 10px !important;
+    gap: 6px !important;
+  }
+
+  .status-item.market-status,
+  .status-item.notification-status {
+    padding-inline: 7px !important;
+    font-size: 10.5px !important;
+  }
+}

@@ -74,3 +74,13 @@ This is a concise chronological handoff log shared by ChatGPT and Codex.
 - AI & Usage view exposes AI Insight, engine/model details, token usage, cost estimates, evaluation summary, and history.
 - Removed obsolete horizontal navigation markup so Angular no longer compiles stale event handlers.
 - Changes are pushed to main. Production Angular build and real browser visual validation are still pending on phive-server.
+
+
+### Mobile header cleanup after sidebar introduction
+
+- Fixed the broken mobile header composition introduced by the sidebar pass.
+- Hamburger, brand mark, and CoinMind AI title now share one 64px row.
+- Status cards were separated into a dedicated two-column strip with mobile-safe sizing/wrapping.
+- Legacy sticky controls are hidden on mobile; main/content widths and bottom spacing are normalized.
+- Commit pushed: `ee472d3 fix: stabilize mobile header and sidebar layout`.
+- Production build and real-device/browser visual verification remain pending.

@@ -1,6 +1,90 @@
 <div class="app-shell">
+  <aside class="app-sidebar" [class.open]="sidebarOpen()" aria-label="CoinMind menu">
+    <div class="sidebar-brand">
+      <div class="brand-mark">CM</div>
+      <div>
+        <strong>CoinMind <span>AI</span></strong>
+        <small>Crypto intelligence</small>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a
+        href="#dashboard"
+        [class.active]="activeSection() === 'dashboard'"
+        [attr.aria-current]="activeSection() === 'dashboard' ? 'page' : null"
+        (click)="navigateToView('dashboard', $event)">
+        <span class="sidebar-nav-icon">D</span>
+        <span>
+          <strong>Dashboard</strong>
+          <small>Market, kondisi & jam ramai</small>
+        </span>
+      </a>
+
+      <a
+        href="#trade"
+        [class.active]="activeSection() === 'trade'"
+        [attr.aria-current]="activeSection() === 'trade' ? 'page' : null"
+        (click)="navigateToView('trade', $event)">
+        <span class="sidebar-nav-icon">T</span>
+        <span>
+          <strong>Trade Decision</strong>
+          <small>Entry, risk, target & alasan</small>
+        </span>
+      </a>
+
+      <a
+        href="#news"
+        [class.active]="activeSection() === 'news'"
+        [attr.aria-current]="activeSection() === 'news' ? 'page' : null"
+        (click)="navigateToView('news', $event)">
+        <span class="sidebar-nav-icon">N</span>
+        <span>
+          <strong>News</strong>
+          <small>Berita & sentiment coin</small>
+        </span>
+      </a>
+
+      <a
+        href="#ai"
+        [class.active]="activeSection() === 'ai'"
+        [attr.aria-current]="activeSection() === 'ai' ? 'page' : null"
+        (click)="navigateToView('ai', $event)">
+        <span class="sidebar-nav-icon">AI</span>
+        <span>
+          <strong>AI & Usage</strong>
+          <small>Engine, token & estimasi biaya</small>
+        </span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span>Selected market</span>
+      <strong>{{ symbolLabel(selectedSymbol()) }} / USDT</strong>
+      @if (selectedTicker()) {
+        <small>{{ formatPrice(selectedTicker()?.closePrice) }}</small>
+      }
+    </div>
+  </aside>
+
+  @if (sidebarOpen()) {
+    <button
+      type="button"
+      class="sidebar-backdrop"
+      aria-label="Tutup menu"
+      (click)="closeSidebar()">
+    </button>
+  }
   <div class="sticky-control-shell">
   <header class="topbar">
+    <button
+      type="button"
+      class="mobile-sidebar-toggle"
+      aria-label="Buka menu"
+      [attr.aria-expanded]="sidebarOpen()"
+      (click)="toggleSidebar()">
+      <span></span><span></span><span></span>
+    </button>
     <div class="brand">
       <div class="brand-mark">CM</div>
       <div>
@@ -75,7 +159,7 @@
     </div>
 
     <div class="sticky-controls-inner">
-    <div class="desktop-nav-slot">
+    <div class="desktop-nav-slot legacy-section-nav">
     <nav class="dashboard-nav desktop-dashboard-nav" aria-label="CoinMind sections">
     <a
       href="#dashboard"
@@ -150,7 +234,7 @@
     </div>
   </div>
 
-  <nav class="dashboard-nav mobile-sticky-dashboard-nav" aria-label="CoinMind sections">
+  <nav class="dashboard-nav mobile-sticky-dashboard-nav legacy-section-nav" aria-label="CoinMind sections">
     <a
       href="#market"
       [class.active]="activeSection() === 'market'"
@@ -275,7 +359,10 @@
     <section class="workspace-grid">
 
 
-      <article class="panel chart-panel" id="dashboard">
+      <article
+        class="panel chart-panel"
+        id="dashboard"
+        [class.sidebar-view-hidden]="activeSection() !== 'dashboard'">
         <div class="panel-header chart-header">
           <div class="chart-header-top">
             <div>
@@ -527,7 +614,10 @@
         </div>
       </article>
 
-<article class="panel trade-setup-panel" id="signals">
+<article
+        class="panel trade-setup-panel"
+        id="trade"
+        [class.sidebar-view-hidden]="activeSection() !== 'trade'">
           <div class="panel-header compact">
             <div>
               <p class="eyebrow">TRADE DECISION</p>
@@ -733,7 +823,10 @@
         </article>
 
             <aside class="side-stack">
-        <section class="advanced-market-details market-details-expanded" id="market">
+        <section
+          class="advanced-market-details market-details-expanded"
+          id="market"
+          [class.sidebar-view-hidden]="activeSection() !== 'dashboard'">
           <div class="market-details-header">
             <div>
               <strong>Detail market</strong>
@@ -945,7 +1038,11 @@
           </div>
         </section>
 
-        <details class="secondary-details news-details" id="news">
+        <details
+          class="secondary-details news-details"
+          id="news"
+          [class.sidebar-view-hidden]="activeSection() !== 'news'"
+          open>
           <summary>
             <div>
               <strong>News sentiment</strong>
@@ -1069,7 +1166,10 @@
           </div>
         </details>
 
-        <article class="panel ai-insight-panel">
+        <article
+          class="panel ai-insight-panel"
+          id="ai-overview"
+          [class.sidebar-view-hidden]="activeSection() !== 'ai'">
           <div class="panel-header compact">
             <div>
               <p class="eyebrow">AI INSIGHT</p>
@@ -1149,11 +1249,15 @@
           </details>
         </article>
 
-        <details class="secondary-details" id="history">
+        <details
+          class="secondary-details ai-usage-section"
+          id="ai"
+          [class.sidebar-view-hidden]="activeSection() !== 'ai'"
+          open>
           <summary>
             <div>
-              <strong>Performance & advanced</strong>
-              <span>Accuracy, history, AI usage, dan detail evaluasi</span>
+              <strong>AI & Usage</strong>
+              <span>Engine, usage token, estimasi biaya, history & evaluasi</span>
             </div>
             <span class="details-hint">Buka</span>
           </summary>

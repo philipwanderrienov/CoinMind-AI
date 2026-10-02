@@ -98,9 +98,9 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly floatingCoinMenuOpen = signal(false);
   readonly floatingCoinMenuDirection = signal<'up' | 'down'>('up');
   readonly floatingCoinDragging = signal(false);
-  readonly activeSection = signal<'dashboard' | 'signals' | 'market-detail' | 'news' | 'performance'>('dashboard');
+  readonly activeSection = signal<'dashboard' | 'signals' | 'market' | 'news' | 'history'>('dashboard');
   private sectionNavigationLock: {
-    section: 'dashboard' | 'signals' | 'market-detail' | 'news' | 'performance';
+    section: 'dashboard' | 'signals' | 'market' | 'news' | 'history';
     until: number;
   } | null = null;
 
@@ -438,7 +438,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   navigateToSection(
-    section: 'dashboard' | 'signals' | 'market-detail' | 'news' | 'performance',
+    section: 'dashboard' | 'signals' | 'market' | 'news' | 'history',
     event?: MouseEvent
   ): void {
     event?.preventDefault();
@@ -448,7 +448,7 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const element = document.getElementById(this.sectionElementId(section));
+    const element = document.getElementById(section);
     if (!element) {
       return;
     }
@@ -465,13 +465,7 @@ export class AppComponent implements OnInit, OnDestroy {
       window.scrollY + element.getBoundingClientRect().top - stickyOffset
     );
 
-    window.history.replaceState(
-      null,
-      '',
-      section === 'market-detail' && window.innerWidth <= 760
-        ? '#market'
-        : `#${section}`
-    );
+    window.history.replaceState(null, '', `#${section}`);
 
     window.scrollTo({
       top: targetTop,
@@ -489,11 +483,6 @@ export class AppComponent implements OnInit, OnDestroy {
     target?.blur();
   }
 
-  private sectionElementId(
-    section: 'dashboard' | 'signals' | 'market-detail' | 'news' | 'performance'
-  ): string {
-    return section === 'dashboard' ? 'dashboard-section' : section;
-  }
 
   private sectionScrollOffset(): number {
     if (typeof window === 'undefined' || typeof document === 'undefined') {
@@ -508,11 +497,9 @@ export class AppComponent implements OnInit, OnDestroy {
       return (mobileNav?.getBoundingClientRect().height ?? 58) + 12;
     }
 
-    const stickyShell = document.querySelector(
-      '.sticky-control-shell'
-    ) as HTMLElement | null;
-
-    return (stickyShell?.getBoundingClientRect().height ?? 150) + 14;
+    // Desktop header/control shell is in normal document flow.
+    // A small breathing offset keeps the target section from touching the viewport edge.
+    return 18;
   }
 
   private startSectionTracking(): void {
@@ -523,15 +510,15 @@ export class AppComponent implements OnInit, OnDestroy {
     const desktopSections = [
       'dashboard',
       'signals',
-      'market-detail',
+      'market',
       'news',
-      'performance'
+      'history'
     ] as const;
 
     const mobileSections = [
-      'market-detail',
+      'market',
       'news',
-      'performance',
+      'history',
       'dashboard',
       'signals'
     ] as const;
@@ -558,11 +545,11 @@ export class AppComponent implements OnInit, OnDestroy {
       const stickyOffset = this.sectionScrollOffset();
       const currentY = window.scrollY + stickyOffset;
 
-      let active: 'dashboard' | 'signals' | 'market-detail' | 'news' | 'performance'
-        = window.innerWidth <= 760 ? 'market-detail' : 'dashboard';
+      let active: 'dashboard' | 'signals' | 'market' | 'news' | 'history'
+        = window.innerWidth <= 760 ? 'market' : 'dashboard';
 
       for (const section of sections) {
-        const element = document.getElementById(this.sectionElementId(section));
+        const element = document.getElementById(section);
         if (!element) {
           continue;
         }
@@ -583,17 +570,17 @@ export class AppComponent implements OnInit, OnDestroy {
     const knownSections = [
       'dashboard',
       'signals',
-      'market-detail',
+      'market',
       'news',
-      'performance'
+      'history'
     ] as const;
 
-    if (hash === 'market') {
+    if (hash === 'section=market') {
       // Logical mobile route: marks Market active without creating an anchor
       // jump to #market-detail, so the app header remains visible on first load.
-      this.activeSection.set('market-detail');
+      this.activeSection.set('market');
       window.scrollTo({ top: 0, behavior: 'auto' });
-    } else if (hash === 'dashboard') {
+    } else if (hash === 'section=dashboard') {
       // Logical desktop route: Dashboard is active, but the initial viewport
       // stays at the top so branding, status, navigation, and tickers remain visible.
       this.activeSection.set('dashboard');
@@ -604,13 +591,13 @@ export class AppComponent implements OnInit, OnDestroy {
       this.activeSection.set(hash as typeof knownSections[number]);
     } else {
       const isMobile = window.innerWidth <= 760;
-      const defaultSection = isMobile ? 'market-detail' : 'dashboard';
+      const defaultSection = isMobile ? 'market' : 'dashboard';
 
       this.activeSection.set(defaultSection);
       window.history.replaceState(
         null,
         '',
-        isMobile ? '#market' : '#dashboard'
+        isMobile ? '#section=market' : '#section=dashboard'
       );
 
       window.scrollTo({

@@ -75,6 +75,7 @@
     </div>
 
     <div class="sticky-controls-inner">
+    <div class="desktop-nav-slot">
     <nav class="dashboard-nav desktop-dashboard-nav" aria-label="CoinMind sections">
     <a
       href="#dashboard"
@@ -112,6 +113,7 @@
       History
     </a>
     </nav>
+    </div>
     <section class="ticker-grid">
       @for (symbol of symbols; track symbol) {
         @let ticker = tickers()[symbol];

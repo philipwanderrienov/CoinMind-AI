@@ -90,7 +90,7 @@ On first mobile access:
 - CoinMind header remains visible
 - application status strip remains visible
 - Market is the active menu
-- tapping Market explicitly scrolls to the internal `#market-detail` section
+- tapping Market explicitly scrolls to the `#market` Detail market section
 
 ### Floating coin selector
 
@@ -128,7 +128,7 @@ Explicit menu links now map directly to semantic DOM ids:
 #history
 ```
 
-The logical first-load hash avoids an initial anchor jump, while menu clicks/direct hashes target the real sections.
+First load normalizes the URL to the viewport-specific logical hash before section ids render, including reloads of real anchors left by previous clicks. Menu clicks and hash changes during a running session target the real sections with the measured offset.
 
 On first desktop access:
 
@@ -152,19 +152,22 @@ Dashboard -> Signals -> Market -> News -> History
 - Market remains full-width and contains timeframe, technical, microstructure, and Polymarket context.
 - News and AI Insight may still share desktop horizontal space inside the lower content stack.
 - History remains full-width.
-- Desktop section scrolling now uses a small 18px offset instead of subtracting the old control-shell height.
+- Desktop section scrolling uses the measured desktop menu height + 18px; only the section menu persists at the viewport top.
 - Menu hrefs, active state names, and DOM ids are aligned to the same semantic section names.
 - Mobile visual order and floating selector behavior are preserved.
 
-Latest frontend changes were pushed to `main`, but this ChatGPT environment cannot run the repository's Angular production build. A server-side `npm run build` is still required before treating the change as validated/deployable.
+### Navigation correction (local source, 2026-10-02)
 
-Next checks:
+- Semantic hrefs and unique DOM ids already match Dashboard/chart, Signals/Trade Decision, Market/Detail market, News/News sentiment, and History/Performance & advanced.
+- First load stays at scroll position zero: Dashboard active on desktop, Market active on mobile. Incoming hashes are normalized to the corresponding logical entry hash, including real-anchor reloads.
+- Section tracking starts after the view exists and sorts rendered section positions instead of assuming responsive document order; a 2px tolerance covers scroll rounding.
+- Menu clicks and in-session hash changes share the same navigation handling. Desktop offset is measured menu height + 18px; mobile offset remains measured sticky-nav height + 12px. CSS anchor scroll margin shares that value.
+- Click selection stays stable during smooth scrolling and at a clamped document end; wheel/touch/keyboard/manual scrolling releases selection so tracking follows section positions. A cancellable finishing correction accounts for rendering movement during the scroll.
+- HTML/layout, mobile order/sticky navigation/floating selector, API, business logic, and backend remain unchanged.
+- Source simulation checks cover 390/760/761/1100/1440/1920 widths, all five menu targets, entry behavior, manual tracking, hash changes, rounding, and document-end clamping. Actual browser/visual verification is pending; no additional packages or browsers are authorized for the resumed task.
+- Production build passed with Node 22.23.2; existing Angular NG8102/NG8107 template warnings remain. Deployment, commit, and push are prohibited for this task; these corrections remain local. The earlier deployment attempt stopped at sudo authentication before any production files changed.
 
-1. run the production frontend build on `phive-server`;
-2. inspect desktop at 1100/1280/1440/1920 widths and shorter viewport heights;
-3. verify each menu lands exactly on Dashboard, Signals, Market, News, and History;
-4. confirm Signals never sticks beside the chart;
-5. smoke-check mobile at 390/760px for navigation order, initial header visibility, and floating coin behavior.
+Next check: verify actual desktop/mobile scrolling and asynchronous content behavior when browser access is available.
 
 ## News and AI state
 
@@ -278,7 +281,7 @@ Synchronization rule for every meaningful change:
 2. update `current-state.md`;
 3. append a concise entry to `session-log.md`;
 4. run relevant build/tests;
-5. commit/push after checks when authorized; the current desktop work must remain local without deployment or push per user instruction.
+5. commit/push after checks when authorized; the current navigation work must remain local without commit, deployment, or push per user instruction.
 
 A new Codex session should be started from:
 
@@ -300,3 +303,12 @@ Install and authenticate Codex CLI on `phive-server`, then verify it can:
 - inspect local server/deployment state when specifically requested.
 
 Codex is intended as an on-demand server-side inspection/development tool, not the primary day-to-day conversation channel.
+
+### Desktop persistent section menu (local, 2026-10-02)
+
+- At widths >=761px, only the existing desktop menu becomes fixed at top:0 when its original slot reaches the viewport top. The slot preserves its height; header/status/tickers remain in normal flow.
+- The final desktop shell rule explicitly disables shell stickiness and backdrop filtering, preventing a fixed-containing-block conflict. Mobile sticky rules and floating selector remain unchanged.
+- Navigation targets, CSS scroll margin, and active-section tracking share measured menu height + 18px on desktop. Mobile keeps menu height + 12px. Entry logic remains top/Dashboard on desktop and top/Market on mobile.
+- No deployment, commit, or push. Browser verification of this new persistence behavior remains pending.
+
+- Validation for desktop persistence: standard `npm run build` passed on retry with Node 22.23.2 (first attempt hit Google Fonts DNS EAI_AGAIN); existing Angular template warnings remain. New browser/visual checks remain pending.

@@ -9493,3 +9493,43 @@ main {
     top: auto !important;
   }
 }
+
+/* Anchor fallback and scripted navigation share the measured navigation offset. */
+#dashboard,
+#signals,
+#market,
+#news,
+#history {
+  scroll-margin-top: var(--coinmind-section-scroll-offset, 18px) !important;
+}
+
+@media (max-width: 760px) {
+  #dashboard,
+  #signals,
+  #market,
+  #news,
+  #history {
+    scroll-margin-top: var(--coinmind-section-scroll-offset, 72px) !important;
+  }
+}
+
+/* Pin only the desktop menu; keep its original footprint in the control stack. */
+.desktop-nav-slot { display: none; }
+
+@media (min-width: 761px) {
+  .sticky-control-shell {
+    position: relative !important;
+    top: auto;
+    /* Prevent this short ancestor from trapping the fixed menu. */
+    backdrop-filter: none;
+  }
+  .desktop-nav-slot { display: block; min-width: 0; }
+  .sticky-control-shell .desktop-dashboard-nav.desktop-nav-pinned {
+    position: fixed;
+    top: 0;
+    left: var(--desktop-nav-left);
+    width: var(--desktop-nav-width);
+    z-index: 60;
+    box-sizing: border-box;
+  }
+}

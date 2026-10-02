@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { Subscription, auditTime, catchError, fromEvent, map, of, retry, switchMap, timer } from 'rxjs';
 import {
   AiAnalysisResult,
@@ -37,7 +37,7 @@ import { formatCompact, formatPrice } from './shared/price-format';
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly Math = Math;
   private readonly marketApi = inject(MarketApiService);
   private readonly pushNotifications = inject(PushNotificationService);
@@ -99,9 +99,11 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly floatingCoinMenuDirection = signal<'up' | 'down'>('up');
   readonly floatingCoinDragging = signal(false);
   readonly activeSection = signal<'dashboard' | 'signals' | 'market' | 'news' | 'history'>('dashboard');
+  private sectionNavigationTimer: ReturnType<typeof setTimeout> | null = null;
   private sectionNavigationLock: {
     section: 'dashboard' | 'signals' | 'market' | 'news' | 'history';
-    until: number;
+    targetTop: number;
+    settled: boolean;
   } | null = null;
 
   private floatingCoinDrag: {
@@ -217,8 +219,8 @@ export class AppComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
+    this.initializeSectionEntry();
     this.restoreFloatingCoinPosition();
-    this.startSectionTracking();
     this.startBackendHealthCheck();
     this.startMarketFeedHealthCheck();
     this.loadSnapshots();
@@ -245,7 +247,15 @@ export class AppComponent implements OnInit, OnDestroy {
     this.startRealtimeWatchdog();
   }
 
+  ngAfterViewInit(): void {
+    // Section targets must exist before resolving entry hashes or tracking scroll.
+    this.startSectionTracking();
+  }
+
   ngOnDestroy(): void {
+    if (this.sectionNavigationTimer !== null) {
+      clearTimeout(this.sectionNavigationTimer);
+    }
     this.realtimeSubscriptions.unsubscribe();
     this.subscriptions.unsubscribe();
   }
@@ -453,31 +463,27 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const targetTop = this.sectionTargetTop(element);
     this.activeSection.set(section);
-    this.sectionNavigationLock = {
-      section,
-      until: Date.now() + 900
-    };
-
-    const stickyOffset = this.sectionScrollOffset();
-    const targetTop = Math.max(
-      0,
-      window.scrollY + element.getBoundingClientRect().top - stickyOffset
-    );
-
+    const navigation = { section, targetTop, settled: false };
+    this.sectionNavigationLock = navigation;
     window.history.replaceState(null, '', `#${section}`);
+    window.scrollTo({ top: targetTop, behavior: 'smooth' });
 
-    window.scrollTo({
-      top: targetTop,
-      behavior: 'smooth'
-    });
-
-    window.setTimeout(() => {
-      if (this.sectionNavigationLock?.section === section) {
-        this.sectionNavigationLock = null;
-        this.activeSection.set(section);
+    // Data/chart rendering can move a target during smooth scrolling. Finish at
+    // its current position; a newer click or manual scroll cancels this correction.
+    if (this.sectionNavigationTimer !== null) {
+      clearTimeout(this.sectionNavigationTimer);
+    }
+    this.sectionNavigationTimer = window.setTimeout(() => {
+      this.sectionNavigationTimer = null;
+      if (this.sectionNavigationLock !== navigation) {
+        return;
       }
-    }, 950);
+      navigation.targetTop = this.sectionTargetTop(element);
+      window.scrollTo({ top: navigation.targetTop, behavior: 'instant' });
+      navigation.settled = true;
+    }, 1000);
 
     const target = event?.currentTarget as HTMLElement | null;
     target?.blur();
@@ -489,17 +495,49 @@ export class AppComponent implements OnInit, OnDestroy {
       return 0;
     }
 
-    if (window.innerWidth <= 760) {
-      const mobileNav = document.querySelector(
-        '.mobile-sticky-dashboard-nav'
-      ) as HTMLElement | null;
-
-      return (mobileNav?.getBoundingClientRect().height ?? 58) + 12;
+    const mobileNav = document.querySelector('.mobile-sticky-dashboard-nav') as HTMLElement | null;
+    const desktopNav = document.querySelector('.desktop-dashboard-nav') as HTMLElement | null;
+    const slot = document.querySelector('.desktop-nav-slot') as HTMLElement | null;
+    if (desktopNav && slot) {
+      const bounds = slot.getBoundingClientRect();
+      const desktop = window.innerWidth > 760;
+      // Keep the original footprint so pinning never moves section targets.
+      if (desktop) {
+        slot.style.height = `${desktopNav.getBoundingClientRect().height}px`;
+        desktopNav.style.setProperty('--desktop-nav-left', `${bounds.left}px`);
+        desktopNav.style.setProperty('--desktop-nav-width', `${bounds.width}px`);
+      } else {
+        slot.style.removeProperty('height');
+      }
+      desktopNav.classList.toggle('desktop-nav-pinned', desktop && bounds.top <= 0);
     }
+    const offset = window.innerWidth <= 760
+      ? (mobileNav?.getBoundingClientRect().height ?? 58) + 12
+      : (desktopNav?.getBoundingClientRect().height ?? 52) + 18;
+    document.documentElement.style.setProperty('--coinmind-section-scroll-offset', `${offset}px`);
+    return offset;
+  }
 
-    // Desktop header/control shell is in normal document flow.
-    // A small breathing offset keeps the target section from touching the viewport edge.
-    return 18;
+  private initializeSectionEntry(): void {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
+    const section = window.innerWidth <= 760 ? 'market' : 'dashboard';
+    this.activeSection.set(section);
+    // Normalize before section ids render: first load must not perform a native
+    // anchor jump, including a reload of a URL left by a previous menu click.
+    window.history.replaceState(null, '', `#section=${section}`);
+    const previousRestoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = 'manual';
+    this.subscriptions.add(() => { window.history.scrollRestoration = previousRestoration; });
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  private sectionTargetTop(element: HTMLElement): number {
+    const top = window.scrollY + element.getBoundingClientRect().top
+      - this.sectionScrollOffset();
+    // Near the document end the browser cannot place a card at the viewport top.
+    return Math.max(0, Math.min(top, document.documentElement.scrollHeight - window.innerHeight));
   }
 
   private startSectionTracking(): void {
@@ -507,118 +545,75 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const desktopSections = [
-      'dashboard',
-      'signals',
-      'market',
-      'news',
-      'history'
-    ] as const;
-
-    const mobileSections = [
-      'market',
-      'news',
-      'history',
-      'dashboard',
-      'signals'
-    ] as const;
-
+    const sections = ['dashboard', 'signals', 'market', 'news', 'history'] as const;
+    const defaultSection = () => window.innerWidth <= 760 ? 'market' : 'dashboard';
     const update = () => {
-      const sections = window.innerWidth <= 760
-        ? mobileSections
-        : desktopSections;
-      if (
-        this.sectionNavigationLock
-        && Date.now() < this.sectionNavigationLock.until
-      ) {
+      const offset = this.sectionScrollOffset();
+      if (this.sectionNavigationLock) {
         this.activeSection.set(this.sectionNavigationLock.section);
         return;
       }
-
-      if (
-        this.sectionNavigationLock
-        && Date.now() >= this.sectionNavigationLock.until
-      ) {
-        this.sectionNavigationLock = null;
-      }
-
-      const stickyOffset = this.sectionScrollOffset();
-      const currentY = window.scrollY + stickyOffset;
-
-      let active: 'dashboard' | 'signals' | 'market' | 'news' | 'history'
-        = window.innerWidth <= 760 ? 'market' : 'dashboard';
-
-      for (const section of sections) {
+      const currentY = window.scrollY + offset + 2;
+      // Use rendered positions, including CSS order and responsive breakpoints.
+      const positions = sections.flatMap(section => {
         const element = document.getElementById(section);
-        if (!element) {
-          continue;
-        }
-
-        const sectionTop = window.scrollY + element.getBoundingClientRect().top;
-
-        if (sectionTop <= currentY) {
-          active = section;
-        } else {
+        return element ? [{ section, top: window.scrollY + element.getBoundingClientRect().top }] : [];
+      }).sort((a, b) => a.top - b.top);
+      let active: typeof sections[number] = defaultSection();
+      for (const position of positions) {
+        if (position.top > currentY) {
           break;
         }
+        active = position.section;
       }
-
       this.activeSection.set(active);
     };
 
-    const hash = window.location.hash.replace('#', '');
-    const knownSections = [
-      'dashboard',
-      'signals',
-      'market',
-      'news',
-      'history'
-    ] as const;
-
-    if (hash === 'section=market') {
-      // Logical mobile route: marks Market active without creating an anchor
-      // jump to #market-detail, so the app header remains visible on first load.
-      this.activeSection.set('market');
-      window.scrollTo({ top: 0, behavior: 'auto' });
-    } else if (hash === 'section=dashboard') {
-      // Logical desktop route: Dashboard is active, but the initial viewport
-      // stays at the top so branding, status, navigation, and tickers remain visible.
-      this.activeSection.set('dashboard');
-      if (window.innerWidth > 760) {
-        window.scrollTo({ top: 0, behavior: 'auto' });
+    const handleHash = () => {
+      const hash = window.location.hash.slice(1);
+      if (sections.includes(hash as typeof sections[number])) {
+        this.navigateToSection(hash as typeof sections[number]);
+        return;
       }
-    } else if (knownSections.includes(hash as typeof knownSections[number])) {
-      this.activeSection.set(hash as typeof knownSections[number]);
-    } else {
-      const isMobile = window.innerWidth <= 760;
-      const defaultSection = isMobile ? 'market' : 'dashboard';
+      // Logical entry hashes never target DOM ids. Entry always follows the
+      // current viewport, even when a desktop URL is opened on mobile.
+      this.sectionNavigationLock = null;
+      this.activeSection.set(defaultSection());
+      window.history.replaceState(null, '', `#section=${defaultSection()}`);
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    };
 
-      this.activeSection.set(defaultSection);
-      window.history.replaceState(
-        null,
-        '',
-        isMobile ? '#section=market' : '#section=dashboard'
-      );
-
-      window.scrollTo({
-        top: 0,
-        behavior: 'auto'
-      });
-    }
-
-    window.setTimeout(update, 40);
-
-    this.subscriptions.add(
-      fromEvent(window, 'scroll')
-        .pipe(auditTime(60))
-        .subscribe(update)
-    );
-
-    this.subscriptions.add(
-      fromEvent(window, 'resize')
-        .pipe(auditTime(100))
-        .subscribe(update)
-    );
+    const releaseNavigation = () => { this.sectionNavigationLock = null; };
+    this.subscriptions.add(fromEvent(window, 'wheel', { passive: true }).subscribe(releaseNavigation));
+    this.subscriptions.add(fromEvent(window, 'touchmove', { passive: true }).subscribe(releaseNavigation));
+    this.subscriptions.add(fromEvent<KeyboardEvent>(window, 'keydown').subscribe(event => {
+      if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)
+        && !(event.target instanceof HTMLElement && event.target.closest('input, textarea, select, [contenteditable]'))) {
+        releaseNavigation();
+      }
+    }));
+    this.subscriptions.add(fromEvent(window, 'scroll').pipe(auditTime(60)).subscribe(() => {
+      // Scrollbar dragging also releases a settled navigation selection.
+      if (this.sectionNavigationLock
+        && Math.abs(window.scrollY - this.sectionNavigationLock.targetTop) > 2
+        && this.sectionNavigationLock.settled) {
+        releaseNavigation();
+      }
+      update();
+    }));
+    this.subscriptions.add(fromEvent(window, 'resize').pipe(auditTime(100)).subscribe(() => {
+      releaseNavigation();
+      update();
+    }));
+    this.subscriptions.add(fromEvent(window, 'hashchange').subscribe(handleHash));
+    // Reassert entry after the DOM renders, without navigating to a card.
+    const frame = window.requestAnimationFrame(() => {
+      if (!this.sectionNavigationLock) {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        update();
+      }
+    });
+    this.subscriptions.add(() => window.cancelAnimationFrame(frame));
   }
 
   selectSymbol(symbol: string): void {

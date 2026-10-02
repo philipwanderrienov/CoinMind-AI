@@ -2794,11 +2794,11 @@ main {
   padding: 0 10px 10px;
 }
 
-#dashboard-section,
+#dashboard,
 #signals,
-#market-detail,
+#market,
 #news,
-#performance {
+#history {
   scroll-margin-top: 130px;
 }
 
@@ -3113,11 +3113,11 @@ main {
     font-size: 9px;
   }
 
-  #dashboard-section,
+  #dashboard,
   #signals,
-  #market-detail,
+  #market,
   #news,
-  #performance {
+  #history {
     scroll-margin-top: 16px;
   }
 }
@@ -8295,10 +8295,10 @@ main {
     margin-top: 2px;
   }
 
-  #dashboard-section,
+  #dashboard,
   #signals,
   #news,
-  #performance {
+  #history {
     scroll-margin-top: 72px;
   }
 }
@@ -8644,11 +8644,11 @@ main {
     margin: 5px 0 2px;
   }
 
-  #dashboard-section,
+  #dashboard,
   #signals,
-  #market-detail,
+  #market,
   #news,
-  #performance {
+  #history {
     scroll-margin-top: 0;
   }
 }
@@ -9027,11 +9027,11 @@ main {
     padding: 16px 22px;
   }
 
-  #dashboard-section,
+  #dashboard,
   #signals,
-  #market-detail,
+  #market,
   #news,
-  #performance {
+  #history {
     scroll-margin-top: 24px;
   }
 }
@@ -9318,13 +9318,13 @@ main {
     grid-column: span 5;
   }
 
-  .side-stack > #performance {
+  .side-stack > #history {
     grid-column: 1 / -1;
   }
 
   .news-details,
   .ai-insight-panel,
-  #performance {
+  #history {
     align-self: start;
   }
 
@@ -9382,12 +9382,12 @@ main {
     min-height: 48px;
     padding: 12px 18px;
   }
-  #performance > .secondary-details-content {
+  #history > .secondary-details-content {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
   }
-  #performance .history-panel {
+  #history .history-panel {
     grid-column: 1 / -1;
     grid-row: 2;
   }
@@ -9400,4 +9400,96 @@ main {
     margin: 5px 0;
   }
 
+}
+
+
+/* ===== Desktop structure reset v2 ===== */
+@media (min-width: 1100px) {
+  /* Keep desktop sections in normal document flow: Dashboard -> Signals -> Market -> News -> History. */
+  .workspace-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 18px !important;
+    align-items: stretch !important;
+  }
+
+  .workspace-grid > .chart-panel,
+  .workspace-grid > .trade-setup-panel,
+  .workspace-grid > .side-stack {
+    grid-column: 1 / -1 !important;
+    width: 100%;
+  }
+
+  /* Signals is a real section below Dashboard, not a sticky/right sidebar. */
+  .workspace-grid > .trade-setup-panel,
+  .trade-setup-panel {
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    align-self: stretch !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* Restore desktop-width signal layouts now that the panel is full width. */
+  .trade-overview {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .trade-price-card {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .decision-context-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .decision-timeframes {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  }
+
+  .trade-levels.actionable {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .trade-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .trade-setup-panel h3 {
+    max-width: none !important;
+  }
+
+  /* Section anchors should land exactly at their own heading/card. */
+  #dashboard,
+  #signals,
+  #market,
+  #news,
+  #history {
+    scroll-margin-top: 18px !important;
+  }
+
+  /* Keep lower-page desktop layout predictable while scrolling. */
+  .side-stack {
+    align-items: start;
+  }
+
+  .side-stack > #market,
+  .side-stack > #history {
+    grid-column: 1 / -1 !important;
+  }
+
+  .side-stack > .news-details {
+    grid-column: span 7;
+  }
+
+  .side-stack > .ai-insight-panel {
+    grid-column: span 5;
+  }
+
+  #history {
+    position: static !important;
+    top: auto !important;
+  }
 }

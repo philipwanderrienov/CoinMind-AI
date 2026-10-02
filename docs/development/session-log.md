@@ -31,3 +31,15 @@ This is a concise chronological handoff log shared by ChatGPT and Codex.
 - Production build passed using installed Node 22.23.2 and network access for Google Fonts; existing Angular NG8102/NG8107 template warnings remain. Default Node 20 fails the CLI version requirement; sandbox build cannot resolve Google Fonts.
 - Visual/browser acceptance pending: check desktop widths >=1100px, short screens, long decision/AI content, indicators and expanded News/History; smoke-check mobile navigation/selector and breakpoint resizing.
 - Updated current-state handoff. No deployment or GitHub push, per user instruction. Existing untracked deploy script/package lock excluded.
+
+
+### Desktop structure/navigation correction
+
+- Replaced mismatched section route/id naming with semantic ids: `dashboard`, `signals`, `market`, `news`, `history`.
+- Updated desktop and mobile nav hrefs/click targets to the same semantic section ids.
+- Changed logical first-load aliases to `#section=dashboard` and `#section=market` so initial header visibility is preserved without colliding with real anchors.
+- Corrected desktop scroll offset: desktop no longer subtracts the full control-shell height because the shell is in normal flow.
+- Removed the desktop 8/4 chart/Signals composition; Dashboard and Signals now stack full-width in normal document order.
+- Explicitly disabled sticky positioning/max-height constraints on Trade Decision for desktop.
+- Preserved lower desktop Market/News/History composition and current mobile interaction model.
+- Changes were pushed to `main`; Angular production build is still pending in this ChatGPT environment and must be run on `phive-server` before deployment/acceptance.

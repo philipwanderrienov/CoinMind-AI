@@ -1,6 +1,6 @@
 # Current Development State
 
-_Last updated: 2026-10-01 (Asia/Jakarta)_
+_Last updated: 2026-10-02 (Asia/Jakarta)_
 
 This file is the handoff note for continuing CoinMind development in a new ChatGPT conversation. Read this first before making changes.
 
@@ -272,3 +272,50 @@ When continuing development in a new conversation:
 4. prioritize desktop layout quality next
 5. use the public Tailscale Funnel URL for user-side testing
 6. update this handoff file again whenever a major UX/architecture change is completed
+
+
+## ChatGPT / Codex synchronization
+
+GitHub is the shared source of truth between the main ChatGPT conversation and Codex running directly on `phive-server`.
+
+Root instructions:
+
+```text
+AGENTS.md
+```
+
+Shared handoff files:
+
+```text
+docs/development/current-state.md
+docs/development/session-log.md
+```
+
+Synchronization rule for every meaningful change:
+
+1. implement the requested change;
+2. update `current-state.md`;
+3. append a concise entry to `session-log.md`;
+4. run relevant build/tests;
+5. commit/push the change so the other agent can read the latest state.
+
+A new Codex session should be started from:
+
+```bash
+cd /home/phive/Documents/CoinMind-AI
+git pull origin main
+codex
+```
+
+Codex should read `AGENTS.md` automatically and must follow its handoff rules.
+
+## Next operational task
+
+Install and authenticate Codex CLI on `phive-server`, then verify it can:
+
+- open the CoinMind repository;
+- read `AGENTS.md`;
+- read `docs/development/current-state.md`;
+- inspect local server/deployment state when specifically requested.
+
+Codex is intended as an on-demand server-side inspection/development tool, not the primary day-to-day conversation channel.

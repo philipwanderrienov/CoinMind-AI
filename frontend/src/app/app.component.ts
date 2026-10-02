@@ -242,7 +242,20 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    // View-based sidebar navigation does not depend on scroll position.
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const forceTop = () => window.scrollTo({ top: 0, behavior: 'auto' });
+
+    // Reassert after render so the browser cannot restore an old scroll position
+    // or jump to a stale DOM anchor from a previous app version.
+    window.requestAnimationFrame(() => {
+      forceTop();
+      window.requestAnimationFrame(forceTop);
+    });
+
+    window.setTimeout(forceTop, 120);
   }
 
   ngOnDestroy(): void {
@@ -446,7 +459,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.sidebarOpen.set(false);
 
     if (typeof window !== 'undefined') {
-      window.history.replaceState(null, '', `#${view}`);
+      window.history.replaceState(null, '', `#view=${view}`);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -467,14 +480,19 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    const hash = window.location.hash.replace('#', '');
+    const rawHash = window.location.hash.replace('#', '');
+    const hashView = rawHash.startsWith('view=')
+      ? rawHash.slice('view='.length)
+      : '';
     const knownViews = ['dashboard', 'trade', 'news', 'ai'] as const;
 
-    if (knownViews.includes(hash as typeof knownViews[number])) {
-      this.activeSection.set(hash as typeof knownViews[number]);
+    window.history.scrollRestoration = 'manual';
+
+    if (knownViews.includes(hashView as typeof knownViews[number])) {
+      this.activeSection.set(hashView as typeof knownViews[number]);
     } else {
       this.activeSection.set('dashboard');
-      window.history.replaceState(null, '', '#dashboard');
+      window.history.replaceState(null, '', '#view=dashboard');
     }
 
     window.scrollTo({ top: 0, behavior: 'auto' });

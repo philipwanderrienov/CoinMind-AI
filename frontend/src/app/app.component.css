@@ -9533,3 +9533,273 @@ main {
     box-sizing: border-box;
   }
 }
+
+
+/* ===== Sidebar navigation shell ===== */
+.legacy-section-nav {
+  display: none !important;
+}
+
+.sidebar-view-hidden {
+  display: none !important;
+}
+
+.app-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 180;
+  width: 252px;
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  border-right: 1px solid #e4e9f1;
+  background: rgba(255,255,255,.98);
+  box-shadow: 12px 0 32px rgba(35, 48, 72, .05);
+}
+
+.sidebar-brand {
+  min-height: 48px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.sidebar-brand .brand-mark {
+  flex: 0 0 auto;
+}
+
+.sidebar-brand > div:last-child {
+  display: grid;
+  gap: 2px;
+}
+
+.sidebar-brand strong {
+  color: #213047;
+  font-size: 15px;
+  line-height: 1.1;
+}
+
+.sidebar-brand strong span {
+  color: #6254df;
+}
+
+.sidebar-brand small {
+  color: #8995a6;
+  font-size: 10px;
+}
+
+.sidebar-nav {
+  display: grid;
+  gap: 7px;
+}
+
+.sidebar-nav a {
+  min-height: 68px;
+  padding: 10px 11px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: #657287;
+  text-decoration: none;
+  transition: background .16s ease, border-color .16s ease, color .16s ease;
+}
+
+.sidebar-nav a:hover {
+  background: #f8f7ff;
+  color: #5144c4;
+}
+
+.sidebar-nav a.active {
+  border-color: rgba(100, 84, 223, .16);
+  background: #f2f0ff;
+  color: #5749cf;
+}
+
+.sidebar-nav-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #f1f4f8;
+  color: #66748a;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.sidebar-nav a.active .sidebar-nav-icon {
+  background: #6557e8;
+  color: #fff;
+}
+
+.sidebar-nav a > span:last-child {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.sidebar-nav strong {
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.sidebar-nav small {
+  color: #929dad;
+  font-size: 9px;
+  line-height: 1.3;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 12px;
+  display: grid;
+  gap: 3px;
+  border: 1px solid #e5eaf1;
+  border-radius: 12px;
+  background: #fafbfd;
+}
+
+.sidebar-footer span {
+  color: #919cac;
+  font-size: 9px;
+}
+
+.sidebar-footer strong {
+  color: #2e3b50;
+  font-size: 12px;
+}
+
+.sidebar-footer small {
+  color: #66758b;
+  font-size: 11px;
+}
+
+.mobile-sidebar-toggle,
+.sidebar-backdrop {
+  display: none;
+}
+
+@media (min-width: 761px) {
+  .app-shell {
+    padding-left: 252px;
+  }
+
+  .sticky-control-shell .topbar,
+  .status-strip-inner,
+  .sticky-controls-inner,
+  main {
+    width: min(1380px, calc(100vw - 252px - 48px)) !important;
+  }
+
+  .sticky-controls-inner {
+    padding-top: 8px;
+  }
+
+  .ticker-grid {
+    margin-top: 0 !important;
+  }
+
+  .workspace-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .workspace-grid > .chart-panel,
+  .workspace-grid > .trade-setup-panel,
+  .workspace-grid > .side-stack {
+    grid-column: 1 / -1 !important;
+  }
+
+  .side-stack {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .side-stack > .advanced-market-details,
+  .side-stack > .news-details,
+  .side-stack > .ai-insight-panel,
+  .side-stack > .ai-usage-section {
+    grid-column: 1 / -1 !important;
+  }
+
+  .ai-usage-section > .secondary-details-content {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .ai-usage-section .usage-panel {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    padding-left: 0;
+  }
+
+  .mobile-sidebar-toggle {
+    width: 38px;
+    height: 38px;
+    padding: 9px;
+    border: 0;
+    border-radius: 10px;
+    background: #f3f5f9;
+    display: grid;
+    align-content: center;
+    gap: 4px;
+    flex: 0 0 auto;
+  }
+
+  .mobile-sidebar-toggle span {
+    width: 20px;
+    height: 2px;
+    margin: 0 auto;
+    border-radius: 999px;
+    background: #49576d;
+  }
+
+  .app-sidebar {
+    width: min(286px, 84vw);
+    transform: translateX(-105%);
+    transition: transform 220ms cubic-bezier(.22,.61,.36,1);
+    box-shadow: 18px 0 44px rgba(24, 34, 54, .18);
+  }
+
+  .app-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 170;
+    border: 0;
+    background: rgba(22, 30, 44, .34);
+    display: block;
+    backdrop-filter: blur(2px);
+  }
+
+  .topbar {
+    gap: 8px;
+  }
+
+  .sidebar-nav a {
+    min-height: 66px;
+  }
+
+  .mobile-sticky-dashboard-nav {
+    display: none !important;
+  }
+
+  .sticky-control-shell .ticker-grid {
+    display: none !important;
+  }
+
+  main {
+    padding-top: 10px;
+  }
+}

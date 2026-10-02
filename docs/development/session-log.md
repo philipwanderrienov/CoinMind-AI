@@ -61,3 +61,16 @@ This is a concise chronological handoff log shared by ChatGPT and Codex.
 - No deployment, commit, or push. Browser verification of the new behavior remains pending.
 
 - Validation for desktop persistence: standard `npm run build` passed on retry with Node 22.23.2 (first attempt hit Google Fonts DNS EAI_AGAIN); existing Angular template warnings remain. New browser/visual checks remain pending.
+
+
+### View-based application sidebar
+
+- Replaced the legacy horizontal section navigator with four primary application views: Dashboard, Trade Decision, News, and AI & Usage.
+- Added persistent desktop sidebar with active state and selected-market summary.
+- Added mobile hamburger + off-canvas drawer; retained the draggable floating coin selector.
+- Dashboard view keeps chart, market condition/hourly activity, and Detail Market context.
+- Trade Decision view isolates the detailed decision engine output.
+- News view isolates the coin news/sentiment section.
+- AI & Usage view exposes AI Insight, engine/model details, token usage, cost estimates, evaluation summary, and history.
+- Removed obsolete horizontal navigation markup so Angular no longer compiles stale event handlers.
+- Changes are pushed to main. Production Angular build and real browser visual validation are still pending on phive-server.

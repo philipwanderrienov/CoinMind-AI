@@ -91,10 +91,10 @@
       Signals
     </a>
     <a
-      href="#market-detail"
-      [class.active]="activeSection() === 'market-detail'"
-      [attr.aria-current]="activeSection() === 'market-detail' ? 'page' : null"
-      (click)="navigateToSection('market-detail', $event)">
+      href="#market"
+      [class.active]="activeSection() === 'market'"
+      [attr.aria-current]="activeSection() === 'market' ? 'page' : null"
+      (click)="navigateToSection('market', $event)">
       Market
     </a>
     <a
@@ -105,10 +105,10 @@
       News
     </a>
     <a
-      href="#performance"
-      [class.active]="activeSection() === 'performance'"
-      [attr.aria-current]="activeSection() === 'performance' ? 'page' : null"
-      (click)="navigateToSection('performance', $event)">
+      href="#history"
+      [class.active]="activeSection() === 'history'"
+      [attr.aria-current]="activeSection() === 'history' ? 'page' : null"
+      (click)="navigateToSection('history', $event)">
       History
     </a>
     </nav>
@@ -150,10 +150,10 @@
 
   <nav class="dashboard-nav mobile-sticky-dashboard-nav" aria-label="CoinMind sections">
     <a
-      href="#market-detail"
-      [class.active]="activeSection() === 'market-detail'"
-      [attr.aria-current]="activeSection() === 'market-detail' ? 'page' : null"
-      (click)="navigateToSection('market-detail', $event)">
+      href="#market"
+      [class.active]="activeSection() === 'market'"
+      [attr.aria-current]="activeSection() === 'market' ? 'page' : null"
+      (click)="navigateToSection('market', $event)">
       Market
     </a>
     <a
@@ -164,10 +164,10 @@
       News
     </a>
     <a
-      href="#performance"
-      [class.active]="activeSection() === 'performance'"
-      [attr.aria-current]="activeSection() === 'performance' ? 'page' : null"
-      (click)="navigateToSection('performance', $event)">
+      href="#history"
+      [class.active]="activeSection() === 'history'"
+      [attr.aria-current]="activeSection() === 'history' ? 'page' : null"
+      (click)="navigateToSection('history', $event)">
       History
     </a>
     <a
@@ -273,7 +273,7 @@
     <section class="workspace-grid">
 
 
-      <article class="panel chart-panel" id="dashboard-section">
+      <article class="panel chart-panel" id="dashboard">
         <div class="panel-header chart-header">
           <div class="chart-header-top">
             <div>
@@ -731,7 +731,7 @@
         </article>
 
             <aside class="side-stack">
-        <section class="advanced-market-details market-details-expanded" id="market-detail">
+        <section class="advanced-market-details market-details-expanded" id="market">
           <div class="market-details-header">
             <div>
               <strong>Detail market</strong>
@@ -1147,7 +1147,7 @@
           </details>
         </article>
 
-        <details class="secondary-details" id="performance">
+        <details class="secondary-details" id="history">
           <summary>
             <div>
               <strong>Performance & advanced</strong>

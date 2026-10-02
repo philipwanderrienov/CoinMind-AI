@@ -80,10 +80,10 @@ Active navigation styling:
 Initial mobile route uses the logical hash:
 
 ```text
-#market
+#section=market
 ```
 
-Important: `#market` is intentionally NOT a real DOM anchor. This avoids the browser automatically jumping past the CoinMind header on first load.
+The logical entry hash intentionally does not match a DOM id. This prevents first-load anchor jumping while the visible Market menu still starts active. Explicit menu clicks use real section anchors.
 
 On first mobile access:
 
@@ -112,19 +112,23 @@ Behavior:
 
 Desktop is currently the main area still being refined.
 
-The desktop route uses logical:
+The desktop first-load route uses logical:
+
+```text
+#section=dashboard
+```
+
+Explicit menu links now map directly to semantic DOM ids:
 
 ```text
 #dashboard
+#signals
+#market
+#news
+#history
 ```
 
-The real chart section DOM id is:
-
-```text
-#dashboard-section
-```
-
-This separation prevents the browser from auto-jumping directly to the chart on first access.
+The logical first-load hash avoids an initial anchor jump, while menu clicks/direct hashes target the real sections.
 
 On first desktop access:
 
@@ -132,24 +136,35 @@ On first desktop access:
 - viewport should remain at the top
 - header, status strip, navigation, and ticker cards should remain visible
 
-### Latest local desktop implementation (2026-10-02)
+### Latest desktop implementation (2026-10-02)
 
-Desktop composition was refined only inside the existing >=1100px CSS block. Earlier responsive rules, HTML, section IDs, logical routes, floating selector, and TypeScript remain unchanged.
+Desktop structure was simplified to remove the confusing right-side Signals sidebar and reduce scroll misalignment.
 
-- Header, status, navigation, ticker, and content share a centered container capped at 1440px with 24px side gutters, including wide screens.
-- Header/navigation/tickers are more compact; ticker prices sit beside asset labels.
-- Chart remains the primary 8-column area beside the 4-column Trade Decision sidebar. Sidebar uses normal flow so long decisions stay reachable on shorter screens.
-- Chart height is 360–460px according to viewport height, including indicator states. Market Condition and Hourly Activity remain side-by-side with tighter cards and a shorter activity plot.
-- Trade Decision retains all content with compact overview, price/status, alignment/regime, trade levels, and detail grids.
-- Detail Market retains five-column timeframe/technical grids and paired Market Microstructure/Polymarket, with tighter spacing.
-- News and AI Insight retain the 7/5 split; insight confidence width adapts to the sidebar.
-- History stays full-width with shorter rows; evaluation summary and AI usage share a row when Performance is expanded.
+Current desktop section flow is literal and matches navigation:
 
-This work is local only: **do not deploy or push until the user requests it**. Production still serves the previous implementation. Untracked `deploy.sh` and `frontend/package-lock.json` predate this work and are excluded.
+```text
+Dashboard -> Signals -> Market -> News -> History
+```
 
-Validation: Angular production build status is recorded in the session log. Source comparison confirms all CSS before the >=1100px composition block is unchanged. Rendered visual acceptance is still pending; no browser screenshots were captured in this session.
+- Dashboard/chart is full-width.
+- Signals/Trade Decision is full-width directly below Dashboard.
+- Signals is explicitly forced to normal document flow; no sticky/right sidebar behavior.
+- Market remains full-width and contains timeframe, technical, microstructure, and Polymarket context.
+- News and AI Insight may still share desktop horizontal space inside the lower content stack.
+- History remains full-width.
+- Desktop section scrolling now uses a small 18px offset instead of subtracting the old control-shell height.
+- Menu hrefs, active state names, and DOM ids are aligned to the same semantic section names.
+- Mobile visual order and floating selector behavior are preserved.
 
-Next checks: review 1100/1280/1440/1920px desktop widths and short viewports; verify loaded and empty data, WAIT/BUY/SELL decisions, long AI text, indicators, expanded News/History, and navigation. Confirm mobile at 390/760px and the unchanged 761–1099px layout, especially boundary resizing.
+Latest frontend changes were pushed to `main`, but this ChatGPT environment cannot run the repository's Angular production build. A server-side `npm run build` is still required before treating the change as validated/deployable.
+
+Next checks:
+
+1. run the production frontend build on `phive-server`;
+2. inspect desktop at 1100/1280/1440/1920 widths and shorter viewport heights;
+3. verify each menu lands exactly on Dashboard, Signals, Market, News, and History;
+4. confirm Signals never sticks beside the chart;
+5. smoke-check mobile at 390/760px for navigation order, initial header visibility, and floating coin behavior.
 
 ## News and AI state
 

@@ -21,3 +21,13 @@ This is a concise chronological handoff log shared by ChatGPT and Codex.
 - Added root `AGENTS.md` with mandatory project-read, validation, handoff, and synchronization rules.
 - Added this session log.
 - Going forward, every meaningful ChatGPT/Codex change should update both `current-state.md` and this log.
+
+### Desktop layout implementation (local only)
+
+- Refined the existing >=1100px composition block in `app.component.css`; unified all desktop containers, compacted upper controls/tickers, reduced chart/support-panel height, and tightened Trade Decision grids.
+- Retained chart/decision 8/4 split, paired Microstructure/Polymarket and News/Insight; compacted Detail Market and full-width History, pairing evaluation/usage cards.
+- Removed the conflicting >=1500px container/chart override and desktop sidebar stickiness so long decision content remains reachable.
+- No HTML, TypeScript, navigation IDs/routes, mobile rules, API, business logic, or backend changes. Source comparison verified pre-desktop CSS unchanged.
+- Production build passed using installed Node 22.23.2 and network access for Google Fonts; existing Angular NG8102/NG8107 template warnings remain. Default Node 20 fails the CLI version requirement; sandbox build cannot resolve Google Fonts.
+- Visual/browser acceptance pending: check desktop widths >=1100px, short screens, long decision/AI content, indicators and expanded News/History; smoke-check mobile navigation/selector and breakpoint resizing.
+- Updated current-state handoff. No deployment or GitHub push, per user instruction. Existing untracked deploy script/package lock excluded.

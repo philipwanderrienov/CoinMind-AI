@@ -9079,17 +9079,62 @@ main {
 }
 
 
-/* ===== Desktop dashboard composition v2 ===== */
+/* ===== Desktop dashboard composition ===== */
 @media (min-width: 1100px) {
+  .sticky-control-shell .topbar,
+  .status-strip-inner,
+  .sticky-controls-inner,
   main {
-    width: min(1440px, calc(100vw - 48px));
-    padding-top: 22px;
+    width: min(1440px, calc(100% - 48px));
+    margin-inline: auto;
+  }
+
+  main {
+    padding: 16px 0 48px;
+  }
+  .sticky-control-shell .topbar {
+    height: 56px;
+  }
+  .status-strip-inner {
+    min-height: 36px;
+  }
+  .sticky-controls-inner {
+    gap: 8px;
+    padding: 8px 0 12px;
+  }
+  .sticky-control-shell .desktop-dashboard-nav {
+    min-height: 42px;
+    padding: 4px;
+  }
+  .sticky-control-shell .desktop-dashboard-nav a {
+    min-height: 32px;
+    padding: 6px 12px;
+  }
+
+  .sticky-control-shell .ticker-card {
+    min-height: 76px !important;
+    padding: 10px 14px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 12px;
+    align-items: center;
+  }
+  .sticky-control-shell .ticker-price {
+    margin: 0;
+    font-size: 22px;
+    text-align: right;
+  }
+  .sticky-control-shell .ticker-meta {
+    grid-column: 1 / -1;
+  }
+  .sticky-control-shell .live-pill {
+    display: none;
   }
 
   .workspace-grid {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: 18px;
+    gap: 14px;
     align-items: start;
   }
 
@@ -9099,8 +9144,7 @@ main {
 
   .workspace-grid > .trade-setup-panel {
     grid-column: span 4;
-    position: sticky;
-    top: 18px;
+    position: static;
     align-self: start;
   }
 
@@ -9134,8 +9178,8 @@ main {
   .chart-wrap,
   .chart-wrap.with-one-indicator,
   .chart-wrap.with-two-indicators {
-    height: 500px;
-    min-height: 500px;
+    height: clamp(360px, 44vh, 460px);
+    min-height: 360px;
   }
 
   .chart-condition-grid {
@@ -9147,7 +9191,8 @@ main {
   }
 
   .activity-hours {
-    height: 108px;
+    height: 72px;
+    padding-inline: 12px;
   }
 
   /* Signals becomes a useful desktop sidebar instead of a second full-width page. */
@@ -9161,7 +9206,7 @@ main {
 
   .trade-setup-panel h3 {
     max-width: 240px;
-    font-size: 20px;
+    font-size: 18px;
     line-height: 1.2;
   }
 
@@ -9172,18 +9217,20 @@ main {
   }
 
   .trade-overview > div {
-    min-height: 82px;
-    padding: 12px;
+    min-height: 58px;
+    padding: 9px 10px;
   }
 
   .trade-price-card {
     margin: 0 18px 14px;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .trade-price-main,
   .trade-price-status {
-    min-height: 104px;
+    min-height: 78px;
+    padding: 10px;
+    overflow-wrap: anywhere;
   }
 
   .decision-context {
@@ -9191,7 +9238,7 @@ main {
   }
 
   .decision-context-summary {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .decision-timeframes {
@@ -9213,7 +9260,7 @@ main {
   }
 
   .trade-detail-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     margin-left: 18px;
     margin-right: 18px;
   }
@@ -9222,7 +9269,7 @@ main {
   .side-stack {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: 18px;
+    gap: 14px;
   }
 
   .side-stack > .advanced-market-details {
@@ -9253,11 +9300,14 @@ main {
   .timeframe-context-grid,
   .technical-context-grid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+    padding: 8px 14px 14px;
   }
 
   .timeframe-context-card,
   .technical-context-card {
-    min-height: 142px;
+    min-height: 120px;
+    padding: 10px;
   }
 
   .side-stack > .news-details {
@@ -9279,26 +9329,75 @@ main {
   }
 
   .ai-insight-body {
-    grid-template-columns: 180px minmax(0, 1fr);
-  }
-}
-
-/* Large desktop gets a little more breathing room without stretching cards. */
-@media (min-width: 1500px) {
-  main,
-  .sticky-control-shell .topbar,
-  .status-strip-inner,
-  .sticky-controls-inner {
-    width: min(1480px, calc(100vw - 72px));
+    grid-template-columns: minmax(110px, .35fr) minmax(0, 1fr);
   }
 
-  .workspace-grid {
-    gap: 20px;
+  .chart-header {
+    padding: 14px 18px 12px !important;
+    gap: 10px;
+  }
+  .chart-header-top {
+    min-height: 48px;
+  }
+  .chart-control-row {
+    width: min(420px, 100%);
+    grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+  }
+  .chart-condition-grid,
+  .activity-summary {
+    gap: 6px;
+    padding: 8px 12px;
+  }
+  .chart-condition-grid > div {
+    min-height: 0;
+    padding: 8px;
+  }
+  .activity-bar-track {
+    min-height: 48px;
+  }
+  .trade-setup-panel .panel-header {
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .trade-setup-panel .trade-action {
+    flex-shrink: 0;
+  }
+  .decision-context-summary > div,
+  .decision-timeframe {
+    min-width: 0;
+    padding: 8px;
+    overflow-wrap: anywhere;
+  }
+  .trade-levels.actionable > div {
+    min-height: 0;
+    padding: 10px;
+  }
+  .trade-setup-panel .ai-decision-review {
+    padding: 12px;
+  }
+  .market-details-header {
+    padding: 14px 18px;
+  }
+  .secondary-details > summary {
+    min-height: 48px;
+    padding: 12px 18px;
+  }
+  #performance > .secondary-details-content {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  #performance .history-panel {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .history-item {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px;
+    padding: 10px 0;
+  }
+  .history-main p {
+    margin: 5px 0;
   }
 
-  .chart-wrap,
-  .chart-wrap.with-one-indicator,
-  .chart-wrap.with-two-indicators {
-    height: 540px;
-  }
 }

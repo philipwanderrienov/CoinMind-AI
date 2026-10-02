@@ -132,58 +132,24 @@ On first desktop access:
 - viewport should remain at the top
 - header, status strip, navigation, and ticker cards should remain visible
 
-### Latest desktop redesign
+### Latest local desktop implementation (2026-10-02)
 
-The latest CSS pass attempts to make desktop a true dashboard instead of a stretched mobile layout.
+Desktop composition was refined only inside the existing >=1100px CSS block. Earlier responsive rules, HTML, section IDs, logical routes, floating selector, and TypeScript remain unchanged.
 
-At >= 1100px:
+- Header, status, navigation, ticker, and content share a centered container capped at 1440px with 24px side gutters, including wide screens.
+- Header/navigation/tickers are more compact; ticker prices sit beside asset labels.
+- Chart remains the primary 8-column area beside the 4-column Trade Decision sidebar. Sidebar uses normal flow so long decisions stay reachable on shorter screens.
+- Chart height is 360–460px according to viewport height, including indicator states. Market Condition and Hourly Activity remain side-by-side with tighter cards and a shorter activity plot.
+- Trade Decision retains all content with compact overview, price/status, alignment/regime, trade levels, and detail grids.
+- Detail Market retains five-column timeframe/technical grids and paired Market Microstructure/Polymarket, with tighter spacing.
+- News and AI Insight retain the 7/5 split; insight confidence width adapts to the sidebar.
+- History stays full-width with shorter rows; evaluation summary and AI usage share a row when Performance is expanded.
 
-- workspace uses a 12-column grid
-- chart occupies 8 columns
-- Trade Decision occupies 4 columns
-- Trade Decision is sticky
-- Market Condition and Hourly Activity sit side-by-side inside the chart card
-- Detail Market returns to full width below the main dashboard
-- Market Microstructure and Polymarket use two columns
-- News and AI Insight use a 7/5 split
-- History remains full width
+This work is local only: **do not deploy or push until the user requests it**. Production still serves the previous implementation. Untracked `deploy.sh` and `frontend/package-lock.json` predate this work and are excluded.
 
-A duplicate AI Decision Review block was removed from the Trade Decision section.
+Validation: Angular production build status is recorded in the session log. Source comparison confirms all CSS before the >=1100px composition block is unchanged. Rendered visual acceptance is still pending; no browser screenshots were captured in this session.
 
-Latest relevant commits:
-
-```text
-29c3c89289e380f3b6cbf1b5a03c584e0c02d226
-style: redesign desktop dashboard composition
-
-6d8906e78716227708c5c3eccfc4fddb5eb78349
-fix: remove duplicate AI decision review section
-
-76f8e52fe9903cc1d4b2fdc4183329d774afb12a
-style: update dashboard section selectors for logical routing
-
-404912ee3ca0fcf79dd76ea296f1f86e7fe9191f
-fix: make desktop dashboard route logical without anchor jump
-```
-
-### Desktop issue still open
-
-The latest desktop layout has NOT yet been visually accepted.
-
-Previous desktop screenshot feedback:
-
-- desktop still looked less polished than mobile
-- chart consumed too much visual space
-- the page felt vertically long
-- content looked like mobile cards stretched across a large screen
-- horizontal space was not used efficiently
-
-The very next development task should be:
-
-1. deploy the latest desktop composition
-2. inspect the real rendered desktop UI
-3. adjust desktop spacing, proportions, card hierarchy, and chart/sidebar ratio
-4. do not change the working mobile layout unless strictly necessary
+Next checks: review 1100/1280/1440/1920px desktop widths and short viewports; verify loaded and empty data, WAIT/BUY/SELL decisions, long AI text, indicators, expanded News/History, and navigation. Confirm mobile at 390/760px and the unchanged 761–1099px layout, especially boundary resizing.
 
 ## News and AI state
 
@@ -297,7 +263,7 @@ Synchronization rule for every meaningful change:
 2. update `current-state.md`;
 3. append a concise entry to `session-log.md`;
 4. run relevant build/tests;
-5. commit/push the change so the other agent can read the latest state.
+5. commit/push after checks when authorized; the current desktop work must remain local without deployment or push per user instruction.
 
 A new Codex session should be started from:
 

@@ -10002,3 +10002,105 @@ main {
     font-size: 10.5px !important;
   }
 }
+
+
+/* ===== Hard mobile header geometry ===== */
+@media (max-width: 760px) {
+  .sticky-control-shell .topbar {
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+    height: 64px !important;
+    min-height: 64px !important;
+    max-height: 64px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  .sticky-control-shell .topbar > .mobile-sidebar-toggle {
+    position: absolute !important;
+    left: 12px !important;
+    top: 12px !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    margin: 0 !important;
+  }
+
+  .sticky-control-shell .topbar > .brand {
+    position: absolute !important;
+    left: 62px !important;
+    right: 12px !important;
+    top: 12px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 9px !important;
+    overflow: hidden !important;
+  }
+
+  .sticky-control-shell .topbar > .brand .brand-mark {
+    position: static !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    margin: 0 !important;
+    flex: 0 0 40px !important;
+  }
+
+  .sticky-control-shell .topbar > .brand > div:last-child {
+    min-width: 0 !important;
+    height: auto !important;
+    display: block !important;
+  }
+
+  .sticky-control-shell .topbar > .brand .brand-name {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 19px !important;
+    line-height: 40px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .sticky-control-shell .topbar > .brand .brand-tagline {
+    display: none !important;
+  }
+
+  .sticky-control-shell > .status-strip {
+    position: relative !important;
+    clear: both !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .sticky-control-shell .topbar > .brand {
+    left: 60px !important;
+    right: 8px !important;
+  }
+
+  .sticky-control-shell .topbar > .brand .brand-name {
+    font-size: 17px !important;
+  }
+}
+
+/* Desktop must stay in normal header flow. */
+@media (min-width: 761px) {
+  .sticky-control-shell .topbar > .brand {
+    position: static !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+}

@@ -297,3 +297,21 @@ Codex is intended as an on-demand server-side inspection/development tool, not t
 - No deployment, commit, or push. Browser verification of this new persistence behavior remains pending.
 
 - Validation for desktop persistence: standard `npm run build` passed on retry with Node 22.23.2 (first attempt hit Google Fonts DNS EAI_AGAIN); existing Angular template warnings remain. New browser/visual checks remain pending.
+
+
+### Mobile sidebar/header stabilization (2026-10-02)
+
+After the first sidebar pass, the mobile header rendered with the hamburger on its own row, the brand pushed down, status cards colliding, and inconsistent spacing before content.
+
+Latest CSS stabilization now enforces:
+- a single 64px mobile header row containing hamburger + CoinMind brand;
+- fixed, balanced hamburger and logo sizing;
+- a separate two-column status strip beneath the header;
+- normal-flow mobile header/status positioning with no accidental overlap;
+- hidden legacy sticky-controls block on mobile;
+- normalized main/content width and spacing;
+- mobile content cards constrained to the viewport width.
+
+Latest commit: `ee472d3 fix: stabilize mobile header and sidebar layout`.
+
+Production Angular build and browser visual verification are still required on `phive-server`.

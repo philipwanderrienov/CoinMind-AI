@@ -29,7 +29,7 @@
         <span class="sidebar-nav-icon">T</span>
         <span>
           <strong>Trade Decision</strong>
-          <small>Entry, risk, target & alasan</small>
+          <small>Rekomendasi, risk, target & alasan</small>
         </span>
       </a>
 
@@ -89,7 +89,7 @@
       <div class="brand-mark">CM</div>
       <div>
         <div class="brand-name">CoinMind <span>AI</span></div>
-        <div class="brand-tagline">Crypto market intelligence</div>
+        <div class="brand-tagline">Crypto market advisor & intelligence</div>
       </div>
     </div>
 
@@ -325,7 +325,7 @@
                 [class.sell]="tradeSetup()!.action === 'SELL'"
                 [class.watch]="tradeSetup()!.action === 'WATCH_BUY' || tradeSetup()!.action === 'WATCH_SELL'"
                 [class.wait]="tradeSetup()!.action === 'WAIT'">
-                <span>Sekarang</span>
+                <span>Rekomendasi</span>
                 <strong>{{ tradeSetup()!.action.replace('_', ' ') }}</strong>
                 <small>{{ tradeSetup()!.confidence }}% confidence</small>
               </div>
@@ -546,8 +546,8 @@
         [class.sidebar-view-hidden]="activeSection() !== 'trade'">
           <div class="panel-header compact">
             <div>
-              <p class="eyebrow">TRADE DECISION</p>
-              <h3>Apa yang sebaiknya dilakukan sekarang?</h3>
+              <p class="eyebrow">TRADE ADVISOR</p>
+              <h3>Rekomendasi CoinMind saat ini</h3>
             </div>
 
             @if (tradeSetup()) {
@@ -560,6 +560,11 @@
                 {{ tradeSetup()!.action.replace('_', ' ') }}
               </span>
             }
+          </div>
+
+          <div class="advisor-disclaimer" role="note">
+            <strong>Advisor only</strong>
+            <span>CoinMind tidak mengeksekusi order ke exchange. BUY, SELL, WATCH, entry, target, dan invalidation di halaman ini adalah rekomendasi berbasis data untuk membantu keputusan Anda.</span>
           </div>
 
           @if (tradeSetup()) {
@@ -584,13 +589,13 @@
 
             <div class="trade-price-card">
               <div class="trade-price-main">
-                <span>Current price</span>
+                <span>Harga market saat ini</span>
                 <strong>{{ formatPrice(decisionPrice(tradeSetup()!)) }}</strong>
                 <small>{{ symbolLabel(selectedSymbol()) }} / USDT live</small>
               </div>
 
               <div class="trade-price-status" [class]="entryStatusClass(tradeSetup()!)">
-                <span>Status</span>
+                <span>Status rekomendasi</span>
                 <strong>{{ entryStatus(tradeSetup()!) }}</strong>
                 @if (tradeSetup()!.action !== 'WAIT') {
                   <small>{{ entryAreaLabel(tradeSetup()!) }} {{ formatPrice(tradeSetup()!.entryLow) }} – {{ formatPrice(tradeSetup()!.entryHigh) }}</small>
@@ -643,9 +648,9 @@
                   <small>{{ entryStatus(tradeSetup()!) }}</small>
                 </div>
                 <div class="invalidation">
-                  <span>STOP LOSS</span>
+                  <span>INVALIDATION / STOP REFERENCE</span>
                   <strong>{{ formatPrice(tradeSetup()!.invalidationPrice) }}</strong>
-                  <small>Setup invalid jika level ini terlewati</small>
+                  <small>Referensi batas risiko; setup dianggap invalid jika level ini terlewati</small>
                 </div>
                 <div class="target">
                   <span>TARGET 1</span>
@@ -660,7 +665,7 @@
               </div>
             } @else {
               <div class="trade-wait actionable-wait">
-                <strong>Belum ada harga entry yang direkomendasikan.</strong>
+                <strong>Belum ada area entry yang direkomendasikan.</strong>
                 <span>CoinMind masih menunggu alignment dan kondisi market yang lebih jelas sebelum membentuk BUY AREA atau SELL AREA.</span>
               </div>
             }
@@ -714,7 +719,7 @@
                 </div>
               } @else {
                 <div class="ai-review-empty">
-                  Engine decision di atas bersifat deterministik. Jalankan AI Review untuk second opinion berbasis context market + news terbaru.
+                  Rekomendasi engine di atas bersifat deterministik. Jalankan AI Review untuk second opinion berbasis context market + news terbaru.
                 </div>
               }
             </section>
@@ -739,11 +744,11 @@
 
             <div class="trade-generated">
               Generated {{ tradeSetup()!.generatedAt | date:'HH:mm:ss' }}
-              · CoinMind decision engine
+              · CoinMind advisor engine
             </div>
           } @else {
             <div class="empty-usage">
-              Waiting for enough live market data to calculate a trade setup.
+              Menunggu data market yang cukup untuk menyusun rekomendasi trade.
             </div>
           }
         </article>

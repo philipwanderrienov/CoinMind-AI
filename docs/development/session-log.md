@@ -84,3 +84,23 @@ This is a concise chronological handoff log shared by ChatGPT and Codex.
 - Legacy sticky controls are hidden on mobile; main/content widths and bottom spacing are normalized.
 - Commit pushed: `ee472d3 fix: stabilize mobile header and sidebar layout`.
 - Production build and real-device/browser visual verification remain pending.
+
+## 2026-10-21
+
+### Polymarket resilience hardening
+
+- Investigated production timeout to `gamma-api.polymarket.com:443`; backend itself remained healthy on port 8080.
+- Added configurable Reactor Netty connect timeout (default 5s) and response/operation timeout (default 8s).
+- Added per-symbol failure cooldown (default 2 minutes) to prevent repeated upstream hammering while Polymarket is unreachable.
+- Added fallback behavior: return last cached intelligence when available, otherwise return neutral intelligence.
+- Replaced expected timeout stack-trace logging with concise warning messages containing symbol, reason, and fallback mode.
+- Added `POLYMARKET_BASE_URL`, `POLYMARKET_CONNECT_TIMEOUT_MS`, `POLYMARKET_RESPONSE_TIMEOUT_MS`, and `POLYMARKET_FAILURE_COOLDOWN_MS` configuration.
+- Implementation commits: `accbf7a`, `2276883`.
+- Server-side Maven build/restart/smoke validation remains pending after `git pull origin main`.
+
+### Handoff cleanup
+
+- Rewrote `docs/development/current-state.md` so the view-based sidebar architecture is canonical.
+- Removed the stale legacy horizontal-navigation state from the primary handoff.
+- Added current backend verification state, Polymarket hardening details, frontend validation priorities, and technical cleanup priorities.
+

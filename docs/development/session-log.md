@@ -104,3 +104,10 @@ This is a concise chronological handoff log shared by ChatGPT and Codex.
 - Removed the stale legacy horizontal-navigation state from the primary handoff.
 - Added current backend verification state, Polymarket hardening details, frontend validation priorities, and technical cleanup priorities.
 
+### Frontend legacy navigation CSS cleanup
+
+- Verified current HTML no longer contains `desktop-dashboard-nav`, `desktop-nav-slot`, `mobile-sticky-dashboard-nav`, `#signals`, or `#history`.
+- Removed the obsolete tail CSS that still implemented scroll-anchor offsets and pinned horizontal desktop navigation for those deleted elements.
+- Preserved current view-based sidebar styles and existing Trade Decision grid rules.
+- Commit: `585f26f style: remove obsolete section navigation CSS`.
+- Production Angular build and browser validation are still required after pulling latest `main`.

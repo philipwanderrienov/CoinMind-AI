@@ -1,6 +1,6 @@
 # CoinMind AI
 
-AI-powered cryptocurrency market intelligence platform focused initially on BTC, ETH, and SOL.
+AI-assisted cryptocurrency market intelligence and trade-advisor platform focused initially on BTC, ETH, and SOL. CoinMind provides recommendations and decision support; it does not execute exchange orders.
 
 ## Architecture
 
@@ -52,7 +52,9 @@ Spring Boot API + WebSocket
 Angular Realtime Dashboard
 ```
 
-> Status: project foundation / Phase 1.
+> Scope: advisor / decision-support only. BUY/SELL/WATCH outputs are recommendations, not automatic order execution.
+
+> Status: active development.
 
 
 ## Current Development Handoff

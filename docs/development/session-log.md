@@ -111,3 +111,14 @@ This is a concise chronological handoff log shared by ChatGPT and Codex.
 - Preserved current view-based sidebar styles and existing Trade Decision grid rules.
 - Commit: `585f26f style: remove obsolete section navigation CSS`.
 - Production Angular build and browser validation are still required after pulling latest `main`.
+
+### Advisor-only product scope
+
+- Product scope was explicitly fixed as advisor / decision-support only.
+- CoinMind will not send BUY/SELL orders to Binance or another exchange.
+- Updated Trade Decision wording so BUY/SELL/WATCH are presented as recommendations.
+- Added an advisor-only disclaimer in the Trade view.
+- Reworded stop/invalidation and entry areas as risk/reference levels.
+- Updated README and canonical current-state documentation.
+- Commits: `1942cea`, `9eaede0`, `43251c7`.
+- Frontend production build/deployment remains pending on `phive-server`.

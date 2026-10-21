@@ -294,8 +294,9 @@ Urutan prioritas saat ini:
    - target split: AppShell, Dashboard, TradeDecision, News, AiUsage, MobileCoinSelector
 
 4. **CSS cleanup**
-   - setelah visual baseline diterima, hapus responsive override lama yang sudah obsolete
-   - jangan terus menambah append-only override tanpa membersihkan rule konflik
+   - obsolete CSS untuk horizontal section anchor / pinned desktop menu sudah dihapus dari tail stylesheet (commit `585f26f`)
+   - masih ada technical debt besar karena `app.component.css` >10k baris dan banyak incremental responsive overrides
+   - setelah visual baseline diterima, lanjut hapus rule obsolete secara bertahap; jangan menambah append-only override tanpa membersihkan konflik
 
 5. **Testing**
    - E2E view switching

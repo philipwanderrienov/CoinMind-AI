@@ -1,13 +1,17 @@
 package com.coinmind.polymarket.service;
 
 import com.coinmind.polymarket.model.PolymarketIntelligence;
+import io.netty.channel.ChannelOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -18,7 +22,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -33,17 +36,38 @@ public class PolymarketIntelligenceService {
 
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
+    private final Duration requestTimeout;
+    private final Duration failureCooldown;
     private final Map<String, PolymarketIntelligence> latestBySymbol = new ConcurrentHashMap<>();
+    private final Map<String, Instant> unavailableUntilBySymbol = new ConcurrentHashMap<>();
 
-    public PolymarketIntelligenceService(ObjectMapper objectMapper) {
+    public PolymarketIntelligenceService(
+            ObjectMapper objectMapper,
+            @Value("${coinmind.polymarket.base-url:https://gamma-api.polymarket.com}") String baseUrl,
+            @Value("${coinmind.polymarket.connect-timeout-ms:5000}") int connectTimeoutMs,
+            @Value("${coinmind.polymarket.response-timeout-ms:8000}") int responseTimeoutMs,
+            @Value("${coinmind.polymarket.failure-cooldown-ms:120000}") long failureCooldownMs
+    ) {
         this.objectMapper = objectMapper;
+        this.requestTimeout = Duration.ofMillis(Math.max(1000, responseTimeoutMs));
+        this.failureCooldown = Duration.ofMillis(Math.max(1000, failureCooldownMs));
+
+        HttpClient httpClient = HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Math.max(1000, connectTimeoutMs))
+                .responseTimeout(this.requestTimeout);
+
         this.webClient = WebClient.builder()
-                .baseUrl("https://gamma-api.polymarket.com")
+                .baseUrl(baseUrl)
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .build();
     }
 
     public Mono<PolymarketIntelligence> refresh(String symbol) {
         String normalized = normalizeSymbol(symbol);
+
+        if (isCoolingDown(normalized)) {
+            return Mono.just(fallback(normalized));
+        }
 
         return Flux.fromIterable(searchQueries(normalized))
                 .concatMap(this::searchEvents)
@@ -57,13 +81,20 @@ public class PolymarketIntelligenceService {
                 .take(8)
                 .collectList()
                 .map(signals -> summarize(normalized, signals))
-                .doOnNext(result -> latestBySymbol.put(normalized, result))
+                .timeout(requestTimeout)
+                .doOnNext(result -> {
+                    latestBySymbol.put(normalized, result);
+                    unavailableUntilBySymbol.remove(normalized);
+                })
                 .onErrorResume(error -> {
-                    log.warn("Polymarket intelligence refresh failed. symbol={}", normalized, error);
-                    PolymarketIntelligence cached = latestFresh(normalized);
-                    return cached == null
-                            ? Mono.just(empty(normalized))
-                            : Mono.just(cached);
+                    unavailableUntilBySymbol.put(normalized, Instant.now().plus(failureCooldown));
+                    log.warn(
+                            "Polymarket unavailable. symbol={} reason={} fallback={}",
+                            normalized,
+                            failureReason(error),
+                            latestBySymbol.containsKey(normalized) ? "cached" : "neutral"
+                    );
+                    return Mono.just(fallback(normalized));
                 });
     }
 
@@ -85,7 +116,10 @@ public class PolymarketIntelligenceService {
                 .concatMap(this::refresh)
                 .subscribe(
                         ignored -> { },
-                        error -> log.warn("Scheduled Polymarket refresh failed", error)
+                        error -> log.warn(
+                                "Scheduled Polymarket refresh stopped unexpectedly. reason={}",
+                                failureReason(error)
+                        )
                 );
     }
 
@@ -97,6 +131,7 @@ public class PolymarketIntelligenceService {
                         .build())
                 .retrieve()
                 .bodyToMono(String.class)
+                .timeout(requestTimeout)
                 .map(body -> {
                     try {
                         JsonNode root = objectMapper.readTree(body);
@@ -119,6 +154,7 @@ public class PolymarketIntelligenceService {
                 .uri("/events/{id}", id)
                 .retrieve()
                 .bodyToMono(String.class)
+                .timeout(requestTimeout)
                 .map(body -> {
                     try {
                         return objectMapper.readTree(body);
@@ -337,6 +373,36 @@ public class PolymarketIntelligenceService {
 
     private boolean containsAny(String value, List<String> terms) {
         return terms.stream().anyMatch(value::contains);
+    }
+
+    private boolean isCoolingDown(String symbol) {
+        Instant unavailableUntil = unavailableUntilBySymbol.get(symbol);
+        if (unavailableUntil == null) {
+            return false;
+        }
+
+        if (unavailableUntil.isAfter(Instant.now())) {
+            return true;
+        }
+
+        unavailableUntilBySymbol.remove(symbol);
+        return false;
+    }
+
+    private PolymarketIntelligence fallback(String symbol) {
+        PolymarketIntelligence cached = latestBySymbol.get(symbol);
+        return cached == null ? empty(symbol) : cached;
+    }
+
+    private String failureReason(Throwable error) {
+        Throwable cause = error;
+        while (cause.getCause() != null && cause.getCause() != cause) {
+            cause = cause.getCause();
+        }
+
+        String message = cause.getMessage();
+        return cause.getClass().getSimpleName()
+                + (message == null || message.isBlank() ? "" : ": " + message);
     }
 
     private PolymarketIntelligence empty(String symbol) {

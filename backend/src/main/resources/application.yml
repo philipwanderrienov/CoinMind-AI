@@ -69,6 +69,12 @@ coinmind:
       - 4h
       - 1d
 
+  polymarket:
+    base-url: ${POLYMARKET_BASE_URL:https://gamma-api.polymarket.com}
+    connect-timeout-ms: ${POLYMARKET_CONNECT_TIMEOUT_MS:5000}
+    response-timeout-ms: ${POLYMARKET_RESPONSE_TIMEOUT_MS:8000}
+    failure-cooldown-ms: ${POLYMARKET_FAILURE_COOLDOWN_MS:120000}
+
   news:
     enabled: ${NEWS_ENABLED:false}
     refresh-interval-ms: ${NEWS_REFRESH_INTERVAL_MS:300000}

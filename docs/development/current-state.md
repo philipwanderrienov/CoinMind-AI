@@ -6,13 +6,15 @@ Dokumen ini adalah sumber kebenaran (handoff) untuk state CoinMind-AI saat ini. 
 
 ## Product state
 
-CoinMind-AI adalah aplikasi crypto market intelligence dan decision-support untuk:
+CoinMind-AI adalah aplikasi crypto market intelligence dan trade-advisor / decision-support untuk:
 
 - BTCUSDT
 - ETHUSDT
 - SOLUSDT
 
-Decision Engine deterministic/multi-timeframe tetap menjadi sumber keputusan utama. AI News Intelligence dan Polymarket hanya berfungsi sebagai bounded supporting signals dan tidak boleh menciptakan BUY/SELL secara independen.
+Decision Engine deterministic/multi-timeframe tetap menjadi sumber rekomendasi utama. AI News Intelligence dan Polymarket hanya berfungsi sebagai bounded supporting signals dan tidak boleh menciptakan BUY/SELL secara independen.
+
+Scope produk sudah diputuskan sebagai **advisor-only**. CoinMind tidak mengeksekusi order ke Binance/exchange. Output BUY/SELL/WATCH, entry, target, dan invalidation adalah rekomendasi yang harus dieksekusi manual oleh user di exchange.
 
 Primary application views:
 
@@ -270,6 +272,27 @@ AI_MODEL=gpt-5.6-luna
 AI_REASONING_EFFORT=low
 AI_MAX_OUTPUT_TOKENS=400
 ```
+
+## Advisor-only UI state
+
+Frontend sekarang secara eksplisit menampilkan CoinMind sebagai advisor:
+
+- Dashboard quick decision menggunakan label `Rekomendasi`
+- Trade view menggunakan eyebrow `TRADE ADVISOR`
+- disclaimer advisor-only tampil di Trade Decision
+- entry/target/invalidation dijelaskan sebagai reference/recommendation, bukan execution command
+- footer Trade Decision menggunakan `CoinMind advisor engine`
+- tidak ada tombol Place Order / Execute BUY / Execute SELL
+
+Latest commits:
+
+```text
+1942cea ui: clarify CoinMind advisor-only trade recommendations
+9eaede0 style: add advisor-only recommendation notice
+43251c7 docs: define CoinMind as advisor-only platform
+```
+
+Frontend production build masih perlu dijalankan di server setelah pull terbaru.
 
 ## Known open issues / priorities
 

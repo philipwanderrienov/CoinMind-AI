@@ -4,8 +4,10 @@ import com.coinmind.ai.config.AiProperties;
 import com.coinmind.ai.model.AiAnalysisResult;
 import com.coinmind.ai.model.AiDecisionReview;
 import com.coinmind.ai.model.AiNewsIntelligence;
+import com.coinmind.ai.model.AiPolymarketIntelligence;
 import com.coinmind.ai.model.MarketContext;
 import com.coinmind.news.model.NewsArticle;
+import com.coinmind.polymarket.model.PolymarketIntelligence;
 import com.coinmind.ai.usage.AiUsageService;
 import com.coinmind.trade.model.TradeSetup;
 import com.coinmind.ai.status.AiStatusService;
@@ -200,6 +202,231 @@ public class OpenAiLunaProvider implements AiProvider {
                         articles.size(),
                         error
                 ));
+    }
+
+    @Override
+    public Mono<AiPolymarketIntelligence> analyzePolymarket(
+            PolymarketIntelligence intelligence,
+            int materialityScore
+    ) {
+        String selectedModel = materialityScore >= properties.polymarketDeepMaterialityScore()
+                ? properties.effectiveDeepModel()
+                : properties.effectiveRoutineModel();
+
+        if (properties.apiKey() == null || properties.apiKey().isBlank()) {
+            return Mono.just(new AiPolymarketIntelligence(
+                    intelligence.symbol(),
+                    "UNAVAILABLE",
+                    intelligence.bias(),
+                    intelligence.importance(),
+                    0,
+                    "NONE",
+                    "AI engine is not configured yet.",
+                    List.of(),
+                    List.of("OpenAI API key is missing"),
+                    List.of(),
+                    materialityScore,
+                    intelligence.bias(),
+                    intelligence.marketCount(),
+                    selectedModel,
+                    "OpenAI API key is missing",
+                    Instant.now()
+            ));
+        }
+
+        return Mono.fromCallable(() -> buildPolymarketRequest(
+                        intelligence,
+                        materialityScore,
+                        selectedModel
+                ))
+                .flatMap(request ->
+                        webClient.post()
+                                .uri("/v1/responses")
+                                .bodyValue(request)
+                                .retrieve()
+                                .bodyToMono(String.class)
+                )
+                .map(body -> parsePolymarketResponse(
+                        body,
+                        intelligence,
+                        materialityScore,
+                        selectedModel
+                ))
+                .doOnNext(ignored -> statusService.markReady())
+                .doOnError(error -> log.warn(
+                        "AI Polymarket intelligence failed. symbol={}, materiality={}, model={}",
+                        intelligence.symbol(),
+                        materialityScore,
+                        selectedModel
+                ));
+    }
+
+    private Map<String, Object> buildPolymarketRequest(
+            PolymarketIntelligence intelligence,
+            int materialityScore,
+            String selectedModel
+    ) throws Exception {
+        String payload = objectMapper.writeValueAsString(Map.of(
+                "symbol", intelligence.symbol(),
+                "deterministicBias", intelligence.bias(),
+                "deterministicConfidence", intelligence.confidence(),
+                "deterministicImportance", intelligence.importance(),
+                "materialityScore", materialityScore,
+                "averageProbabilityChange", intelligence.averageProbabilityChange(),
+                "topEvent", intelligence.topEvent(),
+                "markets", intelligence.signals().stream()
+                        .limit(5)
+                        .map(signal -> Map.of(
+                                "question", signal.question(),
+                                "yesProbability", signal.yesProbability(),
+                                "oneDayProbabilityChange", signal.oneDayProbabilityChange(),
+                                "liquidity", signal.liquidity(),
+                                "volume24h", signal.volume24h(),
+                                "directionalBias", signal.directionalBias(),
+                                "relevanceScore", signal.relevanceScore()
+                        ))
+                        .toList()
+        ));
+
+        String prompt = """
+                Interpret the supplied Polymarket prediction-market data for %s.
+                Use only the supplied structured data. Do not invent market events or probabilities.
+                Treat prediction markets as supporting context, not a trading signal by themselves.
+                Identify whether the market is materially bullish, bearish, or neutral for the asset,
+                the likely horizon, catalysts, risks, and contradictions between markets.
+                The deterministic bias is an input, not a conclusion you must agree with.
+                Keep the summary concise and useful to a crypto market advisor.
+
+                PolymarketContext:
+                %s
+                """.formatted(intelligence.symbol(), payload);
+
+        Map<String, Object> schema = Map.of(
+                "type", "object",
+                "properties", Map.of(
+                        "direction", Map.of(
+                                "type", "string",
+                                "enum", List.of("BULLISH", "BEARISH", "NEUTRAL")
+                        ),
+                        "importance", Map.of(
+                                "type", "integer",
+                                "minimum", 0,
+                                "maximum", 100
+                        ),
+                        "confidence", Map.of(
+                                "type", "integer",
+                                "minimum", 0,
+                                "maximum", 100
+                        ),
+                        "horizon", Map.of(
+                                "type", "string",
+                                "enum", List.of("IMMEDIATE", "INTRADAY", "MULTIDAY", "NONE")
+                        ),
+                        "summary", Map.of("type", "string"),
+                        "catalysts", Map.of(
+                                "type", "array",
+                                "items", Map.of("type", "string"),
+                                "maxItems", 4
+                        ),
+                        "risks", Map.of(
+                                "type", "array",
+                                "items", Map.of("type", "string"),
+                                "maxItems", 4
+                        ),
+                        "contradictions", Map.of(
+                                "type", "array",
+                                "items", Map.of("type", "string"),
+                                "maxItems", 4
+                        )
+                ),
+                "required", List.of(
+                        "direction",
+                        "importance",
+                        "confidence",
+                        "horizon",
+                        "summary",
+                        "catalysts",
+                        "risks",
+                        "contradictions"
+                ),
+                "additionalProperties", false
+        );
+
+        return Map.of(
+                "model", selectedModel,
+                "input", prompt,
+                "reasoning", Map.of("effort", properties.reasoningEffort()),
+                "max_output_tokens", properties.maxOutputTokens(),
+                "text", Map.of(
+                        "format", Map.of(
+                                "type", "json_schema",
+                                "name", "coinmind_polymarket_intelligence",
+                                "strict", true,
+                                "schema", schema
+                        )
+                )
+        );
+    }
+
+    private AiPolymarketIntelligence parsePolymarketResponse(
+            String body,
+            PolymarketIntelligence intelligence,
+            int materialityScore,
+            String selectedModel
+    ) {
+        try {
+            JsonNode response = objectMapper.readTree(body);
+            JsonNode usage = response.path("usage");
+
+            long inputTokens = usage.path("input_tokens").asLong(0);
+            long cachedInputTokens = usage.path("input_tokens_details")
+                    .path("cached_tokens")
+                    .asLong(0);
+            long outputTokens = usage.path("output_tokens").asLong(0);
+            long reasoningTokens = usage.path("output_tokens_details")
+                    .path("reasoning_tokens")
+                    .asLong(0);
+            long totalTokens = usage.path("total_tokens").asLong(
+                    inputTokens + outputTokens
+            );
+
+            usageService.record(
+                    response.path("id").asText(""),
+                    intelligence.symbol(),
+                    "prediction-market",
+                    "POLYMARKET_INTELLIGENCE",
+                    selectedModel,
+                    inputTokens,
+                    cachedInputTokens,
+                    outputTokens,
+                    reasoningTokens,
+                    totalTokens
+            );
+
+            String outputText = extractOutputText(response);
+            JsonNode analysis = objectMapper.readTree(cleanJson(outputText));
+
+            return new AiPolymarketIntelligence(
+                    intelligence.symbol(),
+                    "ANALYZED",
+                    analysis.path("direction").asText("NEUTRAL"),
+                    Math.max(0, Math.min(100, analysis.path("importance").asInt(0))),
+                    Math.max(0, Math.min(100, analysis.path("confidence").asInt(0))),
+                    analysis.path("horizon").asText("NONE"),
+                    analysis.path("summary").asText(""),
+                    stringList(analysis.path("catalysts")),
+                    stringList(analysis.path("risks")),
+                    stringList(analysis.path("contradictions")),
+                    materialityScore,
+                    intelligence.bias(),
+                    intelligence.marketCount(),
+                    selectedModel,
+                    "AI analysis completed",
+                    Instant.now()
+            );
+        } catch (Exception ex) {
+            throw new IllegalStateException("Unable to parse AI Polymarket intelligence", ex);
+        }
     }
 
     private Map<String, Object> buildNewsIntelligenceRequest(

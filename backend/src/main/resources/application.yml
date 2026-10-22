@@ -23,6 +23,8 @@ coinmind:
     enabled: ${AI_ENABLED:false}
     provider: ${AI_PROVIDER:openai}
     model: ${AI_MODEL:gpt-5.6-luna}
+    routine-model: ${AI_ROUTINE_MODEL:${AI_MODEL:gpt-5.6-luna}}
+    deep-model: ${AI_DEEP_MODEL:${AI_MODEL:gpt-5.6-luna}}
     api-key: ${AI_API_KEY:}
     base-url: ${AI_BASE_URL:https://api.openai.com}
     reasoning-effort: ${AI_REASONING_EFFORT:low}
@@ -34,6 +36,11 @@ coinmind:
     minimum-automatic-signal-score: ${AI_MIN_AUTOMATIC_SIGNAL_SCORE:45}
     max-automatic-calls-per-hour: ${AI_MAX_AUTOMATIC_CALLS_PER_HOUR:12}
     max-automatic-calls-per-day: ${AI_MAX_AUTOMATIC_CALLS_PER_DAY:60}
+    polymarket-enabled: ${AI_POLYMARKET_ENABLED:true}
+    polymarket-min-probability-change: ${AI_POLYMARKET_MIN_PROBABILITY_CHANGE:0.03}
+    polymarket-min-importance: ${AI_POLYMARKET_MIN_IMPORTANCE:80}
+    polymarket-deep-materiality-score: ${AI_POLYMARKET_DEEP_MATERIALITY_SCORE:75}
+    polymarket-cache-minutes: ${AI_POLYMARKET_CACHE_MINUTES:60}
     trigger-intervals:
       - 15m
       - 1h

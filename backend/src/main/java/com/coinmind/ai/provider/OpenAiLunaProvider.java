@@ -73,6 +73,8 @@ public class OpenAiLunaProvider implements AiProvider {
             MarketContext context,
             String triggerType
     ) {
+        String selectedModel = properties.effectiveDeepModel();
+
         if (properties.apiKey() == null || properties.apiKey().isBlank()) {
             return Mono.just(new AiAnalysisResult(
                     context.symbol(),
@@ -82,12 +84,12 @@ public class OpenAiLunaProvider implements AiProvider {
                     "AI engine is not configured yet.",
                     List.of(),
                     List.of("OpenAI API key is missing"),
-                    properties.model(),
+                    selectedModel,
                     Instant.now()
             ));
         }
 
-        return Mono.fromCallable(() -> buildRequest(context))
+        return Mono.fromCallable(() -> buildRequest(context, selectedModel))
                 .flatMap(request ->
                         webClient.post()
                                 .uri("/v1/responses")
@@ -95,7 +97,7 @@ public class OpenAiLunaProvider implements AiProvider {
                                 .retrieve()
                                 .bodyToMono(String.class)
                 )
-                .map(body -> parseResponse(body, context, triggerType))
+                .map(body -> parseResponse(body, context, triggerType, selectedModel))
                 .doOnNext(ignored -> statusService.markReady())
                 .doOnError(error -> {
                     if (error instanceof WebClientResponseException responseError) {
@@ -139,6 +141,8 @@ public class OpenAiLunaProvider implements AiProvider {
             TradeSetup setup,
             MarketContext context
     ) {
+        String selectedModel = properties.effectiveDeepModel();
+
         if (properties.apiKey() == null || properties.apiKey().isBlank()) {
             return Mono.just(new AiDecisionReview(
                     setup.symbol(),
@@ -148,12 +152,12 @@ public class OpenAiLunaProvider implements AiProvider {
                     "AI engine is not configured yet.",
                     List.of(),
                     List.of("OpenAI API key is missing"),
-                    properties.model(),
+                    selectedModel,
                     Instant.now()
             ));
         }
 
-        return Mono.fromCallable(() -> buildDecisionReviewRequest(setup, context))
+        return Mono.fromCallable(() -> buildDecisionReviewRequest(setup, context, selectedModel))
                 .flatMap(request ->
                         webClient.post()
                                 .uri("/v1/responses")
@@ -161,7 +165,7 @@ public class OpenAiLunaProvider implements AiProvider {
                                 .retrieve()
                                 .bodyToMono(String.class)
                 )
-                .map(body -> parseDecisionReview(body, setup))
+                .map(body -> parseDecisionReview(body, setup, selectedModel))
                 .doOnNext(ignored -> statusService.markReady());
     }
 
@@ -170,6 +174,8 @@ public class OpenAiLunaProvider implements AiProvider {
             String symbol,
             List<NewsArticle> articles
     ) {
+        String selectedModel = properties.effectiveRoutineModel();
+
         if (properties.apiKey() == null || properties.apiKey().isBlank()) {
             return Mono.just(new AiNewsIntelligence(
                     symbol,
@@ -181,12 +187,12 @@ public class OpenAiLunaProvider implements AiProvider {
                     List.of(),
                     List.of("OpenAI API key is missing"),
                     List.of(),
-                    properties.model(),
+                    selectedModel,
                     Instant.now()
             ));
         }
 
-        return Mono.fromCallable(() -> buildNewsIntelligenceRequest(symbol, articles))
+        return Mono.fromCallable(() -> buildNewsIntelligenceRequest(symbol, articles, selectedModel))
                 .flatMap(request ->
                         webClient.post()
                                 .uri("/v1/responses")
@@ -194,7 +200,7 @@ public class OpenAiLunaProvider implements AiProvider {
                                 .retrieve()
                                 .bodyToMono(String.class)
                 )
-                .map(body -> parseNewsIntelligence(body, symbol, articles))
+                .map(body -> parseNewsIntelligence(body, symbol, articles, selectedModel))
                 .doOnNext(ignored -> statusService.markReady())
                 .doOnError(error -> log.warn(
                         "Luna news intelligence failed. symbol={}, articleCount={}",
@@ -431,7 +437,8 @@ public class OpenAiLunaProvider implements AiProvider {
 
     private Map<String, Object> buildNewsIntelligenceRequest(
             String symbol,
-            List<NewsArticle> articles
+            List<NewsArticle> articles,
+            String selectedModel
     ) throws Exception {
         String payload = objectMapper.writeValueAsString(
                 articles.stream()
@@ -551,7 +558,7 @@ public class OpenAiLunaProvider implements AiProvider {
         );
 
         return Map.of(
-                "model", properties.model(),
+                "model", selectedModel,
                 "input", prompt,
                 "reasoning", Map.of("effort", properties.reasoningEffort()),
                 "max_output_tokens", properties.maxOutputTokens(),
@@ -569,7 +576,8 @@ public class OpenAiLunaProvider implements AiProvider {
     private AiNewsIntelligence parseNewsIntelligence(
             String body,
             String symbol,
-            List<NewsArticle> articles
+            List<NewsArticle> articles,
+            String selectedModel
     ) {
         try {
             JsonNode response = objectMapper.readTree(body);
@@ -592,7 +600,7 @@ public class OpenAiLunaProvider implements AiProvider {
                     symbol,
                     "news",
                     "NEWS_INTELLIGENCE",
-                    properties.model(),
+                    selectedModel,
                     inputTokens,
                     cachedInputTokens,
                     outputTokens,
@@ -640,7 +648,7 @@ public class OpenAiLunaProvider implements AiProvider {
                     stringList(analysis.path("catalysts")),
                     stringList(analysis.path("risks")),
                     List.copyOf(impacts),
-                    properties.model(),
+                    selectedModel,
                     Instant.now()
             );
         } catch (Exception ex) {
@@ -650,7 +658,8 @@ public class OpenAiLunaProvider implements AiProvider {
 
     private Map<String, Object> buildDecisionReviewRequest(
             TradeSetup setup,
-            MarketContext context
+            MarketContext context,
+            String selectedModel
     ) throws Exception {
         String payload = objectMapper.writeValueAsString(Map.of(
                 "engineDecision", setup,
@@ -702,7 +711,7 @@ public class OpenAiLunaProvider implements AiProvider {
         );
 
         return Map.of(
-                "model", properties.model(),
+                "model", selectedModel,
                 "input", prompt,
                 "reasoning", Map.of("effort", properties.reasoningEffort()),
                 "max_output_tokens", properties.maxOutputTokens(),
@@ -719,7 +728,8 @@ public class OpenAiLunaProvider implements AiProvider {
 
     private AiDecisionReview parseDecisionReview(
             String body,
-            TradeSetup setup
+            TradeSetup setup,
+            String selectedModel
     ) {
         try {
             JsonNode response = objectMapper.readTree(body);
@@ -742,7 +752,7 @@ public class OpenAiLunaProvider implements AiProvider {
                     setup.symbol(),
                     "1h",
                     "DECISION_REVIEW",
-                    properties.model(),
+                    selectedModel,
                     inputTokens,
                     cachedInputTokens,
                     outputTokens,
@@ -761,7 +771,7 @@ public class OpenAiLunaProvider implements AiProvider {
                     review.path("summary").asText(""),
                     stringList(review.path("confirmations")),
                     stringList(review.path("concerns")),
-                    properties.model(),
+                    selectedModel,
                     Instant.now()
             );
         } catch (Exception ex) {
@@ -769,7 +779,10 @@ public class OpenAiLunaProvider implements AiProvider {
         }
     }
 
-    private Map<String, Object> buildRequest(MarketContext context) throws Exception {
+    private Map<String, Object> buildRequest(
+            MarketContext context,
+            String selectedModel
+    ) throws Exception {
         String compactContext = objectMapper.writeValueAsString(context);
 
         String prompt = """
@@ -815,7 +828,7 @@ public class OpenAiLunaProvider implements AiProvider {
         );
 
         return Map.of(
-                "model", properties.model(),
+                "model", selectedModel,
                 "input", prompt,
                 "reasoning", Map.of(
                         "effort", properties.reasoningEffort()
@@ -835,7 +848,8 @@ public class OpenAiLunaProvider implements AiProvider {
     private AiAnalysisResult parseResponse(
             String body,
             MarketContext context,
-            String triggerType
+            String triggerType,
+            String selectedModel
     ) {
         try {
             JsonNode response = objectMapper.readTree(body);
@@ -858,7 +872,7 @@ public class OpenAiLunaProvider implements AiProvider {
                     context.symbol(),
                     context.interval(),
                     triggerType,
-                    properties.model(),
+                    selectedModel,
                     inputTokens,
                     cachedInputTokens,
                     outputTokens,
@@ -877,7 +891,7 @@ public class OpenAiLunaProvider implements AiProvider {
                     analysis.path("summary").asText(""),
                     stringList(analysis.path("supportingFactors")),
                     stringList(analysis.path("riskFactors")),
-                    properties.model(),
+                    selectedModel,
                     Instant.now()
             );
         } catch (Exception ex) {

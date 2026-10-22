@@ -150,3 +150,14 @@ This is a concise chronological handoff log shared by ChatGPT and Codex.
 - Existing cache/neutral fallback and cooldown remain the final degradation layer.
 - Added `POLYMARKET_CLOB_BASE_URL`, `POLYMARKET_GAMMA_EVENT_LIMIT`, and `POLYMARKET_CLOB_PAGE_LIMIT`.
 - Server-side Maven validation is required before deployment acceptance.
+
+### Compliant forecast-source fallback for Indonesia
+
+- Production server logs confirmed both `gamma-api.polymarket.com` and `clob.polymarket.com` were DNS/routing-blocked and timed out from the Indonesian ISP path.
+- Added Manifold public forecasting API as a third-source fallback instead of implementing VPN/proxy circumvention.
+- Prediction intelligence now carries explicit source provenance: `POLYMARKET_GAMMA`, `POLYMARKET_CLOB`, `MANIFOLD`, or `NONE`.
+- Manifold uses public `/v0/search-markets` binary/open-market discovery for BTC/ETH/SOL-related questions.
+- Manifold and CLOB fallback confidence remains lower than Gamma because 24h probability-change data may be unavailable.
+- Frontend relabeled the panel to generic Forecast Signal and shows the active data source.
+- AI structured context now includes the source and uses source-neutral prediction/forecast wording.
+- Server Maven + frontend production build validation remains required.

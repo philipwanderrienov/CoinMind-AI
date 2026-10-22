@@ -6,6 +6,7 @@ import java.util.List;
 
 public record PolymarketIntelligence(
         String symbol,
+        String source,
         String bias,
         int confidence,
         int importance,

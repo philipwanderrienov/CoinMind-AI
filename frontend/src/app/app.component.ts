@@ -5,6 +5,7 @@ import {
   AiAnalysisResult,
   AiDecisionReview,
   AiNewsIntelligence,
+  AiPolymarketIntelligence,
   AiAnalysisHistoryItem,
   AiEngineStatus,
   AiEvaluationSummary,
@@ -86,6 +87,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly news = signal<NewsArticle[]>([]);
   readonly newsSentiment = signal<NewsSentimentSummary | null>(null);
   readonly polymarketIntelligence = signal<PolymarketIntelligence | null>(null);
+  readonly aiPolymarketIntelligence = signal<AiPolymarketIntelligence | null>(null);
+  readonly aiPolymarketRunning = signal(false);
   readonly aiUsage = signal<AiUsageSummary | null>(null);
   readonly billingStatus = signal<BillingStatus | null>(null);
   readonly aiRunning = signal(false);
@@ -233,6 +236,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadAiGuardrails();
     this.loadNews();
     this.loadPolymarketIntelligence();
+    this.loadAiPolymarketIntelligence();
     this.startAiUsageMonitoring();
     this.loadBillingStatus();
     this.initializePushNotifications();
@@ -515,6 +519,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadAiEvaluationSummary();
     this.loadNews();
     this.loadPolymarketIntelligence();
+    this.loadAiPolymarketIntelligence();
   }
 
   selectInterval(interval: string): void {
@@ -538,6 +543,35 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   toggleMacd(): void {
     this.showMacd.update(value => !value);
+  }
+
+  runAiPolymarketIntelligence(): void {
+    if (this.aiPolymarketRunning()) {
+      return;
+    }
+
+    const state = this.aiStatus()?.state;
+    if (state !== 'READY' && state !== 'CONFIGURED_UNVERIFIED' && state !== 'MOCK') {
+      return;
+    }
+
+    this.aiPolymarketRunning.set(true);
+
+    this.subscriptions.add(
+      this.marketApi.analyzePolymarketIntelligence(this.selectedSymbol()).subscribe({
+        next: result => {
+          this.aiPolymarketIntelligence.set(result);
+          this.aiPolymarketRunning.set(false);
+          this.loadAiUsage();
+          this.loadAiStatus();
+          this.loadAiGuardrails();
+        },
+        error: () => {
+          this.aiPolymarketRunning.set(false);
+          this.loadAiStatus();
+        }
+      })
+    );
   }
 
   runAiNewsIntelligence(): void {
@@ -900,6 +934,15 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       this.marketApi.getPolymarketIntelligence(this.selectedSymbol()).subscribe({
         next: intelligence => this.polymarketIntelligence.set(intelligence),
         error: () => this.polymarketIntelligence.set(null)
+      })
+    );
+  }
+
+  private loadAiPolymarketIntelligence(): void {
+    this.subscriptions.add(
+      this.marketApi.getAiPolymarketIntelligence(this.selectedSymbol()).subscribe({
+        next: intelligence => this.aiPolymarketIntelligence.set(intelligence),
+        error: () => this.aiPolymarketIntelligence.set(null)
       })
     );
   }

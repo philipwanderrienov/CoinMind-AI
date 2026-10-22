@@ -42,17 +42,19 @@ public class AiUsageService {
     ) {
         long uncachedInput = Math.max(0, inputTokens - cachedInputTokens);
 
+        Pricing pricing = pricingFor(model);
+
         BigDecimal inputCost = tokenCost(
                 uncachedInput,
-                properties.inputPriceMicrosPerMillion()
+                pricing.inputPriceMicrosPerMillion()
         ).add(tokenCost(
                 cachedInputTokens,
-                properties.cachedInputPriceMicrosPerMillion()
+                pricing.cachedInputPriceMicrosPerMillion()
         ));
 
         BigDecimal outputCost = tokenCost(
                 outputTokens,
-                properties.outputPriceMicrosPerMillion()
+                pricing.outputPriceMicrosPerMillion()
         );
 
         AiUsageRecord record = new AiUsageRecord(
@@ -122,6 +124,38 @@ public class AiUsageService {
                     tuple.getT3()
             );
         });
+    }
+
+
+    private Pricing pricingFor(String model) {
+        if (model != null && model.equals(properties.effectiveDeepModel())) {
+            return new Pricing(
+                    properties.deepInputPriceMicrosPerMillion(),
+                    properties.deepCachedInputPriceMicrosPerMillion(),
+                    properties.deepOutputPriceMicrosPerMillion()
+            );
+        }
+
+        if (model != null && model.equals(properties.effectiveRoutineModel())) {
+            return new Pricing(
+                    properties.routineInputPriceMicrosPerMillion(),
+                    properties.routineCachedInputPriceMicrosPerMillion(),
+                    properties.routineOutputPriceMicrosPerMillion()
+            );
+        }
+
+        return new Pricing(
+                properties.inputPriceMicrosPerMillion(),
+                properties.cachedInputPriceMicrosPerMillion(),
+                properties.outputPriceMicrosPerMillion()
+        );
+    }
+
+    private record Pricing(
+            long inputPriceMicrosPerMillion,
+            long cachedInputPriceMicrosPerMillion,
+            long outputPriceMicrosPerMillion
+    ) {
     }
 
     private BigDecimal tokenCost(long tokens, long priceMicrosPerMillion) {

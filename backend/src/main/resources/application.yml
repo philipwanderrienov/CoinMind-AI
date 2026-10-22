@@ -32,6 +32,12 @@ coinmind:
     input-price-micros-per-million: ${AI_INPUT_PRICE_MICROS_PER_MILLION:200000}
     cached-input-price-micros-per-million: ${AI_CACHED_INPUT_PRICE_MICROS_PER_MILLION:20000}
     output-price-micros-per-million: ${AI_OUTPUT_PRICE_MICROS_PER_MILLION:1200000}
+    routine-input-price-micros-per-million: ${AI_ROUTINE_INPUT_PRICE_MICROS_PER_MILLION:${AI_INPUT_PRICE_MICROS_PER_MILLION:200000}}
+    routine-cached-input-price-micros-per-million: ${AI_ROUTINE_CACHED_INPUT_PRICE_MICROS_PER_MILLION:${AI_CACHED_INPUT_PRICE_MICROS_PER_MILLION:20000}}
+    routine-output-price-micros-per-million: ${AI_ROUTINE_OUTPUT_PRICE_MICROS_PER_MILLION:${AI_OUTPUT_PRICE_MICROS_PER_MILLION:1200000}}
+    deep-input-price-micros-per-million: ${AI_DEEP_INPUT_PRICE_MICROS_PER_MILLION:${AI_INPUT_PRICE_MICROS_PER_MILLION:200000}}
+    deep-cached-input-price-micros-per-million: ${AI_DEEP_CACHED_INPUT_PRICE_MICROS_PER_MILLION:${AI_CACHED_INPUT_PRICE_MICROS_PER_MILLION:20000}}
+    deep-output-price-micros-per-million: ${AI_DEEP_OUTPUT_PRICE_MICROS_PER_MILLION:${AI_OUTPUT_PRICE_MICROS_PER_MILLION:1200000}}
     usage-timezone: ${AI_USAGE_TIMEZONE:Asia/Jakarta}
     minimum-automatic-signal-score: ${AI_MIN_AUTOMATIC_SIGNAL_SCORE:45}
     max-automatic-calls-per-hour: ${AI_MAX_AUTOMATIC_CALLS_PER_HOUR:12}

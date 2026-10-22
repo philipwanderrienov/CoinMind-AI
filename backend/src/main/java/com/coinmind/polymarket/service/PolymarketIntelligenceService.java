@@ -36,6 +36,7 @@ public class PolymarketIntelligenceService {
 
     private final WebClient gammaClient;
     private final WebClient clobClient;
+    private final WebClient manifoldClient;
     private final ObjectMapper objectMapper;
     private final Duration requestTimeout;
     private final Duration failureCooldown;
@@ -49,6 +50,7 @@ public class PolymarketIntelligenceService {
             ObjectMapper objectMapper,
             @Value("${coinmind.polymarket.base-url:https://gamma-api.polymarket.com}") String gammaBaseUrl,
             @Value("${coinmind.polymarket.clob-base-url:https://clob.polymarket.com}") String clobBaseUrl,
+            @Value("${coinmind.polymarket.manifold-base-url:https://api.manifold.markets}") String manifoldBaseUrl,
             @Value("${coinmind.polymarket.connect-timeout-ms:5000}") int connectTimeoutMs,
             @Value("${coinmind.polymarket.response-timeout-ms:8000}") int responseTimeoutMs,
             @Value("${coinmind.polymarket.failure-cooldown-ms:120000}") long failureCooldownMs,
@@ -76,6 +78,11 @@ public class PolymarketIntelligenceService {
                 .baseUrl(clobBaseUrl)
                 .clientConnector(connector)
                 .build();
+
+        this.manifoldClient = WebClient.builder()
+                .baseUrl(manifoldBaseUrl)
+                .clientConnector(connector)
+                .build();
     }
 
     public Mono<PolymarketIntelligence> refresh(String symbol) {
@@ -88,33 +95,22 @@ public class PolymarketIntelligenceService {
         return loadGammaSignals(normalized)
                 .flatMap(signals -> {
                     if (!signals.isEmpty()) {
-                        log.debug("Polymarket source selected. symbol={} source=gamma signals={}",
+                        log.debug("Prediction source selected. symbol={} source=POLYMARKET_GAMMA signals={}",
                                 normalized, signals.size());
-                        return Mono.just(signals);
+                        return Mono.just(new SourcedSignals("POLYMARKET_GAMMA", signals));
                     }
 
-                    return loadClobSignals(normalized)
-                            .doOnNext(clobSignals -> log.debug(
-                                    "Polymarket source selected. symbol={} source=clob signals={}",
-                                    normalized,
-                                    clobSignals.size()
-                            ));
+                    return loadFallbackSignals(normalized);
                 })
                 .onErrorResume(gammaError -> {
                     log.warn(
-                            "Polymarket Gamma unavailable. symbol={} reason={} trying=clob",
+                            "Polymarket Gamma unavailable. symbol={} reason={} trying=fallback-sources",
                             normalized,
                             failureReason(gammaError)
                     );
-
-                    return loadClobSignals(normalized)
-                            .doOnNext(clobSignals -> log.info(
-                                    "Polymarket fallback source used. symbol={} source=clob signals={}",
-                                    normalized,
-                                    clobSignals.size()
-                            ));
+                    return loadFallbackSignals(normalized);
                 })
-                .map(signals -> summarize(normalized, signals))
+                .map(result -> summarize(normalized, result.source(), result.signals()))
                 .timeout(requestTimeout.multipliedBy(2))
                 .doOnNext(result -> {
                     latestBySymbol.put(normalized, result);
@@ -184,6 +180,109 @@ public class PolymarketIntelligenceService {
                             continue;
                         }
                         signals.addAll(extractGammaSignals(event, symbol));
+                    }
+
+                    return rankSignals(signals);
+                });
+    }
+
+    private Mono<SourcedSignals> loadFallbackSignals(String symbol) {
+        return loadClobSignals(symbol)
+                .flatMap(signals -> {
+                    if (!signals.isEmpty()) {
+                        log.info(
+                                "Prediction fallback source used. symbol={} source=POLYMARKET_CLOB signals={}",
+                                symbol,
+                                signals.size()
+                        );
+                        return Mono.just(new SourcedSignals("POLYMARKET_CLOB", signals));
+                    }
+                    return loadManifoldSignals(symbol)
+                            .map(manifoldSignals -> new SourcedSignals("MANIFOLD", manifoldSignals));
+                })
+                .onErrorResume(clobError -> {
+                    log.warn(
+                            "Polymarket CLOB unavailable. symbol={} reason={} trying=manifold",
+                            symbol,
+                            failureReason(clobError)
+                    );
+                    return loadManifoldSignals(symbol)
+                            .map(manifoldSignals -> new SourcedSignals("MANIFOLD", manifoldSignals));
+                })
+                .doOnNext(result -> {
+                    if ("MANIFOLD".equals(result.source())) {
+                        log.info(
+                                "Prediction fallback source used. symbol={} source=MANIFOLD signals={}",
+                                symbol,
+                                result.signals().size()
+                        );
+                    }
+                });
+    }
+
+    private Mono<List<PolymarketIntelligence.MarketSignal>> loadManifoldSignals(String symbol) {
+        String term = switch (symbol) {
+            case "BTCUSDT" -> "bitcoin";
+            case "ETHUSDT" -> "ethereum";
+            case "SOLUSDT" -> "solana";
+            default -> symbol.toLowerCase(Locale.ROOT);
+        };
+
+        return manifoldClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/v0/search-markets")
+                        .queryParam("term", term)
+                        .queryParam("sort", "liquidity")
+                        .queryParam("filter", "open")
+                        .queryParam("contractType", "BINARY")
+                        .queryParam("limit", 50)
+                        .build())
+                .retrieve()
+                .bodyToMono(String.class)
+                .timeout(requestTimeout)
+                .map(this::parseJson)
+                .map(root -> {
+                    List<PolymarketIntelligence.MarketSignal> signals = new ArrayList<>();
+                    if (!root.isArray()) {
+                        return signals;
+                    }
+
+                    for (JsonNode market : root) {
+                        String question = market.path("question").asText("");
+                        if (!textMatchesSymbol(question, symbol)) {
+                            continue;
+                        }
+
+                        int direction = directionalSign(question);
+                        if (direction == 0) {
+                            continue;
+                        }
+
+                        BigDecimal probability = decimal(market.path("probability"));
+                        BigDecimal liquidity = decimal(market.path("totalLiquidity"));
+                        BigDecimal volume24h = decimal(market.path("volume24Hours"));
+                        int relevance = Math.min(
+                                78,
+                                relevance(
+                                        question,
+                                        symbol,
+                                        liquidity,
+                                        volume24h,
+                                        BigDecimal.ZERO
+                                )
+                        );
+
+                        signals.add(new PolymarketIntelligence.MarketSignal(
+                                "manifold",
+                                market.path("id").asText(""),
+                                question,
+                                probability,
+                                BigDecimal.ZERO,
+                                liquidity,
+                                volume24h,
+                                direction > 0 ? "BULLISH" : "BEARISH",
+                                relevance
+                        ));
                     }
 
                     return rankSignals(signals);
@@ -385,17 +484,18 @@ public class PolymarketIntelligenceService {
 
     private PolymarketIntelligence summarize(
             String symbol,
+            String source,
             List<PolymarketIntelligence.MarketSignal> signals
     ) {
         if (signals.isEmpty()) {
-            return empty(symbol);
+            return empty(symbol, source);
         }
 
         BigDecimal weightedSignedEvidence = BigDecimal.ZERO;
         BigDecimal totalWeight = BigDecimal.ZERO;
         int importance = 0;
-        boolean clobFallbackOnly = signals.stream()
-                .allMatch(signal -> "clob".equals(signal.eventId()));
+        boolean probabilityOnlyFallback = "POLYMARKET_CLOB".equals(source)
+                || "MANIFOLD".equals(source);
 
         for (PolymarketIntelligence.MarketSignal signal : signals) {
             BigDecimal qualityWeight = BigDecimal.valueOf(Math.max(1, signal.relevanceScore()));
@@ -403,7 +503,7 @@ public class PolymarketIntelligenceService {
 
             BigDecimal evidence = signal.oneDayProbabilityChange();
 
-            if (clobFallbackOnly && evidence.signum() == 0 && signal.yesProbability().signum() > 0) {
+            if (probabilityOnlyFallback && evidence.signum() == 0 && signal.yesProbability().signum() > 0) {
                 evidence = signal.yesProbability()
                         .subtract(BigDecimal.valueOf(0.5), MC)
                         .multiply(BigDecimal.valueOf(0.12), MC);
@@ -430,7 +530,7 @@ public class PolymarketIntelligenceService {
                 : "NEUTRAL";
 
         int confidence = Math.min(
-                clobFallbackOnly ? 65 : 90,
+                "MANIFOLD".equals(source) ? 60 : probabilityOnlyFallback ? 65 : 90,
                 35
                         + Math.min(25, signals.size() * 5)
                         + Math.min(30, averageChange.abs()
@@ -444,6 +544,7 @@ public class PolymarketIntelligenceService {
 
         return new PolymarketIntelligence(
                 symbol,
+                source,
                 bias,
                 confidence,
                 importance,
@@ -654,7 +755,7 @@ public class PolymarketIntelligenceService {
 
     private PolymarketIntelligence fallback(String symbol) {
         PolymarketIntelligence cached = latestBySymbol.get(symbol);
-        return cached == null ? empty(symbol) : cached;
+        return cached == null ? empty(symbol, "NONE") : cached;
     }
 
     private String failureReason(Throwable error) {
@@ -668,9 +769,10 @@ public class PolymarketIntelligenceService {
                 + (message == null || message.isBlank() ? "" : ": " + message);
     }
 
-    private PolymarketIntelligence empty(String symbol) {
+    private PolymarketIntelligence empty(String symbol, String source) {
         return new PolymarketIntelligence(
                 symbol,
+                source,
                 "NEUTRAL",
                 0,
                 0,
@@ -681,4 +783,10 @@ public class PolymarketIntelligenceService {
                 Instant.now()
         );
     }
+    private record SourcedSignals(
+            String source,
+            List<PolymarketIntelligence.MarketSignal> signals
+    ) {
+    }
+
 }

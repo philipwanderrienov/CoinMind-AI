@@ -857,6 +857,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
             this.loadMarketActivity();
             this.loadNews();
             this.loadPolymarketIntelligence();
+            this.loadAiPolymarketIntelligence();
           }
         })
     );

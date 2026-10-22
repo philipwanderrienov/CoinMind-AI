@@ -393,6 +393,26 @@ export interface AiNewsIntelligence {
 }
 
 
+export interface AiPolymarketIntelligence {
+  symbol: string;
+  analysisState: 'ANALYZED' | 'SKIPPED' | 'UNAVAILABLE' | 'MOCK';
+  direction: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
+  importance: number;
+  confidence: number;
+  horizon: 'IMMEDIATE' | 'INTRADAY' | 'MULTIDAY' | 'NONE';
+  summary: string;
+  catalysts: string[];
+  risks: string[];
+  contradictions: string[];
+  materialityScore: number;
+  deterministicBias: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
+  sourceMarketCount: number;
+  model: string;
+  reason: string;
+  analyzedAt: string;
+}
+
+
 export interface PolymarketIntelligence {
   symbol: string;
   bias: 'BULLISH' | 'BEARISH' | 'NEUTRAL';

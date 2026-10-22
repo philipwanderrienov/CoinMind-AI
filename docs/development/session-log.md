@@ -140,3 +140,13 @@ This is a concise chronological handoff log shared by ChatGPT and Codex.
 - AI Polymarket output remains advisor context only; it does not yet modify the deterministic Decision Engine.
 - Live API provider remains disabled until a server API key is intentionally configured.
 - Local build could not be executed in the ChatGPT container because external GitHub DNS/network access is unavailable; server-side Maven + Angular production validation is required before deployment acceptance.
+
+### Polymarket multi-source discovery failover
+
+- Replaced Gamma `/public-search` as primary discovery with the documented `GET /events?active=true&closed=false&order=volume_24hr...` flow.
+- Added local BTC/ETH/SOL filtering over active events and direct extraction from nested markets, removing the extra per-event fetch roundtrip.
+- Added read-only CLOB `/simplified-markets` as a second-host fallback when Gamma is unreachable.
+- CLOB fallback confidence is capped lower than Gamma because it may lack 24h probability-change metadata; current YES probability is used only as bounded contextual evidence.
+- Existing cache/neutral fallback and cooldown remain the final degradation layer.
+- Added `POLYMARKET_CLOB_BASE_URL`, `POLYMARKET_GAMMA_EVENT_LIMIT`, and `POLYMARKET_CLOB_PAGE_LIMIT`.
+- Server-side Maven validation is required before deployment acceptance.

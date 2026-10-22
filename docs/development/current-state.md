@@ -290,6 +290,19 @@ Existing cost controls:
 - hourly automatic-call cap
 - daily automatic-call cap
 - automatic signal-score guardrail
+- route-specific pricing for routine/deep models
+- `AI_ENABLED=false` is a hard master switch; paid provider methods return unavailable instead of calling the API
+
+If routine/deep models use different prices, configure:
+
+```text
+AI_ROUTINE_INPUT_PRICE_MICROS_PER_MILLION
+AI_ROUTINE_CACHED_INPUT_PRICE_MICROS_PER_MILLION
+AI_ROUTINE_OUTPUT_PRICE_MICROS_PER_MILLION
+AI_DEEP_INPUT_PRICE_MICROS_PER_MILLION
+AI_DEEP_CACHED_INPUT_PRICE_MICROS_PER_MILLION
+AI_DEEP_OUTPUT_PRICE_MICROS_PER_MILLION
+```
 
 ### AI Polymarket Intelligence
 
@@ -353,6 +366,8 @@ AI_POLYMARKET_MIN_IMPORTANCE
 AI_POLYMARKET_DEEP_MATERIALITY_SCORE
 AI_POLYMARKET_CACHE_MINUTES
 ```
+
+`AiProvider` tetap menjadi abstraction layer, sehingga provider lain dapat ditambahkan untuk benchmark tanpa mengubah service/use-case layer.
 
 AI Polymarket interpretation **belum menjadi modifier tambahan untuk Decision Engine**. Untuk sekarang ia ditampilkan sebagai advisor context/second opinion. Deterministic Polymarket modifier yang sudah dibatasi tetap menjadi satu-satunya Polymarket contribution ke Decision Engine sampai hasil AI layer dievaluasi.
 

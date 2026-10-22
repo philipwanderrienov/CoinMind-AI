@@ -10,6 +10,8 @@ public record AiProperties(
         boolean enabled,
         String provider,
         String model,
+        String routineModel,
+        String deepModel,
         String apiKey,
         String baseUrl,
         String reasoningEffort,
@@ -21,6 +23,18 @@ public record AiProperties(
         List<String> triggerIntervals,
         BigDecimal minimumAutomaticSignalScore,
         int maxAutomaticCallsPerHour,
-        int maxAutomaticCallsPerDay
+        int maxAutomaticCallsPerDay,
+        boolean polymarketEnabled,
+        BigDecimal polymarketMinProbabilityChange,
+        int polymarketMinImportance,
+        int polymarketDeepMaterialityScore,
+        int polymarketCacheMinutes
 ) {
+    public String effectiveRoutineModel() {
+        return routineModel == null || routineModel.isBlank() ? model : routineModel;
+    }
+
+    public String effectiveDeepModel() {
+        return deepModel == null || deepModel.isBlank() ? model : deepModel;
+    }
 }

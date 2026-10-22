@@ -3,8 +3,10 @@ package com.coinmind.ai.provider;
 import com.coinmind.ai.model.AiAnalysisResult;
 import com.coinmind.ai.model.AiDecisionReview;
 import com.coinmind.ai.model.AiNewsIntelligence;
+import com.coinmind.ai.model.AiPolymarketIntelligence;
 import com.coinmind.ai.model.MarketContext;
 import com.coinmind.news.model.NewsArticle;
+import com.coinmind.polymarket.model.PolymarketIntelligence;
 import com.coinmind.trade.model.TradeSetup;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
@@ -121,6 +123,32 @@ public class MockAiProvider implements AiProvider {
                         "Mock impact derived from deterministic news sentiment."
                 )).toList(),
                 name(),
+                Instant.now()
+        ));
+    }
+
+
+    @Override
+    public Mono<AiPolymarketIntelligence> analyzePolymarket(
+            PolymarketIntelligence intelligence,
+            int materialityScore
+    ) {
+        return Mono.just(new AiPolymarketIntelligence(
+                intelligence.symbol(),
+                "MOCK",
+                intelligence.bias(),
+                intelligence.importance(),
+                Math.min(80, Math.max(40, intelligence.confidence())),
+                "INTRADAY",
+                "Mock AI interpretation mirrors the deterministic Polymarket signal.",
+                intelligence.topEvent().isBlank() ? List.of() : List.of(intelligence.topEvent()),
+                List.of("Mock provider: validate with a live AI provider before production use"),
+                List.of(),
+                materialityScore,
+                intelligence.bias(),
+                intelligence.marketCount(),
+                name(),
+                "Mock provider",
                 Instant.now()
         ));
     }

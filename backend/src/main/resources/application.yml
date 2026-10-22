@@ -84,9 +84,12 @@ coinmind:
 
   polymarket:
     base-url: ${POLYMARKET_BASE_URL:https://gamma-api.polymarket.com}
+    clob-base-url: ${POLYMARKET_CLOB_BASE_URL:https://clob.polymarket.com}
     connect-timeout-ms: ${POLYMARKET_CONNECT_TIMEOUT_MS:5000}
     response-timeout-ms: ${POLYMARKET_RESPONSE_TIMEOUT_MS:8000}
     failure-cooldown-ms: ${POLYMARKET_FAILURE_COOLDOWN_MS:120000}
+    gamma-event-limit: ${POLYMARKET_GAMMA_EVENT_LIMIT:100}
+    clob-page-limit: ${POLYMARKET_CLOB_PAGE_LIMIT:3}
 
   news:
     enabled: ${NEWS_ENABLED:false}

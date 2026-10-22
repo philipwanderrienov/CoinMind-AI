@@ -213,7 +213,7 @@ AI News hanya bounded modifier untuk Decision Engine.
 
 Polymarket adalah prediction-market intelligence, bukan sumber berita.
 
-Market discovery sekarang memakai **multi-source failover**: Gamma `/events` sebagai primary sesuai dokumentasi resmi terbaru, lalu CLOB `/simplified-markets` sebagai read-only fallback host jika Gamma tidak dapat diakses.
+Market discovery sekarang memakai **multi-source failover**: Gamma `/events` sebagai primary, CLOB `/simplified-markets` sebagai secondary, lalu **Manifold public forecasting API** sebagai compliant third-source fallback jika Polymarket diblokir/unreachable. Frontend menampilkan source aktual agar provenance data tidak ambigu.
 
 Endpoint:
 
@@ -229,7 +229,8 @@ Hardening yang sudah masuk `main`:
 - Reactor Netty connect timeout default 5 detik
 - response/operation timeout default 8 detik
 - failure cooldown default 2 menit per symbol
-- fallback antar-source: Gamma events -> CLOB simplified markets
+- fallback antar-source: Gamma events -> CLOB simplified markets -> Manifold search markets
+- source field ikut dikirim ke frontend (`POLYMARKET_GAMMA`, `POLYMARKET_CLOB`, `MANIFOLD`, `NONE`)
 - fallback ke last cached result bila semua source gagal
 - fallback ke neutral result bila cache belum ada
 - timeout/error expected dicatat sebagai warning ringkas tanpa full stack trace
@@ -240,6 +241,7 @@ Config:
 ```text
 POLYMARKET_BASE_URL
 POLYMARKET_CLOB_BASE_URL
+PREDICTION_MANIFOLD_BASE_URL
 POLYMARKET_GAMMA_EVENT_LIMIT
 POLYMARKET_CLOB_PAGE_LIMIT
 POLYMARKET_CONNECT_TIMEOUT_MS

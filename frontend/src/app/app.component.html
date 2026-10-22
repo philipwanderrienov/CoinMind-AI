@@ -887,6 +887,95 @@
                 <strong>{{ polymarketIntelligence()!.topEvent }}</strong>
               </div>
             }
+
+            <section class="polymarket-ai-layer">
+              <div class="polymarket-ai-head">
+                <div>
+                  <span>AI INTERPRETATION</span>
+                  <strong>Analisis prediction market</strong>
+                </div>
+                <button
+                  type="button"
+                  [disabled]="aiPolymarketRunning() || aiStatus()?.state === 'DISABLED' || aiStatus()?.state === 'MISSING_API_KEY'"
+                  (click)="runAiPolymarketIntelligence()">
+                  {{ aiPolymarketRunning() ? 'Menganalisis…' : (aiPolymarketIntelligence()?.analysisState === 'ANALYZED' ? 'Analisa ulang' : 'Analisa dengan AI') }}
+                </button>
+              </div>
+
+              @if (aiPolymarketIntelligence()) {
+                <div class="polymarket-ai-summary">
+                  <div class="polymarket-ai-metrics">
+                    <div>
+                      <span>State</span>
+                      <strong>{{ aiPolymarketIntelligence()!.analysisState }}</strong>
+                    </div>
+                    <div>
+                      <span>Direction</span>
+                      <strong
+                        [class.positive]="aiPolymarketIntelligence()!.direction === 'BULLISH'"
+                        [class.negative]="aiPolymarketIntelligence()!.direction === 'BEARISH'">
+                        {{ aiPolymarketIntelligence()!.direction }}
+                      </strong>
+                    </div>
+                    <div>
+                      <span>Materiality</span>
+                      <strong>{{ aiPolymarketIntelligence()!.materialityScore }}/100</strong>
+                    </div>
+                    <div>
+                      <span>AI confidence</span>
+                      <strong>{{ aiPolymarketIntelligence()!.confidence }}%</strong>
+                    </div>
+                  </div>
+
+                  <p>{{ aiPolymarketIntelligence()!.summary }}</p>
+
+                  @if (aiPolymarketIntelligence()!.reason) {
+                    <small class="polymarket-ai-reason">
+                      {{ aiPolymarketIntelligence()!.reason }}
+                    </small>
+                  }
+
+                  @if (aiPolymarketIntelligence()!.catalysts.length || aiPolymarketIntelligence()!.risks.length || aiPolymarketIntelligence()!.contradictions.length) {
+                    <div class="polymarket-ai-factors">
+                      @if (aiPolymarketIntelligence()!.catalysts.length) {
+                        <div>
+                          <span>Catalyst</span>
+                          @for (item of aiPolymarketIntelligence()!.catalysts; track item) {
+                            <small>+ {{ item }}</small>
+                          }
+                        </div>
+                      }
+                      @if (aiPolymarketIntelligence()!.risks.length) {
+                        <div>
+                          <span>Risk</span>
+                          @for (item of aiPolymarketIntelligence()!.risks; track item) {
+                            <small>• {{ item }}</small>
+                          }
+                        </div>
+                      }
+                      @if (aiPolymarketIntelligence()!.contradictions.length) {
+                        <div>
+                          <span>Contradiction</span>
+                          @for (item of aiPolymarketIntelligence()!.contradictions; track item) {
+                            <small>• {{ item }}</small>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+
+                  <div class="polymarket-ai-meta">
+                    {{ aiPolymarketIntelligence()!.model }}
+                    · {{ aiPolymarketIntelligence()!.horizon }}
+                    · {{ aiPolymarketIntelligence()!.analyzedAt | date:'HH:mm:ss' }}
+                  </div>
+                </div>
+              } @else {
+                <div class="polymarket-ai-empty">
+                  Deterministic Polymarket signal tetap aktif. AI hanya dipanggil bila material atau saat Anda meminta analisa manual.
+                </div>
+              }
+            </section>
           } @else {
             <div class="empty-usage">Menunggu data prediction market.</div>
           }

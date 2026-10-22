@@ -252,26 +252,111 @@ Backend Maven build dan smoke test pada `phive-server` masih perlu dijalankan se
 
 ## AI & Usage state
 
-AI config mendukung:
+AI framework sekarang mendukung **cost-aware task routing**.
 
-- provider/model status
-- API key state
-- automatic-call guardrails
-- manual analysis
-- decision review
-- news intelligence
-- usage/token accounting
-- estimated cost
-- history/evaluation
+Important: AI provider live **belum aktif** sampai server memiliki API key dan `AI_ENABLED=true`. ChatGPT Plus/Codex subscription tidak digunakan oleh backend; CoinMind memakai API key dan API billing terpisah.
 
-Default config saat ini:
+Task routing:
 
 ```text
-AI_PROVIDER=openai
-AI_MODEL=gpt-5.6-luna
-AI_REASONING_EFFORT=low
-AI_MAX_OUTPUT_TOKENS=400
+Routine model
+- News Intelligence
+- Polymarket interpretation dengan materiality rendah/menengah
+
+Deep model
+- Manual/general market analysis
+- AI Decision Review
+- Polymarket interpretation dengan materiality tinggi
 ```
+
+Config:
+
+```text
+AI_PROVIDER
+AI_MODEL
+AI_ROUTINE_MODEL
+AI_DEEP_MODEL
+AI_API_KEY
+AI_ENABLED
+```
+
+Default routine/deep model masih fallback ke `AI_MODEL`, sehingga model berbeda tidak wajib digunakan sebelum benchmark.
+
+Existing cost controls:
+
+- token usage tracking
+- estimated cost tracking
+- cached input token tracking
+- hourly automatic-call cap
+- daily automatic-call cap
+- automatic signal-score guardrail
+
+### AI Polymarket Intelligence
+
+Polymarket sekarang memiliki dua layer terpisah:
+
+```text
+Polymarket API
+   ↓
+Deterministic parser / scorer
+   ↓
+PolymarketIntelligence
+   ↓
+Materiality gate + cache + budget guardrail
+   ↓ (hanya jika perlu)
+AI Polymarket Intelligence
+```
+
+Automatic AI call hanya layak jika deterministic data dianggap material, default:
+
+- absolute average probability change >= 3%
+- atau importance/relevance >= 80
+- atau materiality score >= 75
+
+Materiality tinggi memilih `AI_DEEP_MODEL`; kondisi lain memilih `AI_ROUTINE_MODEL`.
+
+AI input dibatasi ke structured data dan maksimum lima market teratas, bukan raw Polymarket payload penuh.
+
+AI output:
+
+- direction
+- importance
+- confidence
+- horizon
+- summary
+- catalysts
+- risks
+- contradictions
+- materiality score
+- actual model used
+
+Cache AI Polymarket default 60 menit. Repeated identical context menggunakan cache agar tidak membuang token.
+
+Automatic Polymarket AI calls juga menggunakan `AiBudgetGuardrailService` sehingga tunduk pada hourly/daily limit.
+
+Endpoints:
+
+```text
+GET  /api/v1/ai/polymarket-intelligence/{symbol}
+POST /api/v1/ai/polymarket-intelligence/{symbol}
+```
+
+GET hanya membaca cache/fallback deterministic dan tidak memaksa paid call.
+POST adalah manual analysis request.
+
+Config:
+
+```text
+AI_POLYMARKET_ENABLED
+AI_POLYMARKET_MIN_PROBABILITY_CHANGE
+AI_POLYMARKET_MIN_IMPORTANCE
+AI_POLYMARKET_DEEP_MATERIALITY_SCORE
+AI_POLYMARKET_CACHE_MINUTES
+```
+
+AI Polymarket interpretation **belum menjadi modifier tambahan untuk Decision Engine**. Untuk sekarang ia ditampilkan sebagai advisor context/second opinion. Deterministic Polymarket modifier yang sudah dibatasi tetap menjadi satu-satunya Polymarket contribution ke Decision Engine sampai hasil AI layer dievaluasi.
+
+Frontend Prediction Market panel sekarang menampilkan deterministic layer dan AI interpretation layer secara terpisah.
 
 ## Advisor-only UI state
 
@@ -298,12 +383,14 @@ Frontend production build masih perlu dijalankan di server setelah pull terbaru.
 
 Urutan prioritas saat ini:
 
-1. **Validate Polymarket hardening di server**
+1. **Validate AI Router + Polymarket AI pipeline di server**
    - pull `main`
    - Maven build
    - restart backend
-   - test Polymarket + trade setup
-   - pastikan timeout sekitar beberapa detik dan tidak ada stack trace spam
+   - test deterministic Polymarket endpoint
+   - test AI Polymarket GET fallback while AI is disabled
+   - verify frontend production build
+   - do not enable paid AI until environment/config has been reviewed
 
 2. **Frontend shell visual validation**
    - production Angular build setelah commit `937f6c6`

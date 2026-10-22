@@ -75,13 +75,13 @@ public class OpenAiLunaProvider implements AiProvider {
     ) {
         String selectedModel = properties.effectiveDeepModel();
 
-        if (properties.apiKey() == null || properties.apiKey().isBlank()) {
+        if (!properties.enabled() || properties.apiKey() == null || properties.apiKey().isBlank()) {
             return Mono.just(new AiAnalysisResult(
                     context.symbol(),
                     context.interval(),
                     "UNAVAILABLE",
                     0,
-                    "AI engine is not configured yet.",
+                    "AI engine is disabled or not configured yet.",
                     List.of(),
                     List.of("OpenAI API key is missing"),
                     selectedModel,
@@ -143,13 +143,13 @@ public class OpenAiLunaProvider implements AiProvider {
     ) {
         String selectedModel = properties.effectiveDeepModel();
 
-        if (properties.apiKey() == null || properties.apiKey().isBlank()) {
+        if (!properties.enabled() || properties.apiKey() == null || properties.apiKey().isBlank()) {
             return Mono.just(new AiDecisionReview(
                     setup.symbol(),
                     setup.action(),
                     "UNAVAILABLE",
                     0,
-                    "AI engine is not configured yet.",
+                    "AI engine is disabled or not configured yet.",
                     List.of(),
                     List.of("OpenAI API key is missing"),
                     selectedModel,
@@ -176,14 +176,14 @@ public class OpenAiLunaProvider implements AiProvider {
     ) {
         String selectedModel = properties.effectiveRoutineModel();
 
-        if (properties.apiKey() == null || properties.apiKey().isBlank()) {
+        if (!properties.enabled() || properties.apiKey() == null || properties.apiKey().isBlank()) {
             return Mono.just(new AiNewsIntelligence(
                     symbol,
                     "NEUTRAL",
                     0,
                     0,
                     "NONE",
-                    "AI engine is not configured yet.",
+                    "AI engine is disabled or not configured yet.",
                     List.of(),
                     List.of("OpenAI API key is missing"),
                     List.of(),
@@ -219,7 +219,7 @@ public class OpenAiLunaProvider implements AiProvider {
                 ? properties.effectiveDeepModel()
                 : properties.effectiveRoutineModel();
 
-        if (properties.apiKey() == null || properties.apiKey().isBlank()) {
+        if (!properties.enabled() || properties.apiKey() == null || properties.apiKey().isBlank()) {
             return Mono.just(new AiPolymarketIntelligence(
                     intelligence.symbol(),
                     "UNAVAILABLE",
@@ -227,7 +227,7 @@ public class OpenAiLunaProvider implements AiProvider {
                     intelligence.importance(),
                     0,
                     "NONE",
-                    "AI engine is not configured yet.",
+                    "AI engine is disabled or not configured yet.",
                     List.of(),
                     List.of("OpenAI API key is missing"),
                     List.of(),

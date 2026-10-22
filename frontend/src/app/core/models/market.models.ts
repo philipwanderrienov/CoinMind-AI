@@ -415,6 +415,7 @@ export interface AiPolymarketIntelligence {
 
 export interface PolymarketIntelligence {
   symbol: string;
+  source: 'POLYMARKET_GAMMA' | 'POLYMARKET_CLOB' | 'MANIFOLD' | 'NONE';
   bias: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
   confidence: number;
   importance: number;

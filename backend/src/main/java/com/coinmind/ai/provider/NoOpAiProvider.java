@@ -3,8 +3,10 @@ package com.coinmind.ai.provider;
 import com.coinmind.ai.model.AiAnalysisResult;
 import com.coinmind.ai.model.AiDecisionReview;
 import com.coinmind.ai.model.AiNewsIntelligence;
+import com.coinmind.ai.model.AiPolymarketIntelligence;
 import com.coinmind.ai.model.MarketContext;
 import com.coinmind.news.model.NewsArticle;
+import com.coinmind.polymarket.model.PolymarketIntelligence;
 import com.coinmind.trade.model.TradeSetup;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -68,6 +70,32 @@ public class NoOpAiProvider implements AiProvider {
                 List.of("No AI provider configured"),
                 List.of(),
                 name(),
+                Instant.now()
+        ));
+    }
+
+
+    @Override
+    public Mono<AiPolymarketIntelligence> analyzePolymarket(
+            PolymarketIntelligence intelligence,
+            int materialityScore
+    ) {
+        return Mono.just(new AiPolymarketIntelligence(
+                intelligence.symbol(),
+                "UNAVAILABLE",
+                intelligence.bias(),
+                intelligence.importance(),
+                0,
+                "NONE",
+                "AI provider is not configured yet.",
+                List.of(),
+                List.of("No AI provider configured"),
+                List.of(),
+                materialityScore,
+                intelligence.bias(),
+                intelligence.marketCount(),
+                name(),
+                "AI provider unavailable",
                 Instant.now()
         ));
     }

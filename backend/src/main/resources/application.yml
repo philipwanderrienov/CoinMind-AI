@@ -85,6 +85,7 @@ coinmind:
   polymarket:
     base-url: ${POLYMARKET_BASE_URL:https://gamma-api.polymarket.com}
     clob-base-url: ${POLYMARKET_CLOB_BASE_URL:https://clob.polymarket.com}
+    manifold-base-url: ${PREDICTION_MANIFOLD_BASE_URL:https://api.manifold.markets}
     connect-timeout-ms: ${POLYMARKET_CONNECT_TIMEOUT_MS:5000}
     response-timeout-ms: ${POLYMARKET_RESPONSE_TIMEOUT_MS:8000}
     failure-cooldown-ms: ${POLYMARKET_FAILURE_COOLDOWN_MS:120000}

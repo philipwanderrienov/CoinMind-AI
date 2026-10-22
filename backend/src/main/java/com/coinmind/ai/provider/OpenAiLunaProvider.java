@@ -274,6 +274,7 @@ public class OpenAiLunaProvider implements AiProvider {
     ) throws Exception {
         String payload = objectMapper.writeValueAsString(Map.of(
                 "symbol", intelligence.symbol(),
+                "source", intelligence.source(),
                 "deterministicBias", intelligence.bias(),
                 "deterministicConfidence", intelligence.confidence(),
                 "deterministicImportance", intelligence.importance(),
@@ -295,7 +296,7 @@ public class OpenAiLunaProvider implements AiProvider {
         ));
 
         String prompt = """
-                Interpret the supplied Polymarket prediction-market data for %s.
+                Interpret the supplied prediction/forecast-market data for %s.
                 Use only the supplied structured data. Do not invent market events or probabilities.
                 Treat prediction markets as supporting context, not a trading signal by themselves.
                 Identify whether the market is materially bullish, bearish, or neutral for the asset,
@@ -303,7 +304,7 @@ public class OpenAiLunaProvider implements AiProvider {
                 The deterministic bias is an input, not a conclusion you must agree with.
                 Keep the summary concise and useful to a crypto market advisor.
 
-                PolymarketContext:
+                ForecastMarketContext:
                 %s
                 """.formatted(intelligence.symbol(), payload);
 

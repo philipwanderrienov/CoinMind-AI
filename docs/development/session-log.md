@@ -122,3 +122,21 @@ This is a concise chronological handoff log shared by ChatGPT and Codex.
 - Updated README and canonical current-state documentation.
 - Commits: `1942cea`, `9eaede0`, `43251c7`.
 - Frontend production build/deployment remains pending on `phive-server`.
+
+## 2026-10-22
+
+### Cost-aware AI router and Polymarket AI intelligence
+
+- Added routine/deep AI model routing with `AI_ROUTINE_MODEL` and `AI_DEEP_MODEL`.
+- General market analysis and Decision Review use the deep route; News Intelligence uses the routine route.
+- Added `AiPolymarketIntelligence` model, service and API endpoints.
+- Polymarket AI analysis receives only compact structured data from the deterministic layer, capped to the top five markets.
+- Added Polymarket materiality gating, cache, hourly/daily automatic-call guardrail, and scheduled analysis of tracked symbols.
+- Default automatic trigger thresholds: 3% probability change, importance/relevance 80, deep materiality 75, cache 60 minutes.
+- Added deterministic/AI separation in the frontend Prediction Market panel plus manual AI analysis action.
+- Added route-specific token pricing so routine/deep cost estimates can remain accurate when different models are configured.
+- Enforced `AI_ENABLED` as a hard master switch for every live OpenAI provider call.
+- Updated `.env.example` with model-routing, pricing, Polymarket AI and upstream resilience settings.
+- AI Polymarket output remains advisor context only; it does not yet modify the deterministic Decision Engine.
+- Live API provider remains disabled until a server API key is intentionally configured.
+- Local build could not be executed in the ChatGPT container because external GitHub DNS/network access is unavailable; server-side Maven + Angular production validation is required before deployment acceptance.

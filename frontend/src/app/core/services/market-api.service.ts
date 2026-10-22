@@ -6,6 +6,7 @@ import {
   AiAnalysisResult,
   AiDecisionReview,
   AiNewsIntelligence,
+  AiPolymarketIntelligence,
   AiAnalysisHistoryItem,
   AiEngineStatus,
   AiEvaluationSummary,
@@ -75,6 +76,19 @@ export class MarketApiService {
   getPolymarketIntelligence(symbol: string): Observable<PolymarketIntelligence> {
     return this.http.get<PolymarketIntelligence>(
       `/api/v1/polymarket/${symbol}`
+    );
+  }
+
+  getAiPolymarketIntelligence(symbol: string): Observable<AiPolymarketIntelligence> {
+    return this.http.get<AiPolymarketIntelligence>(
+      `/api/v1/ai/polymarket-intelligence/${symbol}`
+    );
+  }
+
+  analyzePolymarketIntelligence(symbol: string): Observable<AiPolymarketIntelligence> {
+    return this.http.post<AiPolymarketIntelligence>(
+      `/api/v1/ai/polymarket-intelligence/${symbol}`,
+      {}
     );
   }
 

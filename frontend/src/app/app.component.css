@@ -10071,3 +10071,138 @@ main {
   }
 }
 
+/* ===== Polymarket AI interpretation layer ===== */
+.polymarket-ai-layer {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #e8edf4;
+}
+
+.polymarket-ai-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.polymarket-ai-head > div {
+  display: grid;
+  gap: 3px;
+}
+
+.polymarket-ai-head span {
+  color: #8c97a8;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .07em;
+}
+
+.polymarket-ai-head strong {
+  color: #26344a;
+  font-size: 12px;
+}
+
+.polymarket-ai-head button {
+  min-height: 34px;
+  padding: 7px 11px;
+  border: 1px solid rgba(101, 87, 232, .2);
+  border-radius: 10px;
+  background: #f6f4ff;
+  color: #594bce;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.polymarket-ai-head button:disabled {
+  opacity: .5;
+  cursor: default;
+}
+
+.polymarket-ai-summary {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.polymarket-ai-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.polymarket-ai-metrics > div {
+  min-width: 0;
+  padding: 9px;
+  display: grid;
+  gap: 3px;
+  border: 1px solid #e8edf4;
+  border-radius: 10px;
+  background: #fafbfd;
+}
+
+.polymarket-ai-metrics span,
+.polymarket-ai-factors span {
+  color: #8d98a8;
+  font-size: 9px;
+}
+
+.polymarket-ai-metrics strong {
+  color: #2f3d52;
+  font-size: 11px;
+}
+
+.polymarket-ai-summary p {
+  margin: 0;
+  color: #536176;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.polymarket-ai-reason {
+  color: #7b8798;
+  font-size: 10px;
+}
+
+.polymarket-ai-factors {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.polymarket-ai-factors > div {
+  min-width: 0;
+  padding: 9px;
+  display: grid;
+  gap: 5px;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.polymarket-ai-factors small {
+  color: #5d6a7d;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.polymarket-ai-meta,
+.polymarket-ai-empty {
+  color: #929dad;
+  font-size: 9.5px;
+  line-height: 1.4;
+}
+
+@media (max-width: 760px) {
+  .polymarket-ai-head {
+    align-items: flex-start;
+  }
+
+  .polymarket-ai-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .polymarket-ai-factors {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+

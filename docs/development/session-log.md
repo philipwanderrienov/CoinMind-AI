@@ -173,3 +173,16 @@ This is a concise chronological handoff log shared by ChatGPT and Codex.
 - No scheduled benchmark calls are made.
 - Frontend AI advanced details now displays routine/deep model routing.
 - Backend Maven + frontend production build remain required on phive-server before this increment is accepted.
+
+### Dedicated AI Billing / Cost Center
+
+- Added a fifth application view: `AI Billing`.
+- Added backend cost-center aggregation for today, current month and lifetime usage.
+- Cost accounting separates input and output cost and tracks input/cached/output/reasoning tokens.
+- Added monthly cost breakdown by model and trigger type.
+- Added optional `AI_CREDIT_BUDGET_USD` internal budget reference and estimated remaining internal budget.
+- Added `GET /api/v1/ai/usage/cost-center`.
+- Frontend displays internal credit budget, estimated lifetime spend, remaining estimate, daily/monthly token/cost cards, per-model costs and per-activity costs.
+- UI explicitly states that this is a CoinMind estimate, not the live OpenAI prepaid balance.
+- Historical/lifetime accounting depends on persistence being enabled.
+- Backend Maven and Angular production builds remain required on phive-server for acceptance.

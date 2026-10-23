@@ -23,6 +23,7 @@ Dashboard
 Trade Decision
 News
 AI & Usage
+AI Billing
 ```
 
 ## Current access
@@ -424,6 +425,36 @@ AI_POLYMARKET_CACHE_MINUTES
 AI Polymarket interpretation **belum menjadi modifier tambahan untuk Decision Engine**. Untuk sekarang ia ditampilkan sebagai advisor context/second opinion. Deterministic Polymarket modifier yang sudah dibatasi tetap menjadi satu-satunya Polymarket contribution ke Decision Engine sampai hasil AI layer dievaluasi.
 
 Frontend Prediction Market panel sekarang menampilkan deterministic layer dan AI interpretation layer secara terpisah.
+
+## AI Billing / Cost Center
+
+Dedicated `AI Billing` view tracks CoinMind's own AI usage accounting:
+
+- input tokens
+- cached input tokens
+- output tokens
+- reasoning tokens
+- estimated input cost
+- estimated output cost
+- total cost today / current month / lifetime
+- monthly breakdown by model
+- monthly breakdown by trigger/activity
+- optional internal credit budget via `AI_CREDIT_BUDGET_USD`
+- estimated remaining internal budget
+
+Endpoint:
+
+```text
+GET /api/v1/ai/usage/cost-center
+```
+
+Important accounting rule:
+
+- CoinMind calculates cost from token usage returned by the provider response and configured model pricing.
+- `AI_CREDIT_BUDGET_USD` is only an internal reference budget.
+- Estimated remaining budget is NOT the live OpenAI prepaid balance.
+- OpenAI Billing remains authoritative for actual prepaid credit, grants, invoices and account-level spend.
+- Usage persistence must be enabled for historical/lifetime accounting.
 
 ## Advisor-only UI state
 

@@ -2,6 +2,7 @@ package com.coinmind.ai.api;
 
 import com.coinmind.ai.usage.AiUsageService;
 import com.coinmind.ai.usage.AiUsageSummary;
+import com.coinmind.ai.usage.AiCostCenterSummary;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,5 +24,10 @@ public class AiUsageController {
             @RequestParam(defaultValue = "14") int days
     ) {
         return usageService.summary(days);
+    }
+
+    @GetMapping("/cost-center")
+    public Mono<AiCostCenterSummary> costCenter() {
+        return usageService.costCenter();
     }
 }

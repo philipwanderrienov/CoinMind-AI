@@ -25,6 +25,7 @@ public record AiProperties(
         long deepInputPriceMicrosPerMillion,
         long deepCachedInputPriceMicrosPerMillion,
         long deepOutputPriceMicrosPerMillion,
+        BigDecimal creditBudgetUsd,
         String usageTimezone,
         List<String> triggerIntervals,
         BigDecimal minimumAutomaticSignalScore,

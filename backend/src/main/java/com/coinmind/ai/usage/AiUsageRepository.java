@@ -65,6 +65,8 @@ public class AiUsageRepository {
                     COALESCE(SUM(output_tokens), 0) AS output_tokens,
                     COALESCE(SUM(reasoning_tokens), 0) AS reasoning_tokens,
                     COALESCE(SUM(total_tokens), 0) AS total_tokens,
+                    COALESCE(SUM(estimated_input_cost_usd), 0) AS input_cost,
+                    COALESCE(SUM(estimated_output_cost_usd), 0) AS output_cost,
                     COALESCE(SUM(estimated_total_cost_usd), 0) AS cost
                 FROM ai_usage_log
                 WHERE created_at >= :from
@@ -77,6 +79,8 @@ public class AiUsageRepository {
                         number(row.get("output_tokens", BigDecimal.class)),
                         number(row.get("reasoning_tokens", BigDecimal.class)),
                         number(row.get("total_tokens", BigDecimal.class)),
+                        decimal(row.get("input_cost", BigDecimal.class)),
+                        decimal(row.get("output_cost", BigDecimal.class)),
                         decimal(row.get("cost", BigDecimal.class))
                 ))
                 .one();
@@ -114,6 +118,70 @@ public class AiUsageRepository {
                 .all();
     }
 
+    public Flux<CostBreakdown> costByModel(Instant from) {
+        return databaseClient.sql("""
+                SELECT
+                    model AS label,
+                    COUNT(*) AS calls,
+                    COALESCE(SUM(input_tokens), 0) AS input_tokens,
+                    COALESCE(SUM(cached_input_tokens), 0) AS cached_input_tokens,
+                    COALESCE(SUM(output_tokens), 0) AS output_tokens,
+                    COALESCE(SUM(reasoning_tokens), 0) AS reasoning_tokens,
+                    COALESCE(SUM(estimated_input_cost_usd), 0) AS input_cost,
+                    COALESCE(SUM(estimated_output_cost_usd), 0) AS output_cost,
+                    COALESCE(SUM(estimated_total_cost_usd), 0) AS total_cost
+                FROM ai_usage_log
+                WHERE created_at >= :from
+                GROUP BY model
+                ORDER BY total_cost DESC
+                """)
+                .bind("from", from)
+                .map((row, metadata) -> new CostBreakdown(
+                        row.get("label", String.class),
+                        number(row.get("calls", Long.class)),
+                        number(row.get("input_tokens", BigDecimal.class)),
+                        number(row.get("cached_input_tokens", BigDecimal.class)),
+                        number(row.get("output_tokens", BigDecimal.class)),
+                        number(row.get("reasoning_tokens", BigDecimal.class)),
+                        decimal(row.get("input_cost", BigDecimal.class)),
+                        decimal(row.get("output_cost", BigDecimal.class)),
+                        decimal(row.get("total_cost", BigDecimal.class))
+                ))
+                .all();
+    }
+
+    public Flux<CostBreakdown> costByTrigger(Instant from) {
+        return databaseClient.sql("""
+                SELECT
+                    trigger_type AS label,
+                    COUNT(*) AS calls,
+                    COALESCE(SUM(input_tokens), 0) AS input_tokens,
+                    COALESCE(SUM(cached_input_tokens), 0) AS cached_input_tokens,
+                    COALESCE(SUM(output_tokens), 0) AS output_tokens,
+                    COALESCE(SUM(reasoning_tokens), 0) AS reasoning_tokens,
+                    COALESCE(SUM(estimated_input_cost_usd), 0) AS input_cost,
+                    COALESCE(SUM(estimated_output_cost_usd), 0) AS output_cost,
+                    COALESCE(SUM(estimated_total_cost_usd), 0) AS total_cost
+                FROM ai_usage_log
+                WHERE created_at >= :from
+                GROUP BY trigger_type
+                ORDER BY total_cost DESC
+                """)
+                .bind("from", from)
+                .map((row, metadata) -> new CostBreakdown(
+                        row.get("label", String.class),
+                        number(row.get("calls", Long.class)),
+                        number(row.get("input_tokens", BigDecimal.class)),
+                        number(row.get("cached_input_tokens", BigDecimal.class)),
+                        number(row.get("output_tokens", BigDecimal.class)),
+                        number(row.get("reasoning_tokens", BigDecimal.class)),
+                        decimal(row.get("input_cost", BigDecimal.class)),
+                        decimal(row.get("output_cost", BigDecimal.class)),
+                        decimal(row.get("total_cost", BigDecimal.class))
+                ))
+                .all();
+    }
+
     private long number(Long value) {
         return value == null ? 0L : value;
     }
@@ -137,7 +205,23 @@ public class AiUsageRepository {
             long outputTokens,
             long reasoningTokens,
             long totalTokens,
+            BigDecimal inputCost,
+            BigDecimal outputCost,
             BigDecimal cost
     ) {
     }
+
+    public record CostBreakdown(
+            String label,
+            long calls,
+            long inputTokens,
+            long cachedInputTokens,
+            long outputTokens,
+            long reasoningTokens,
+            BigDecimal inputCostUsd,
+            BigDecimal outputCostUsd,
+            BigDecimal totalCostUsd
+    ) {
+    }
+
 }

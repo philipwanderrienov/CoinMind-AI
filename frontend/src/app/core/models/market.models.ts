@@ -218,6 +218,42 @@ export interface AiUsageDaily {
   estimatedCostUsd: number;
 }
 
+export interface AiCostCenterBreakdown {
+  label: string;
+  calls: number;
+  inputTokens: number;
+  cachedInputTokens: number;
+  outputTokens: number;
+  reasoningTokens: number;
+  inputCostUsd: number;
+  outputCostUsd: number;
+  totalCostUsd: number;
+}
+
+export interface AiCostCenterSummary {
+  internalCreditBudgetUsd: number;
+  estimatedLifetimeSpendUsd: number;
+  estimatedRemainingBudgetUsd: number;
+  todayInputCostUsd: number;
+  todayOutputCostUsd: number;
+  todayTotalCostUsd: number;
+  monthInputCostUsd: number;
+  monthOutputCostUsd: number;
+  monthTotalCostUsd: number;
+  todayInputTokens: number;
+  todayCachedInputTokens: number;
+  todayOutputTokens: number;
+  todayReasoningTokens: number;
+  monthInputTokens: number;
+  monthCachedInputTokens: number;
+  monthOutputTokens: number;
+  monthReasoningTokens: number;
+  byModel: AiCostCenterBreakdown[];
+  byTrigger: AiCostCenterBreakdown[];
+  balanceSourceNote: string;
+}
+
+
 export interface AiUsageSummary {
   todayCalls: number;
   todayInputTokens: number;

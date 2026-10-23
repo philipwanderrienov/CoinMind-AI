@@ -249,6 +249,14 @@ export interface BillingStatus {
 }
 
 
+export interface AiBenchmarkConfig {
+  aiEnabled: boolean;
+  provider: string;
+  routineModel: string;
+  deepModel: string;
+}
+
+
 export interface AiEngineStatus {
   state: 'DISABLED' | 'MISSING_API_KEY' | 'MOCK' | 'CONFIGURED_UNVERIFIED' | 'READY' | 'AUTH_ERROR' | 'RATE_LIMITED' | 'ERROR';
   provider: string;

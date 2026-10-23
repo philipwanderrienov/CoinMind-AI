@@ -38,6 +38,7 @@ coinmind:
     deep-input-price-micros-per-million: ${AI_DEEP_INPUT_PRICE_MICROS_PER_MILLION:2000000}
     deep-cached-input-price-micros-per-million: ${AI_DEEP_CACHED_INPUT_PRICE_MICROS_PER_MILLION:100000}
     deep-output-price-micros-per-million: ${AI_DEEP_OUTPUT_PRICE_MICROS_PER_MILLION:10000000}
+    credit-budget-usd: ${AI_CREDIT_BUDGET_USD:0}
     usage-timezone: ${AI_USAGE_TIMEZONE:Asia/Jakarta}
     minimum-automatic-signal-score: ${AI_MIN_AUTOMATIC_SIGNAL_SCORE:45}
     max-automatic-calls-per-hour: ${AI_MAX_AUTOMATIC_CALLS_PER_HOUR:12}

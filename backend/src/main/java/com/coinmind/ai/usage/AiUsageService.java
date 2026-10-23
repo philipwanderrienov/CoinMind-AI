@@ -127,6 +127,79 @@ public class AiUsageService {
     }
 
 
+    public Mono<AiCostCenterSummary> costCenter() {
+        AiUsageRepository repository = repositoryProvider.getIfAvailable();
+        BigDecimal budget = properties.creditBudgetUsd() == null
+                ? BigDecimal.ZERO
+                : properties.creditBudgetUsd();
+
+        if (repository == null) {
+            return Mono.just(new AiCostCenterSummary(
+                    budget,
+                    BigDecimal.ZERO,
+                    budget,
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO,
+                    0, 0, 0, 0,
+                    0, 0, 0, 0,
+                    java.util.List.of(),
+                    java.util.List.of(),
+                    "Internal estimate only. Persistence is disabled, so usage history is not available."
+            ));
+        }
+
+        ZoneId zoneId = ZoneId.of(properties.usageTimezone());
+        Instant todayStart = LocalDate.now(zoneId)
+                .atStartOfDay(zoneId)
+                .toInstant();
+        Instant monthStart = LocalDate.now(zoneId)
+                .withDayOfMonth(1)
+                .atStartOfDay(zoneId)
+                .toInstant();
+
+        return Mono.zip(
+                repository.aggregate(todayStart),
+                repository.aggregate(monthStart),
+                repository.aggregate(Instant.EPOCH),
+                repository.costByModel(monthStart).collectList(),
+                repository.costByTrigger(monthStart).collectList()
+        ).map(tuple -> {
+            var today = tuple.getT1();
+            var month = tuple.getT2();
+            var lifetime = tuple.getT3();
+            BigDecimal remaining = budget.signum() <= 0
+                    ? BigDecimal.ZERO
+                    : budget.subtract(lifetime.cost()).max(BigDecimal.ZERO);
+
+            return new AiCostCenterSummary(
+                    budget,
+                    lifetime.cost(),
+                    remaining,
+                    today.inputCost(),
+                    today.outputCost(),
+                    today.cost(),
+                    month.inputCost(),
+                    month.outputCost(),
+                    month.cost(),
+                    today.inputTokens(),
+                    today.cachedInputTokens(),
+                    today.outputTokens(),
+                    today.reasoningTokens(),
+                    month.inputTokens(),
+                    month.cachedInputTokens(),
+                    month.outputTokens(),
+                    month.reasoningTokens(),
+                    tuple.getT4(),
+                    tuple.getT5(),
+                    "CoinMind estimate from recorded API response usage. OpenAI prepaid balance remains authoritative in OpenAI Billing."
+            );
+        });
+    }
+
     private Pricing pricingFor(String model) {
         if (model != null && model.equals(properties.effectiveDeepModel())) {
             return new Pricing(

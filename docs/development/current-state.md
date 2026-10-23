@@ -312,6 +312,50 @@ AI_DEEP_CACHED_INPUT_PRICE_MICROS_PER_MILLION
 AI_DEEP_OUTPUT_PRICE_MICROS_PER_MILLION
 ```
 
+### AI model benchmark
+
+Current benchmark candidates (AI remains disabled by default):
+
+```text
+Routine: gpt-6-luna
+Deep:    gpt-6.1-sol
+```
+
+Rationale:
+
+- routine route is for high-volume structured classification/interpretation
+- deep route is for Decision Review, general market reasoning, and high-materiality forecast context
+- these are benchmark candidates, not a claim that the deep route is always superior for CoinMind
+
+Current standard API pricing configured in the usage estimator:
+
+```text
+gpt-6-luna:
+  input       $0.10 / 1M
+  cached      $0.01 / 1M
+  output      $0.50 / 1M
+
+gpt-6.1-sol:
+  input       $2.00 / 1M
+  cached      $0.10 / 1M
+  output      $10.00 / 1M
+```
+
+Manual benchmark endpoints:
+
+```text
+GET  /api/v1/ai/benchmark/config
+POST /api/v1/ai/benchmark/forecast/{symbol}
+```
+
+GET is free and only reports configured routes.
+
+POST requires `AI_ENABLED=true` and an API key and intentionally performs two paid calls against the same forecast context: routine then deep. The result reports latency, each structured analysis, model agreement, and whether each direction matches the deterministic forecast bias.
+
+Benchmark is manual only; there is no scheduled benchmark job.
+
+Frontend AI & Usage advanced details now shows the configured routine/deep models.
+
 ### AI Polymarket Intelligence
 
 Polymarket sekarang memiliki dua layer terpisah:

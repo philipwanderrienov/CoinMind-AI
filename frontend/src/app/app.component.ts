@@ -3,6 +3,7 @@ import { AfterViewInit, Component, OnDestroy, OnInit, computed, inject, signal }
 import { Subscription, auditTime, catchError, fromEvent, map, of, retry, switchMap, timer } from 'rxjs';
 import {
   AiAnalysisResult,
+  AiBenchmarkConfig,
   AiDecisionReview,
   AiNewsIntelligence,
   AiPolymarketIntelligence,
@@ -82,6 +83,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly aiNewsIntelligenceRunning = signal(false);
   readonly aiHistory = signal<AiAnalysisHistoryItem[]>([]);
   readonly aiEvaluationSummary = signal<AiEvaluationSummary | null>(null);
+  readonly aiBenchmarkConfig = signal<AiBenchmarkConfig | null>(null);
   readonly aiStatus = signal<AiEngineStatus | null>(null);
   readonly aiGuardrails = signal<AiGuardrailStatus | null>(null);
   readonly news = signal<NewsArticle[]>([]);
@@ -233,6 +235,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadAiHistory();
     this.loadAiEvaluationSummary();
     this.startAiStatusMonitoring();
+    this.loadAiBenchmarkConfig();
     this.loadAiGuardrails();
     this.loadNews();
     this.loadPolymarketIntelligence();
@@ -975,6 +978,15 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       })
     );
 
+  }
+
+  private loadAiBenchmarkConfig(): void {
+    this.subscriptions.add(
+      this.marketApi.getAiBenchmarkConfig().subscribe({
+        next: config => this.aiBenchmarkConfig.set(config),
+        error: () => this.aiBenchmarkConfig.set(null)
+      })
+    );
   }
 
   private loadLatestAiAnalysis(): void {

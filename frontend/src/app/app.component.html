@@ -1241,6 +1241,17 @@
                 </div>
               }
 
+              @if (aiBenchmarkConfig()) {
+                <div>
+                  <span>Routine model</span>
+                  <strong>{{ aiBenchmarkConfig()!.routineModel }}</strong>
+                </div>
+                <div>
+                  <span>Deep model</span>
+                  <strong>{{ aiBenchmarkConfig()!.deepModel }}</strong>
+                </div>
+              }
+
               @if (aiGuardrails()) {
                 <div>
                   <span>Auto trigger</span>

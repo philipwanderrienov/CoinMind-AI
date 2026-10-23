@@ -27,6 +27,14 @@ public interface AiProvider {
             int materialityScore
     );
 
+    default Mono<AiPolymarketIntelligence> analyzePolymarketWithModel(
+            PolymarketIntelligence intelligence,
+            int materialityScore,
+            String model
+    ) {
+        return analyzePolymarket(intelligence, materialityScore);
+    }
+
     default Mono<AiAnalysisResult> analyze(MarketContext context) {
         return analyze(context, "MANUAL");
     }

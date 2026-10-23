@@ -219,6 +219,19 @@ public class OpenAiLunaProvider implements AiProvider {
                 ? properties.effectiveDeepModel()
                 : properties.effectiveRoutineModel();
 
+        return analyzePolymarketWithModel(
+                intelligence,
+                materialityScore,
+                selectedModel
+        );
+    }
+
+    @Override
+    public Mono<AiPolymarketIntelligence> analyzePolymarketWithModel(
+            PolymarketIntelligence intelligence,
+            int materialityScore,
+            String selectedModel
+    ) {
         if (!properties.enabled() || properties.apiKey() == null || properties.apiKey().isBlank()) {
             return Mono.just(new AiPolymarketIntelligence(
                     intelligence.symbol(),
@@ -229,13 +242,13 @@ public class OpenAiLunaProvider implements AiProvider {
                     "NONE",
                     "AI engine is disabled or not configured yet.",
                     List.of(),
-                    List.of("OpenAI API key is missing"),
+                    List.of("OpenAI API key is missing or AI is disabled"),
                     List.of(),
                     materialityScore,
                     intelligence.bias(),
                     intelligence.marketCount(),
                     selectedModel,
-                    "OpenAI API key is missing",
+                    "AI disabled or OpenAI API key missing",
                     Instant.now()
             ));
         }
@@ -260,7 +273,7 @@ public class OpenAiLunaProvider implements AiProvider {
                 ))
                 .doOnNext(ignored -> statusService.markReady())
                 .doOnError(error -> log.warn(
-                        "AI Polymarket intelligence failed. symbol={}, materiality={}, model={}",
+                        "AI forecast intelligence failed. symbol={}, materiality={}, model={}",
                         intelligence.symbol(),
                         materialityScore,
                         selectedModel

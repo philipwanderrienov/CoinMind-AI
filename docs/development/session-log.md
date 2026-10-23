@@ -161,3 +161,15 @@ This is a concise chronological handoff log shared by ChatGPT and Codex.
 - Frontend relabeled the panel to generic Forecast Signal and shows the active data source.
 - AI structured context now includes the source and uses source-neutral prediction/forecast wording.
 - Server Maven + frontend production build validation remains required.
+
+### Routine/deep AI benchmark harness
+
+- Updated current OpenAI benchmark candidates to `gpt-6-luna` (routine) and `gpt-6.1-sol` (deep), while keeping `AI_ENABLED=false` by default.
+- Updated token-cost defaults for the two routes.
+- Extended `AiProvider` with an explicit model override for controlled benchmark runs.
+- Added a manual forecast benchmark service that runs routine and deep sequentially against exactly the same structured prediction context.
+- Benchmark output includes per-model latency/result, direction agreement, deterministic-bias agreement, source and materiality.
+- Added free `GET /api/v1/ai/benchmark/config` and paid/manual-only `POST /api/v1/ai/benchmark/forecast/{symbol}`.
+- No scheduled benchmark calls are made.
+- Frontend AI advanced details now displays routine/deep model routing.
+- Backend Maven + frontend production build remain required on phive-server before this increment is accepted.

@@ -56,6 +56,18 @@
           <small>Engine, token & estimasi biaya</small>
         </span>
       </a>
+
+      <a
+        href="#billing"
+        [class.active]="activeSection() === 'billing'"
+        [attr.aria-current]="activeSection() === 'billing' ? 'page' : null"
+        (click)="navigateToView('billing', $event)">
+        <span class="sidebar-nav-icon">$</span>
+        <span>
+          <strong>AI Billing</strong>
+          <small>Credit, token & cost center</small>
+        </span>
+      </a>
     </nav>
 
     <div class="sidebar-footer">
@@ -1521,6 +1533,127 @@
         </article>
           </div>
         </details>
+
+        <article
+          class="panel ai-billing-panel"
+          id="billing"
+          [class.sidebar-view-hidden]="activeSection() !== 'billing'">
+          <div class="panel-header compact">
+            <div>
+              <p class="eyebrow">AI BILLING / COST CENTER</p>
+              <h3>Credit & biaya penggunaan AI</h3>
+            </div>
+            <span class="usage-live" [class.warn]="aiStatus()?.state === 'MOCK'">
+              {{ aiStatus()?.state === 'MOCK' ? 'NO PAID CALLS' : (aiStatus()?.state ?? 'CHECKING') }}
+            </span>
+          </div>
+
+          <div class="billing-disclaimer">
+            <strong>CoinMind estimate</strong>
+            <span>
+              Data biaya dihitung dari token usage yang dikembalikan API dan pricing model yang dikonfigurasi.
+              Saldo prepaid aktual tetap mengikuti halaman Billing OpenAI.
+            </span>
+          </div>
+
+          @if (aiCostCenter()) {
+            <div class="billing-hero-grid">
+              <div>
+                <span>Internal credit budget</span>
+                <strong>${{ aiCostCenter()!.internalCreditBudgetUsd | number:'1.2-4' }}</strong>
+                <small>Set via AI_CREDIT_BUDGET_USD</small>
+              </div>
+              <div>
+                <span>Lifetime estimated spend</span>
+                <strong>${{ aiCostCenter()!.estimatedLifetimeSpendUsd | number:'1.4-6' }}</strong>
+                <small>Recorded CoinMind API usage</small>
+              </div>
+              <div>
+                <span>Estimated remaining budget</span>
+                <strong>${{ aiCostCenter()!.estimatedRemainingBudgetUsd | number:'1.4-6' }}</strong>
+                <small>Bukan live prepaid balance OpenAI</small>
+              </div>
+            </div>
+
+            <div class="billing-period-grid">
+              <section>
+                <div class="billing-period-head">
+                  <strong>Hari ini</strong>
+                  <span>${{ aiCostCenter()!.todayTotalCostUsd | number:'1.4-6' }}</span>
+                </div>
+                <div class="billing-token-grid">
+                  <div><span>Input</span><strong>{{ formatCompact(aiCostCenter()!.todayInputTokens) }}</strong><small>${{ aiCostCenter()!.todayInputCostUsd | number:'1.4-6' }}</small></div>
+                  <div><span>Cached</span><strong>{{ formatCompact(aiCostCenter()!.todayCachedInputTokens) }}</strong></div>
+                  <div><span>Output</span><strong>{{ formatCompact(aiCostCenter()!.todayOutputTokens) }}</strong><small>${{ aiCostCenter()!.todayOutputCostUsd | number:'1.4-6' }}</small></div>
+                  <div><span>Reasoning</span><strong>{{ formatCompact(aiCostCenter()!.todayReasoningTokens) }}</strong></div>
+                </div>
+              </section>
+
+              <section>
+                <div class="billing-period-head">
+                  <strong>Bulan ini</strong>
+                  <span>${{ aiCostCenter()!.monthTotalCostUsd | number:'1.4-6' }}</span>
+                </div>
+                <div class="billing-token-grid">
+                  <div><span>Input</span><strong>{{ formatCompact(aiCostCenter()!.monthInputTokens) }}</strong><small>${{ aiCostCenter()!.monthInputCostUsd | number:'1.4-6' }}</small></div>
+                  <div><span>Cached</span><strong>{{ formatCompact(aiCostCenter()!.monthCachedInputTokens) }}</strong></div>
+                  <div><span>Output</span><strong>{{ formatCompact(aiCostCenter()!.monthOutputTokens) }}</strong><small>${{ aiCostCenter()!.monthOutputCostUsd | number:'1.4-6' }}</small></div>
+                  <div><span>Reasoning</span><strong>{{ formatCompact(aiCostCenter()!.monthReasoningTokens) }}</strong></div>
+                </div>
+              </section>
+            </div>
+
+            <div class="billing-breakdown-grid">
+              <section>
+                <div class="billing-table-title">Biaya per model — bulan ini</div>
+                <div class="billing-table">
+                  @for (item of aiCostCenter()!.byModel; track item.label) {
+                    <div class="billing-row">
+                      <div>
+                        <strong>{{ item.label }}</strong>
+                        <small>{{ item.calls }} calls · I {{ formatCompact(item.inputTokens) }} · O {{ formatCompact(item.outputTokens) }}</small>
+                      </div>
+                      <div>
+                        <small>Input ${{ item.inputCostUsd | number:'1.4-6' }}</small>
+                        <small>Output ${{ item.outputCostUsd | number:'1.4-6' }}</small>
+                        <strong>${{ item.totalCostUsd | number:'1.4-6' }}</strong>
+                      </div>
+                    </div>
+                  } @empty {
+                    <div class="empty-usage">Belum ada paid model usage bulan ini.</div>
+                  }
+                </div>
+              </section>
+
+              <section>
+                <div class="billing-table-title">Biaya per aktivitas — bulan ini</div>
+                <div class="billing-table">
+                  @for (item of aiCostCenter()!.byTrigger; track item.label) {
+                    <div class="billing-row">
+                      <div>
+                        <strong>{{ item.label }}</strong>
+                        <small>{{ item.calls }} calls · cached {{ formatCompact(item.cachedInputTokens) }}</small>
+                      </div>
+                      <div>
+                        <small>Input ${{ item.inputCostUsd | number:'1.4-6' }}</small>
+                        <small>Output ${{ item.outputCostUsd | number:'1.4-6' }}</small>
+                        <strong>${{ item.totalCostUsd | number:'1.4-6' }}</strong>
+                      </div>
+                    </div>
+                  } @empty {
+                    <div class="empty-usage">Belum ada AI activity cost bulan ini.</div>
+                  }
+                </div>
+              </section>
+            </div>
+
+            <div class="billing-source-note">
+              {{ aiCostCenter()!.balanceSourceNote }}
+            </div>
+          } @else {
+            <div class="empty-usage">Loading AI billing cost center…</div>
+          }
+        </article>
 
       </aside>
     </section>

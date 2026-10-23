@@ -13,6 +13,7 @@ import {
   AiEvaluationSummary,
   AiGuardrailStatus,
   AiUsageSummary,
+  AiCostCenterSummary,
   BillingStatus,
   MarketContext,
   MarketActivityProfile,
@@ -161,6 +162,10 @@ export class MarketApiService {
     return this.http.get<AiUsageSummary>(
       `/api/v1/ai/usage/summary?days=${days}`
     );
+  }
+
+  getAiCostCenter(): Observable<AiCostCenterSummary> {
+    return this.http.get<AiCostCenterSummary>('/api/v1/ai/usage/cost-center');
   }
 
   getBillingStatus(): Observable<BillingStatus> {

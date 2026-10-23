@@ -12,6 +12,7 @@ import {
   AiEvaluationSummary,
   AiGuardrailStatus,
   AiUsageSummary,
+  AiCostCenterSummary,
   BillingStatus,
   Candlestick,
   ConnectionState,
@@ -92,6 +93,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly aiPolymarketIntelligence = signal<AiPolymarketIntelligence | null>(null);
   readonly aiPolymarketRunning = signal(false);
   readonly aiUsage = signal<AiUsageSummary | null>(null);
+  readonly aiCostCenter = signal<AiCostCenterSummary | null>(null);
   readonly billingStatus = signal<BillingStatus | null>(null);
   readonly aiRunning = signal(false);
   readonly pushStatus = signal<PushDeviceStatus | 'checking' | 'enabling' | 'error'>('checking');
@@ -103,7 +105,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly floatingCoinMenuOpen = signal(false);
   readonly floatingCoinMenuDirection = signal<'up' | 'down'>('up');
   readonly floatingCoinDragging = signal(false);
-  readonly activeSection = signal<'dashboard' | 'trade' | 'news' | 'ai'>('dashboard');
+  readonly activeSection = signal<'dashboard' | 'trade' | 'news' | 'ai' | 'billing'>('dashboard');
   readonly sidebarOpen = signal(false);
   private floatingCoinDrag: {
     pointerId: number;
@@ -241,6 +243,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadPolymarketIntelligence();
     this.loadAiPolymarketIntelligence();
     this.startAiUsageMonitoring();
+    this.loadAiCostCenter();
     this.loadBillingStatus();
     this.initializePushNotifications();
     this.startNotificationPermissionMonitoring();
@@ -458,7 +461,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   navigateToView(
-    view: 'dashboard' | 'trade' | 'news' | 'ai',
+    view: 'dashboard' | 'trade' | 'news' | 'ai' | 'billing',
     event?: MouseEvent
   ): void {
     event?.preventDefault();
@@ -491,7 +494,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     const hashView = rawHash.startsWith('view=')
       ? rawHash.slice('view='.length)
       : '';
-    const knownViews = ['dashboard', 'trade', 'news', 'ai'] as const;
+    const knownViews = ['dashboard', 'trade', 'news', 'ai', 'billing'] as const;
 
     window.history.scrollRestoration = 'manual';
 
@@ -566,6 +569,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
           this.aiPolymarketIntelligence.set(result);
           this.aiPolymarketRunning.set(false);
           this.loadAiUsage();
+          this.loadAiCostCenter();
           this.loadAiStatus();
           this.loadAiGuardrails();
         },
@@ -590,6 +594,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
           this.aiNewsIntelligence.set(result);
           this.aiNewsIntelligenceRunning.set(false);
           this.loadAiUsage();
+          this.loadAiCostCenter();
           this.loadAiStatus();
         },
         error: () => {
@@ -614,6 +619,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
           this.aiDecisionReview.set(review);
           this.aiDecisionReviewRunning.set(false);
           this.loadAiUsage();
+          this.loadAiCostCenter();
           this.loadAiStatus();
         },
         error: () => {
@@ -644,6 +650,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
           this.aiAnalysis.set(result);
           this.aiRunning.set(false);
           this.loadAiUsage();
+          this.loadAiCostCenter();
           this.loadAiStatus();
           this.loadAiGuardrails();
           this.loadAiHistory();
@@ -978,6 +985,15 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       })
     );
 
+  }
+
+  private loadAiCostCenter(): void {
+    this.subscriptions.add(
+      this.marketApi.getAiCostCenter().subscribe({
+        next: summary => this.aiCostCenter.set(summary),
+        error: () => this.aiCostCenter.set(null)
+      })
+    );
   }
 
   private loadAiBenchmarkConfig(): void {

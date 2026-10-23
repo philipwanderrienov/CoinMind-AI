@@ -6,6 +6,7 @@ import {
   AiAnalysisResult,
   AiDecisionReview,
   AiNewsIntelligence,
+  AiBenchmarkConfig,
   AiPolymarketIntelligence,
   AiAnalysisHistoryItem,
   AiEngineStatus,
@@ -146,6 +147,10 @@ export class MarketApiService {
 
   getAiStatus(): Observable<AiEngineStatus> {
     return this.http.get<AiEngineStatus>('/api/v1/ai/status');
+  }
+
+  getAiBenchmarkConfig(): Observable<AiBenchmarkConfig> {
+    return this.http.get<AiBenchmarkConfig>('/api/v1/ai/benchmark/config');
   }
 
   getAiGuardrails(): Observable<AiGuardrailStatus> {

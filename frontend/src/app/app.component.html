@@ -1266,6 +1266,14 @@
 
               @if (aiGuardrails()) {
                 <div>
+                  <span>Automatic AI</span>
+                  <strong>{{ aiGuardrails()!.automaticEnabled ? 'ENABLED' : 'OFF' }}</strong>
+                </div>
+                <div>
+                  <span>Monthly hard cap</span>
+                  <strong>${{ aiGuardrails()!.maxMonthlySpendUsd | number:'1.2-2' }}</strong>
+                </div>
+                <div>
                   <span>Auto trigger</span>
                   <strong>|score| ≥ {{ aiGuardrails()!.minimumAutomaticSignalScore | number:'1.0-0' }}</strong>
                 </div>

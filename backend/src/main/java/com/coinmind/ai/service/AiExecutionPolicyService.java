@@ -19,7 +19,7 @@ public class AiExecutionPolicyService {
     }
 
     public boolean providerReadyForAutomaticCalls() {
-        if (!properties.enabled()) {
+        if (!properties.enabled() || !properties.automaticEnabled()) {
             return false;
         }
 

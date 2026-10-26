@@ -127,6 +127,32 @@ public class AiUsageService {
     }
 
 
+    public Mono<Boolean> allowPaidCall() {
+        BigDecimal cap = properties.maxMonthlySpendUsd() == null
+                ? BigDecimal.ZERO
+                : properties.maxMonthlySpendUsd();
+
+        if (cap.signum() <= 0) {
+            return Mono.just(false);
+        }
+
+        AiUsageRepository repository = repositoryProvider.getIfAvailable();
+        if (repository == null) {
+            // Without persisted accounting we cannot enforce a durable spend cap.
+            return Mono.just(false);
+        }
+
+        ZoneId zoneId = ZoneId.of(properties.usageTimezone());
+        Instant monthStart = LocalDate.now(zoneId)
+                .withDayOfMonth(1)
+                .atStartOfDay(zoneId)
+                .toInstant();
+
+        return repository.aggregate(monthStart)
+                .map(month -> month.cost().compareTo(cap) < 0)
+                .defaultIfEmpty(false);
+    }
+
     public Mono<AiCostCenterSummary> costCenter() {
         AiUsageRepository repository = repositoryProvider.getIfAvailable();
         BigDecimal budget = properties.creditBudgetUsd() == null

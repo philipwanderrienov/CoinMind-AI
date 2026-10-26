@@ -71,6 +71,23 @@ class TradeSetupServiceTest {
         assertEquals("WATCH_BUY", setup.action());
     }
 
+
+    @Test
+    void capsWaitConfidenceSoItCannotLookLikeAnActionableSetup() {
+        var setup = service.build(context(
+                "44",
+                "BEARISH",
+                "50",
+                "-25",
+                "0.90",
+                "1.30",
+                "LOW"
+        ));
+
+        assertEquals("WAIT", setup.action());
+        assertTrue(setup.confidence() <= 60);
+    }
+
     private MarketContext context(
             String score,
             String bias,

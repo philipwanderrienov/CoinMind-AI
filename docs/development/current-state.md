@@ -477,6 +477,29 @@ Latest commits:
 
 Frontend production build masih perlu dijalankan di server setelah pull terbaru.
 
+### Real-server smoke-test finding
+
+Production smoke tests on 2026-10-26 confirmed:
+
+- actuator health = UP
+- TradeSetup responds with live Binance-derived context
+- forecast fallback source = MANIFOLD
+- Manifold remains NEUTRAL/context-only with confidence 45
+- AI provider = MOCK
+- automatic AI = false
+- monthly hard spend cap = 0
+- AI usage/cost center = zero paid usage
+
+A real output exposed one recommendation-semantics issue: WAIT could still display very high confidence because confidence was calculated independently from actionability. This has been fixed by capping recommendation confidence:
+
+```text
+WAIT       <= 60
+WATCH_*    <= 80
+BUY/SELL   <= 95
+```
+
+This keeps the displayed confidence aligned with the recommendation state.
+
 ## Pre-live AI readiness audit (2026-10-26)
 
 Paid AI must remain unconfigured until the server validates this increment.

@@ -202,3 +202,11 @@ This is a concise chronological handoff log shared by ChatGPT and Codex.
 - Added WebFlux paid-call guardrail: live OpenAI POSTs require persistence plus a positive monthly cap with recorded spend below the cap.
 - Exposed automatic AI state and monthly cap in AI guardrail API/UI.
 - Code-level syntax sanity passed; phive-server Maven/Angular production builds and smoke tests are still required before API key provisioning.
+
+### Final smoke-test confidence alignment
+
+- Real server smoke tests passed for health, trade setup, forecast fallback, AI mock status, guardrails and cost center.
+- Observed `WAIT` with confidence 86, which was technically possible because confidence and actionability were computed separately but was misleading for advisor UX.
+- Added recommendation confidence caps: WAIT <= 60, WATCH <= 80, BUY/SELL <= 95.
+- Added regression test for WAIT confidence cap.
+- Requires one final backend test/build/restart on phive-server before live API provisioning.

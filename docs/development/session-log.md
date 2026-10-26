@@ -186,3 +186,19 @@ This is a concise chronological handoff log shared by ChatGPT and Codex.
 - UI explicitly states that this is a CoinMind estimate, not the live OpenAI prepaid balance.
 - Historical/lifetime accounting depends on persistence being enabled.
 - Backend Maven and Angular production builds remain required on phive-server for acceptance.
+
+## 2026-10-26
+
+### Pre-live paid AI readiness audit
+
+- Re-audited market, forecast, trade decision, AI routing, billing, persistence and paid-call failure modes before API-key activation.
+- Found Manifold fallback markets could be multi-year and were capable of affecting forecast bias despite lacking equivalent 24h probability-change data.
+- Restricted Manifold to closing-month / <=35-day markets, sorted by 24h volume.
+- Manifold is now neutral deterministic context only; static probabilities do not create trading direction.
+- Only `POLYMARKET_GAMMA` may apply the bounded prediction-market confidence modifier in TradeSetup.
+- Automatic AI interpretation is skipped for fallback forecast sources; fallback sources remain available for manual second-opinion analysis.
+- Added `AI_AUTOMATIC_ENABLED=false` fail-closed master switch for automatic/event-triggered AI.
+- Added `AI_MAX_MONTHLY_SPEND_USD=0` fail-closed paid API spend cap.
+- Added WebFlux paid-call guardrail: live OpenAI POSTs require persistence plus a positive monthly cap with recorded spend below the cap.
+- Exposed automatic AI state and monthly cap in AI guardrail API/UI.
+- Code-level syntax sanity passed; phive-server Maven/Angular production builds and smoke tests are still required before API key provisioning.

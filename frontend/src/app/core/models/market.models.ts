@@ -306,6 +306,8 @@ export interface AiEngineStatus {
 
 
 export interface AiGuardrailStatus {
+  automaticEnabled: boolean;
+  maxMonthlySpendUsd: number;
   minimumAutomaticSignalScore: number;
   automaticCallsThisHour: number;
   automaticCallsToday: number;

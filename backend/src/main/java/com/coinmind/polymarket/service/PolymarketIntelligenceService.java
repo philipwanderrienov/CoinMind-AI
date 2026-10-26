@@ -232,8 +232,8 @@ public class PolymarketIntelligenceService {
                 .uri(uriBuilder -> uriBuilder
                         .path("/v0/search-markets")
                         .queryParam("term", term)
-                        .queryParam("sort", "liquidity")
-                        .queryParam("filter", "open")
+                        .queryParam("sort", "24-hour-vol")
+                        .queryParam("filter", "closing-month")
                         .queryParam("contractType", "BINARY")
                         .queryParam("limit", 50)
                         .build())
@@ -249,7 +249,7 @@ public class PolymarketIntelligenceService {
 
                     for (JsonNode market : root) {
                         String question = market.path("question").asText("");
-                        if (!textMatchesSymbol(question, symbol)) {
+                        if (!textMatchesSymbol(question, symbol) || !manifoldHorizonEligible(market)) {
                             continue;
                         }
 
@@ -503,10 +503,16 @@ public class PolymarketIntelligenceService {
 
             BigDecimal evidence = signal.oneDayProbabilityChange();
 
-            if (probabilityOnlyFallback && evidence.signum() == 0 && signal.yesProbability().signum() > 0) {
+            if ("POLYMARKET_CLOB".equals(source)
+                    && evidence.signum() == 0
+                    && signal.yesProbability().signum() > 0) {
                 evidence = signal.yesProbability()
                         .subtract(BigDecimal.valueOf(0.5), MC)
-                        .multiply(BigDecimal.valueOf(0.12), MC);
+                        .multiply(BigDecimal.valueOf(0.06), MC);
+            }
+
+            if ("MANIFOLD".equals(source)) {
+                evidence = BigDecimal.ZERO;
             }
 
             weightedSignedEvidence = weightedSignedEvidence.add(
@@ -523,14 +529,16 @@ public class PolymarketIntelligenceService {
                 ? BigDecimal.ZERO
                 : weightedSignedEvidence.divide(totalWeight, 6, RoundingMode.HALF_UP);
 
-        String bias = averageChange.compareTo(BigDecimal.valueOf(0.015)) > 0
+        String bias = "MANIFOLD".equals(source)
+                ? "NEUTRAL"
+                : averageChange.compareTo(BigDecimal.valueOf(0.015)) > 0
                 ? "BULLISH"
                 : averageChange.compareTo(BigDecimal.valueOf(-0.015)) < 0
                 ? "BEARISH"
                 : "NEUTRAL";
 
         int confidence = Math.min(
-                "MANIFOLD".equals(source) ? 60 : probabilityOnlyFallback ? 65 : 90,
+                "MANIFOLD".equals(source) ? 45 : probabilityOnlyFallback ? 60 : 90,
                 35
                         + Math.min(25, signals.size() * 5)
                         + Math.min(30, averageChange.abs()
@@ -588,6 +596,19 @@ public class PolymarketIntelligenceService {
         }
 
         return Math.min(100, score);
+    }
+
+    private boolean manifoldHorizonEligible(JsonNode market) {
+        long closeTime = market.path("closeTime").asLong(0L);
+        if (closeTime <= 0L) {
+            return false;
+        }
+
+        Instant closeAt = Instant.ofEpochMilli(closeTime);
+        Instant now = Instant.now();
+
+        return closeAt.isAfter(now)
+                && closeAt.isBefore(now.plus(Duration.ofDays(35)));
     }
 
     private boolean eventMatchesSymbol(JsonNode event, String symbol) {

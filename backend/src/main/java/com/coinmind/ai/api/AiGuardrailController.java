@@ -28,6 +28,8 @@ public class AiGuardrailController {
         var status = budgetGuardrailService.status();
 
         return new GuardrailResponse(
+                properties.automaticEnabled(),
+                properties.maxMonthlySpendUsd(),
                 properties.minimumAutomaticSignalScore(),
                 status.automaticCallsThisHour(),
                 status.automaticCallsToday(),
@@ -37,6 +39,8 @@ public class AiGuardrailController {
     }
 
     public record GuardrailResponse(
+            boolean automaticEnabled,
+            BigDecimal maxMonthlySpendUsd,
             BigDecimal minimumAutomaticSignalScore,
             int automaticCallsThisHour,
             int automaticCallsToday,

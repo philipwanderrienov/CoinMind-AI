@@ -160,15 +160,18 @@ public class TradeSetupService {
                 marketActivity,
                 newsIntelligence
         );
-        int confidence = confidence(
-                context,
-                strength,
-                alignmentScore,
-                regime,
-                marketActivity,
-                newsIntelligence,
-                polymarketIntelligence,
-                side
+        int confidence = recommendationConfidence(
+                action,
+                confidence(
+                        context,
+                        strength,
+                        alignmentScore,
+                        regime,
+                        marketActivity,
+                        newsIntelligence,
+                        polymarketIntelligence,
+                        side
+                )
         );
 
         List<String> reasons = reasons(
@@ -435,6 +438,17 @@ public class TradeSetupService {
         }
 
         return "LONG".equals(side) ? "WATCH_BUY" : "WATCH_SELL";
+    }
+
+    private int recommendationConfidence(
+            String action,
+            int rawConfidence
+    ) {
+        return switch (action) {
+            case "WAIT" -> Math.min(rawConfidence, 60);
+            case "WATCH_BUY", "WATCH_SELL" -> Math.min(rawConfidence, 80);
+            default -> Math.min(rawConfidence, 95);
+        };
     }
 
     private int confidence(

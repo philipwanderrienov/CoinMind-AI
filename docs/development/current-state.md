@@ -1,6 +1,6 @@
 # Current Development State
 
-_Last updated: 2026-10-21 (Asia/Jakarta)_
+_Last updated: 2026-10-26 (Asia/Jakarta)_
 
 Dokumen ini adalah sumber kebenaran (handoff) untuk state CoinMind-AI saat ini. Baca file ini sebelum melakukan perubahan.
 
@@ -476,6 +476,45 @@ Latest commits:
 ```
 
 Frontend production build masih perlu dijalankan di server setelah pull terbaru.
+
+## Pre-live AI readiness audit (2026-10-26)
+
+Paid AI must remain unconfigured until the server validates this increment.
+
+Key safety changes from the audit:
+
+- Manifold fallback is now restricted to markets closing within roughly one month and sorted by 24h volume.
+- Manifold static probability is no longer converted into an automatic bullish/bearish trading signal.
+- Only `POLYMARKET_GAMMA` may modify deterministic Trade Decision confidence; CLOB/Manifold remain context only.
+- Automatic paid forecast AI is disabled for fallback forecast sources.
+- `AI_AUTOMATIC_ENABLED=false` is now a separate master switch; adding an API key does not enable scheduled/event-triggered paid AI.
+- `AI_MAX_MONTHLY_SPEND_USD=0` is a hard fail-closed default.
+- Paid AI HTTP POSTs are blocked with HTTP 402 unless persistence is enabled and recorded monthly spend is below the configured hard cap.
+- AI guardrail status now exposes automatic-enabled state and monthly hard spend cap.
+
+Current safe first-live configuration should be:
+
+```text
+PERSISTENCE_ENABLED=true
+AI_ENABLED=true
+AI_PROVIDER=openai
+AI_AUTOMATIC_ENABLED=false
+AI_MAX_MONTHLY_SPEND_USD=<small deliberate amount>
+AI_CREDIT_BUDGET_USD=<optional internal reference>
+```
+
+Then verify one manual call / benchmark before considering automatic AI.
+
+Forecast-source policy:
+
+```text
+POLYMARKET_GAMMA -> decision-confidence modifier allowed (bounded)
+POLYMARKET_CLOB  -> context only
+MANIFOLD         -> short-horizon context only
+NONE             -> neutral fallback
+```
+
+Manifold API documentation labels the API alpha; it is acceptable as a resilient context source for this project, but should not be treated as equivalent to Polymarket temporal signal quality.
 
 ## Known open issues / priorities
 

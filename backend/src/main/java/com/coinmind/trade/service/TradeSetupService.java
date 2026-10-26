@@ -533,7 +533,8 @@ public class TradeSetupService {
                     ? "opposes"
                     : "is neutral to";
             reasons.add(
-                    "Polymarket " + relation + " the setup: "
+                    "Forecast source " + polymarketIntelligence.source()
+                            + " " + relation + " the setup: "
                             + polymarketIntelligence.bias().toLowerCase()
                             + ", confidence " + polymarketIntelligence.confidence()
                             + "%, avg 24h probability change "
@@ -633,6 +634,7 @@ public class TradeSetupService {
             String side
     ) {
         if (intelligence == null
+                || !"POLYMARKET_GAMMA".equals(intelligence.source())
                 || intelligence.marketCount() == 0
                 || intelligence.importance() < 50
                 || intelligence.confidence() < 50) {
@@ -660,7 +662,7 @@ public class TradeSetupService {
             PolymarketIntelligence intelligence,
             String side
     ) {
-        if (intelligence == null) {
+        if (intelligence == null || !"POLYMARKET_GAMMA".equals(intelligence.source())) {
             return false;
         }
 
@@ -672,7 +674,7 @@ public class TradeSetupService {
             PolymarketIntelligence intelligence,
             String side
     ) {
-        if (intelligence == null) {
+        if (intelligence == null || !"POLYMARKET_GAMMA".equals(intelligence.source())) {
             return false;
         }
 

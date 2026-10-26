@@ -110,11 +110,19 @@ public class AiPolymarketIntelligenceService {
             return Mono.just(fresh);
         }
 
+        if (!force && !"POLYMARKET_GAMMA".equals(intelligence.source())) {
+            return Mono.just(skipped(
+                    intelligence,
+                    materiality,
+                    "Fallback forecast source hanya digunakan sebagai context; automatic paid AI call dinonaktifkan."
+            ));
+        }
+
         if (!force && !isMaterial(intelligence, materiality)) {
             return Mono.just(skipped(
                     intelligence,
                     materiality,
-                    "Perubahan Polymarket belum cukup material untuk memakai token AI."
+                    "Perubahan prediction market belum cukup material untuk memakai token AI."
             ));
         }
 

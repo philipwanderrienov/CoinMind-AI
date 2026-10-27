@@ -220,3 +220,8 @@ This is a concise chronological handoff log shared by ChatGPT and Codex.
 - Health endpoint is observational only and does not cause an extra upstream request.
 - Existing compliant failover remains Gamma -> CLOB -> Manifold -> cache/neutral.
 - Backend Maven validation on phive-server is required after pull.
+
+
+## 2026-10-27 — Futures intraday direction (feature branch, not deployed)
+
+User selected Futures Intraday Advisor (advisor-only) over long-hold spot and requested full removal of Polymarket. First incremental work adds a paper-only futures sizing preview and tests. Full Polymarket removal, Manifold-only refactor, futures data pipeline, new timeframe weighting and UI remain OPEN. Do not represent futures as fully supported. See `docs/development/futures-intraday-roadmap.md`. Branch cannot be build-validated in current ChatGPT environment (Java 21, no Maven, no GitHub DNS); server must run tests before merging.

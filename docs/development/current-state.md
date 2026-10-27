@@ -210,6 +210,41 @@ AI News Intelligence menghasilkan:
 
 AI News hanya bounded modifier untuk Decision Engine.
 
+### Prediction source health
+
+Because Polymarket access is officially blocked in Indonesia, CoinMind does not attempt to bypass ISP/regulatory blocking.
+
+A runtime source-health endpoint now exposes the last observed status of each prediction source:
+
+```text
+GET /api/v1/polymarket/source-health
+```
+
+Possible states:
+
+```text
+UNKNOWN
+UP
+EMPTY
+UNAVAILABLE
+```
+
+Tracked sources:
+
+```text
+POLYMARKET_GAMMA
+POLYMARKET_CLOB
+MANIFOLD
+```
+
+The endpoint records the last check time, concise failure/reachability detail, and last relevant signal count. It does not trigger a new network request by itself; it reports the state captured during normal refreshes.
+
+Important separation:
+
+- Gamma/CLOB/Manifold = prediction-market / forecast context.
+- CoinDesk/Cointelegraph RSS = news context.
+- Polymarket Gamma is not a news API.
+
 ## Polymarket state
 
 Polymarket adalah prediction-market intelligence, bukan sumber berita.

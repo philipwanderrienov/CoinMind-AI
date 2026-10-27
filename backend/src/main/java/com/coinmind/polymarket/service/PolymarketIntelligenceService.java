@@ -93,30 +93,11 @@ public class PolymarketIntelligenceService {
 
     public Mono<PolymarketIntelligence> refresh(String symbol) {
         String normalized = normalizeSymbol(symbol);
-
         if (isCoolingDown(normalized)) {
             return Mono.just(fallback(normalized));
         }
-
-        return loadGammaSignals(normalized)
-                .flatMap(signals -> {
-                    if (!signals.isEmpty()) {
-                        log.debug("Prediction source selected. symbol={} source=POLYMARKET_GAMMA signals={}",
-                                normalized, signals.size());
-                        return Mono.just(new SourcedSignals("POLYMARKET_GAMMA", signals));
-                    }
-
-                    return loadFallbackSignals(normalized);
-                })
-                .onErrorResume(gammaError -> {
-                    log.warn(
-                            "Polymarket Gamma unavailable. symbol={} reason={} trying=fallback-sources",
-                            normalized,
-                            failureReason(gammaError)
-                    );
-                    return loadFallbackSignals(normalized);
-                })
-                .map(result -> summarize(normalized, result.source(), result.signals()))
+        return loadManifoldSignals(normalized)
+                .map(signals -> summarize(normalized, "MANIFOLD", signals))
                 .timeout(requestTimeout.multipliedBy(2))
                 .doOnNext(result -> {
                     latestBySymbol.put(normalized, result);
@@ -124,12 +105,8 @@ public class PolymarketIntelligenceService {
                 })
                 .onErrorResume(error -> {
                     unavailableUntilBySymbol.put(normalized, Instant.now().plus(failureCooldown));
-                    log.warn(
-                            "Polymarket all sources unavailable. symbol={} reason={} fallback={}",
-                            normalized,
-                            failureReason(error),
-                            latestBySymbol.containsKey(normalized) ? "cached" : "neutral"
-                    );
+                    log.warn("Manifold source unavailable. symbol={} reason={}",
+                            normalized, failureReason(error));
                     return Mono.just(fallback(normalized));
                 });
     }
@@ -148,22 +125,8 @@ public class PolymarketIntelligenceService {
 
     public PredictionSourceHealth sourceHealth() {
         return new PredictionSourceHealth(
-                List.of(
-                        sourceHealth.getOrDefault(
-                                "POLYMARKET_GAMMA",
-                                unknownSource("POLYMARKET_GAMMA")
-                        ),
-                        sourceHealth.getOrDefault(
-                                "POLYMARKET_CLOB",
-                                unknownSource("POLYMARKET_CLOB")
-                        ),
-                        sourceHealth.getOrDefault(
-                                "MANIFOLD",
-                                unknownSource("MANIFOLD")
-                        )
-                ),
-                Instant.now()
-        );
+                List.of(sourceHealth.getOrDefault("MANIFOLD", unknownSource("MANIFOLD"))),
+                Instant.now());
     }
 
     @Scheduled(initialDelay = 15000, fixedDelay = 300000)
@@ -173,7 +136,7 @@ public class PolymarketIntelligenceService {
                 .subscribe(
                         ignored -> { },
                         error -> log.warn(
-                                "Scheduled Polymarket refresh stopped unexpectedly. reason={}",
+                                "Scheduled Manifold refresh stopped unexpectedly. reason={}",
                                 failureReason(error)
                         )
                 );

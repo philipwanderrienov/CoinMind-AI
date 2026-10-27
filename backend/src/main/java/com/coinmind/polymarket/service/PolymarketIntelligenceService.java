@@ -98,7 +98,12 @@ public class PolymarketIntelligenceService {
     }
 
     private PolymarketIntelligence parse(String symbol, String body) {
-        JsonNode root;\n        try {\n            root = objectMapper.readTree(body);\n        } catch (Exception ex) {\n            throw new IllegalArgumentException("Invalid Manifold JSON", ex);\n        }
+        JsonNode root;
+        try {
+            root = objectMapper.readTree(body);
+        } catch (Exception ex) {
+            throw new IllegalArgumentException("Invalid Manifold JSON", ex);
+        }
         List<PolymarketIntelligence.MarketSignal> signals = new ArrayList<>();
         long now = Instant.now().toEpochMilli();
         long cutoff = Instant.now().plus(Duration.ofDays(35)).toEpochMilli();

@@ -85,16 +85,7 @@ coinmind:
       - 4h
       - 1d
 
-  polymarket:
-    base-url: ${POLYMARKET_BASE_URL:https://gamma-api.polymarket.com}
-    clob-base-url: ${POLYMARKET_CLOB_BASE_URL:https://clob.polymarket.com}
-    manifold-base-url: ${PREDICTION_MANIFOLD_BASE_URL:https://api.manifold.markets}
-    connect-timeout-ms: ${POLYMARKET_CONNECT_TIMEOUT_MS:5000}
-    response-timeout-ms: ${POLYMARKET_RESPONSE_TIMEOUT_MS:8000}
-    failure-cooldown-ms: ${POLYMARKET_FAILURE_COOLDOWN_MS:120000}
-    gamma-event-limit: ${POLYMARKET_GAMMA_EVENT_LIMIT:100}
-    clob-page-limit: ${POLYMARKET_CLOB_PAGE_LIMIT:3}
-
+  manifold:\n    base-url: ${PREDICTION_MANIFOLD_BASE_URL:https://api.manifold.markets}\n    connect-timeout-ms: ${MANIFOLD_CONNECT_TIMEOUT_MS:5000}\n    response-timeout-ms: ${MANIFOLD_RESPONSE_TIMEOUT_MS:8000}\n    failure-cooldown-ms: ${MANIFOLD_FAILURE_COOLDOWN_MS:120000}\n
   news:
     enabled: ${NEWS_ENABLED:false}
     refresh-interval-ms: ${NEWS_REFRESH_INTERVAL_MS:300000}

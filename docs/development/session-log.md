@@ -220,3 +220,8 @@ This is a concise chronological handoff log shared by ChatGPT and Codex.
 - Health endpoint is observational only and does not cause an extra upstream request.
 - Existing compliant failover remains Gamma -> CLOB -> Manifold -> cache/neutral.
 - Backend Maven validation on phive-server is required after pull.
+
+
+## 2026-10-27 — Futures intraday work on main (partial, not deployed)
+
+User requested direct main development. Implemented paper-only `POST /api/v1/futures/risk/preview` with validated sizing, fees/slippage assumptions, 1% risk cap, 5x leverage cap, 20% margin allocation ceiling, and associated unit tests. `GET /api/v1/futures/readiness` explicitly reports BLOCKED until futures-specific feeds, contract liquidation rules and strategy validation are ready. Prediction refresh now calls Manifold exclusively and source-health reports Manifold only; old Polymarket-named classes, unused Gamma/CLOB methods, configuration, and frontend/AI references still require full cleanup. Do not call this complete. Server Maven/Angular tests were not run; no deployment was made.

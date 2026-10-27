@@ -106,7 +106,7 @@ public class PolymarketIntelligenceService {
             if (!"BINARY".equals(market.path("outcomeType").asText("")) ||
                     market.path("isResolved").asBoolean(false)) continue;
             JsonNode end = market.path("closeTime");
-            if (end.isMissingNode() || end.isNull() || !end.canConvertToLong()) continue;
+            if (!end.isNumber()) continue;
             long close = end.asLong();
             if (close <= now || close > cutoff) continue;
             String question = market.path("question").asText("");

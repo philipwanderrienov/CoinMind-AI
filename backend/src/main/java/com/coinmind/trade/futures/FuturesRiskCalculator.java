@@ -28,7 +28,10 @@ public class FuturesRiskCalculator {
         if (r.leverage().compareTo(new BigDecimal("5")) > 0) {
             throw new IllegalArgumentException("leverage cannot exceed 5x in initial paper mode");
         }
-        if (r.side() == null) {\n            throw new IllegalArgumentException("side must be LONG or SHORT");\n        }\n        boolean isLong = switch (r.side()) {
+        if (r.side() == null) {
+            throw new IllegalArgumentException("side must be LONG or SHORT");
+        }
+        boolean isLong = switch (r.side()) {
             case "LONG" -> true;
             case "SHORT" -> false;
             default -> throw new IllegalArgumentException("side must be LONG or SHORT");

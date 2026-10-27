@@ -1,6 +1,7 @@
 package com.coinmind.polymarket.service;
 
 import com.coinmind.polymarket.model.PolymarketIntelligence;
+import com.coinmind.polymarket.model.PredictionSourceHealth;
 import io.netty.channel.ChannelOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,7 @@ public class PolymarketIntelligenceService {
 
     private final Map<String, PolymarketIntelligence> latestBySymbol = new ConcurrentHashMap<>();
     private final Map<String, Instant> unavailableUntilBySymbol = new ConcurrentHashMap<>();
+    private final Map<String, PredictionSourceHealth.SourceStatus> sourceHealth = new ConcurrentHashMap<>();
 
     public PolymarketIntelligenceService(
             ObjectMapper objectMapper,
@@ -83,6 +85,10 @@ public class PolymarketIntelligenceService {
                 .baseUrl(manifoldBaseUrl)
                 .clientConnector(connector)
                 .build();
+
+        markSource("POLYMARKET_GAMMA", "UNKNOWN", "Belum pernah diperiksa sejak startup.", 0);
+        markSource("POLYMARKET_CLOB", "UNKNOWN", "Belum pernah diperiksa sejak startup.", 0);
+        markSource("MANIFOLD", "UNKNOWN", "Belum pernah diperiksa sejak startup.", 0);
     }
 
     public Mono<PolymarketIntelligence> refresh(String symbol) {
@@ -140,6 +146,26 @@ public class PolymarketIntelligenceService {
                 : null;
     }
 
+    public PredictionSourceHealth sourceHealth() {
+        return new PredictionSourceHealth(
+                List.of(
+                        sourceHealth.getOrDefault(
+                                "POLYMARKET_GAMMA",
+                                unknownSource("POLYMARKET_GAMMA")
+                        ),
+                        sourceHealth.getOrDefault(
+                                "POLYMARKET_CLOB",
+                                unknownSource("POLYMARKET_CLOB")
+                        ),
+                        sourceHealth.getOrDefault(
+                                "MANIFOLD",
+                                unknownSource("MANIFOLD")
+                        )
+                ),
+                Instant.now()
+        );
+    }
+
     @Scheduled(initialDelay = 15000, fixedDelay = 300000)
     public void refreshTrackedSymbols() {
         Flux.fromIterable(List.of("BTCUSDT", "ETHUSDT", "SOLUSDT"))
@@ -183,7 +209,21 @@ public class PolymarketIntelligenceService {
                     }
 
                     return rankSignals(signals);
-                });
+                })
+                .doOnNext(signals -> markSource(
+                        "POLYMARKET_GAMMA",
+                        signals.isEmpty() ? "EMPTY" : "UP",
+                        signals.isEmpty()
+                                ? "Gamma reachable, tetapi tidak ada signal relevan untuk symbol ini."
+                                : "Gamma reachable dan mengembalikan signal relevan.",
+                        signals.size()
+                ))
+                .doOnError(error -> markSource(
+                        "POLYMARKET_GAMMA",
+                        "UNAVAILABLE",
+                        failureReason(error),
+                        0
+                ));
     }
 
     private Mono<SourcedSignals> loadFallbackSignals(String symbol) {
@@ -286,12 +326,40 @@ public class PolymarketIntelligenceService {
                     }
 
                     return rankSignals(signals);
-                });
+                })
+                .doOnNext(signals -> markSource(
+                        "MANIFOLD",
+                        signals.isEmpty() ? "EMPTY" : "UP",
+                        signals.isEmpty()
+                                ? "Manifold reachable, tetapi tidak ada short-horizon signal relevan."
+                                : "Manifold reachable dan menyediakan short-horizon fallback context.",
+                        signals.size()
+                ))
+                .doOnError(error -> markSource(
+                        "MANIFOLD",
+                        "UNAVAILABLE",
+                        failureReason(error),
+                        0
+                ));
     }
 
     private Mono<List<PolymarketIntelligence.MarketSignal>> loadClobSignals(String symbol) {
         return loadClobPage(symbol, "MA==", 0, new ArrayList<>())
-                .map(this::rankSignals);
+                .map(this::rankSignals)
+                .doOnNext(signals -> markSource(
+                        "POLYMARKET_CLOB",
+                        signals.isEmpty() ? "EMPTY" : "UP",
+                        signals.isEmpty()
+                                ? "CLOB reachable, tetapi tidak ada signal relevan untuk symbol ini."
+                                : "CLOB reachable dan mengembalikan signal relevan.",
+                        signals.size()
+                ))
+                .doOnError(error -> markSource(
+                        "POLYMARKET_CLOB",
+                        "UNAVAILABLE",
+                        failureReason(error),
+                        0
+                ));
     }
 
     private Mono<List<PolymarketIntelligence.MarketSignal>> loadClobPage(
@@ -777,6 +845,34 @@ public class PolymarketIntelligenceService {
     private PolymarketIntelligence fallback(String symbol) {
         PolymarketIntelligence cached = latestBySymbol.get(symbol);
         return cached == null ? empty(symbol, "NONE") : cached;
+    }
+
+    private void markSource(
+            String source,
+            String state,
+            String detail,
+            int signalCount
+    ) {
+        sourceHealth.put(
+                source,
+                new PredictionSourceHealth.SourceStatus(
+                        source,
+                        state,
+                        detail == null || detail.isBlank() ? "No detail" : detail,
+                        Instant.now(),
+                        signalCount
+                )
+        );
+    }
+
+    private PredictionSourceHealth.SourceStatus unknownSource(String source) {
+        return new PredictionSourceHealth.SourceStatus(
+                source,
+                "UNKNOWN",
+                "Belum pernah diperiksa sejak startup.",
+                null,
+                0
+        );
     }
 
     private String failureReason(Throwable error) {

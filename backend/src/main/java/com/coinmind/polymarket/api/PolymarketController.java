@@ -1,6 +1,7 @@
 package com.coinmind.polymarket.api;
 
 import com.coinmind.polymarket.model.PolymarketIntelligence;
+import com.coinmind.polymarket.model.PredictionSourceHealth;
 import com.coinmind.polymarket.service.PolymarketIntelligenceService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,6 +18,11 @@ public class PolymarketController {
 
     public PolymarketController(PolymarketIntelligenceService service) {
         this.service = service;
+    }
+
+    @GetMapping("/source-health")
+    public PredictionSourceHealth sourceHealth() {
+        return service.sourceHealth();
     }
 
     @GetMapping("/{symbol}")

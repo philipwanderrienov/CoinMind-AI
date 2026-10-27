@@ -210,3 +210,13 @@ This is a concise chronological handoff log shared by ChatGPT and Codex.
 - Added recommendation confidence caps: WAIT <= 60, WATCH <= 80, BUY/SELL <= 95.
 - Added regression test for WAIT confidence cap.
 - Requires one final backend test/build/restart on phive-server before live API provisioning.
+
+### Prediction source health diagnostics
+
+- Reconfirmed that Polymarket Gamma is prediction-market metadata/probability data, not a news API.
+- Current Indonesian network restrictions mean CoinMind must not depend on bypassing Polymarket access.
+- Added in-memory source health tracking for Gamma, CLOB and Manifold.
+- Added `GET /api/v1/polymarket/source-health` reporting UNKNOWN/UP/EMPTY/UNAVAILABLE, last checked time, concise detail and signal count.
+- Health endpoint is observational only and does not cause an extra upstream request.
+- Existing compliant failover remains Gamma -> CLOB -> Manifold -> cache/neutral.
+- Backend Maven validation on phive-server is required after pull.

@@ -6,7 +6,7 @@ import java.util.List;
 
 /**
  * Offline-only orchestration of replay and performance reporting.
- * Data gate and risk guard are evaluated to prove no simulated input is live-eligible.
+ * Live execution is forbidden by explicit provenance validation and output labeling.
  * No HTTP endpoints, live signals or order execution.
  */
 public final class FuturesOfflineValidationPipeline {

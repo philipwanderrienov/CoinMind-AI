@@ -25,7 +25,8 @@ class FuturesReplayEngineTest {
     }
     @Test void shortTargetHasPositiveNetPnl() {
         var result = FuturesReplayEngine.run(request("SHORT", List.of(
-                bar("2026-10-28T00:00:00Z","100","100","97","99"))));
+                bar("2026-10-28T00:00:00Z","100","100","99","99"),
+                bar("2026-10-28T00:01:00Z","99","99","97","98"))));
         assertEquals("TARGET", result.exitReason());
         assertTrue(result.netPnl().signum() > 0);
     }
@@ -40,6 +41,18 @@ class FuturesReplayEngineTest {
                 bar("2026-10-28T00:00:00Z","110","111","109","110"))));
         assertEquals("NO_ENTRY", result.exitReason());
         assertNull(result.netPnl());
+    }
+
+    @Test void sameCandleTargetCannotBeClaimedAsWin() {
+        var result = FuturesReplayEngine.run(request("LONG", List.of(
+                bar("2026-10-28T00:00:00Z","100","103","100","101"))));
+        assertEquals("TIME_EXIT", result.exitReason());
+    }
+    @Test void invalidTrailingCandleIsRejectedEvenAfterEarlyStop() {
+        assertThrows(IllegalArgumentException.class, () -> FuturesReplayEngine.run(
+                request("LONG", List.of(
+                        bar("2026-10-28T00:00:00Z","100","100","98","99"),
+                        bar("2026-10-28T00:01:00Z","100","99","98","99")))));
     }
     @Test void rejectsUnknownSource() {
         var input = request("LONG", List.of(bar("2026-10-28T00:00:00Z","100","101","99","100")));

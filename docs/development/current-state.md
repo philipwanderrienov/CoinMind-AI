@@ -749,3 +749,8 @@ Updated FuturesHistoricalWalkForwardRunner to reject any OHLC open timestamp not
 ## 2026-10-28 — Risk-budgeted offline position sizing adapter
 
 Added FuturesPaperPositionSizer, wrapping the existing FuturesRiskCalculator for SYNTHETIC_FIXTURE/HISTORICAL_REPLAY only, with four new tests (LONG, SHORT, risk cap and live-data exclusion). Estimates quantity, risk budget, notional and initial margin on fixed reference equity; rejects unsuitable risk parameters via calculator. This is an isolated paper-only adapter and is NOT yet wired into FuturesHistoricalWalkForwardRunner. Sizing uses simplified fees and slippage, not funding, gap loss, liquidation, exchange minimum steps or real account state. Server Maven verification pending. Futures live readiness remains BLOCKED.
+
+
+## 2026-10-28 — Opt-in paper sizing on historical runner
+
+Added FuturesHistoricalWalkForwardRunner.runWithPaperSizing(Input, PaperSizing) using existing FuturesPaperPositionSizer for per-candidate risk-budgeted quantity at fixed reference equity. Existing run(Input) retains fixed-quantity behavior. Strict paper constraints cap risk at 1%, leverage at 5x, with margin cap delegated to FuturesRiskCalculator. Two tests exercise sized vs legacy outcomes and invalid parameters. This is NOT compounding/equity-curve sizing; outcomes do not feed back into equity or risk controls. Exchange lot-size, adverse gaps, funding, liquidation and realized drawdown constraints remain unmodeled. Maven server verification pending. No live Futures signals; readiness BLOCKED.

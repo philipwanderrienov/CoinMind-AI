@@ -299,3 +299,8 @@ The experimental FuturesStrategyReplayPipeline now rejects nonascending decision
 ## 2026-10-28 — Closed candle score derivation (experimental)
 
 Added FuturesClosedCandleScoring and four tests: calculates bounded [-100,100] close-to-close 2-interval momentum for 5m, 15m, 1h, 4h. Candle timestamp is explicitly OPEN time, and every candle must have ended by decisionTime. Rejects unclosed/future, malformed, out-of-order candles and non-offline provenance. This is a provisional score formula, not a validated strategy; caller must ensure data is truly exchange-representative and indicator history wasn't selected using future information. It is not yet wired into the strategy replay orchestrator. Requires Maven server verification; Futures readiness remains BLOCKED.
+
+
+## 2026-10-28 — Closed-candle strategy-to-replay pipeline
+
+Added FuturesCandleStrategyPipeline, which builds offline 5m/15m/1h/4h scores from completed candles, then feeds the existing FuturesStrategyReplayPipeline for chronological execution replay and net performance aggregation. Five regression tests check trade replay, WAIT, unclosed candle rejection, live-provenance rejection, and same-timestamp execution rejection. The existing standalone score-based API remains unchanged for compatibility. This is an experimental OFFLINE_ONLY pipeline: candle authenticity and a continuous historical data ingestion pipeline are not verified, the replay model excludes funding/liquidation/venue constraints, and no production decision endpoints or live futures signals were enabled. Maven verify pending on phive-server; Futures readiness remains BLOCKED.

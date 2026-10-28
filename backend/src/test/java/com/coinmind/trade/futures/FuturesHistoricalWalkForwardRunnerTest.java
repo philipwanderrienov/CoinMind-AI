@@ -61,4 +61,32 @@ class FuturesHistoricalWalkForwardRunnerTest {
         assertThrows(IllegalArgumentException.class,
                 () -> FuturesHistoricalWalkForwardRunner.run(broken));
     }
+    @Test void rejectsMisalignedHourlyCandleDespiteRegularIntervals() {
+        var original = input("SYNTHETIC_FIXTURE", true);
+        var offset = original.h1().stream()
+                .map(c -> new FuturesReplayEngine.Candle(c.time().plusSeconds(60),
+                        c.open(), c.high(), c.low(), c.close())).toList();
+        var broken = new FuturesHistoricalWalkForwardRunner.Input(original.provenance(),
+                original.m5(), original.m15(), offset, original.h4(),
+                original.horizonBars(), original.stopPercent(), original.targetPercent(),
+                original.quantity(), original.feePercentPerSide(), original.slippagePercentPerSide());
+        var error = assertThrows(IllegalArgumentException.class,
+                () -> FuturesHistoricalWalkForwardRunner.run(broken));
+        assertTrue(error.getMessage().contains("boundary"));
+    }
+
+    @Test void rejectsSubsecondFiveMinuteCandleTimestamp() {
+        var original = input("SYNTHETIC_FIXTURE", true);
+        var shifted = new java.util.ArrayList<>(original.m5());
+        var c = shifted.get(10);
+        shifted.set(10, new FuturesReplayEngine.Candle(c.time().plusNanos(1),
+                c.open(), c.high(), c.low(), c.close()));
+        var broken = new FuturesHistoricalWalkForwardRunner.Input(original.provenance(),
+                shifted, original.m15(), original.h1(), original.h4(),
+                original.horizonBars(), original.stopPercent(), original.targetPercent(),
+                original.quantity(), original.feePercentPerSide(), original.slippagePercentPerSide());
+        assertThrows(IllegalArgumentException.class,
+                () -> FuturesHistoricalWalkForwardRunner.run(broken));
+    }
+
 }

@@ -89,4 +89,25 @@ class FuturesHistoricalWalkForwardRunnerTest {
                 () -> FuturesHistoricalWalkForwardRunner.run(broken));
     }
 
+    @Test void optInSizingUsesRiskBudgetInsteadOfFixedQuantity() {
+        var data = input("SYNTHETIC_FIXTURE", true);
+        var legacy = FuturesHistoricalWalkForwardRunner.run(data);
+        var sized = FuturesHistoricalWalkForwardRunner.runWithPaperSizing(data,
+                new FuturesHistoricalWalkForwardRunner.PaperSizing(
+                        new BigDecimal("1000"), new BigDecimal("1"), new BigDecimal("3")));
+        assertEquals(legacy.candidates(), sized.candidates());
+        assertEquals("OFFLINE_ONLY", sized.mode());
+        assertFalse(sized.liveSignalEligible());
+        assertTrue(sized.outcomes().size() > 0);
+        assertNotEquals(0, legacy.performance().totalNetPnl().compareTo(sized.performance().totalNetPnl()));
+    }
+
+    @Test void rejectsUnsafeSizingConfiguration() {
+        var data = input("SYNTHETIC_FIXTURE", true);
+        assertThrows(IllegalArgumentException.class, () ->
+                FuturesHistoricalWalkForwardRunner.runWithPaperSizing(data,
+                        new FuturesHistoricalWalkForwardRunner.PaperSizing(
+                                new BigDecimal("1000"), new BigDecimal("2"), new BigDecimal("3"))));
+    }
+
 }

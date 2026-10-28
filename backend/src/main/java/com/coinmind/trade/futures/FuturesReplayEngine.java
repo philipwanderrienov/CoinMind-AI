@@ -27,6 +27,21 @@ public final class FuturesReplayEngine {
                    : !(r.stop().compareTo(r.entry()) > 0 && r.target().compareTo(r.entry()) < 0))
             throw new IllegalArgumentException("stop/target direction invalid");
 
+        // Validate the entire dataset first, including candles after a potential early exit.
+        Instant validatedPrevious = null;
+        for (Candle candle : r.candles()) {
+            if (candle == null || candle.time() == null
+                    || (validatedPrevious != null && !candle.time().isAfter(validatedPrevious)))
+                throw new IllegalArgumentException("Candles must have unique ascending timestamps");
+            validatedPrevious = candle.time();
+            positive(candle.open(), "open"); positive(candle.high(), "high");
+            positive(candle.low(), "low"); positive(candle.close(), "close");
+            if (candle.low().compareTo(candle.high()) > 0
+                    || candle.open().compareTo(candle.low()) < 0 || candle.open().compareTo(candle.high()) > 0
+                    || candle.close().compareTo(candle.low()) < 0 || candle.close().compareTo(candle.high()) > 0)
+                throw new IllegalArgumentException("Invalid OHLC candle");
+        }
+
         Instant previous = null;
         boolean entered = false;
         BigDecimal fill = null;
@@ -43,15 +58,21 @@ public final class FuturesReplayEngine {
                     || candle.open().compareTo(candle.low()) < 0 || candle.open().compareTo(candle.high()) > 0
                     || candle.close().compareTo(candle.low()) < 0 || candle.close().compareTo(candle.high()) > 0)
                 throw new IllegalArgumentException("Invalid OHLC candle");
+            boolean enteredThisCandle = false;
             if (!entered) {
                 if (candle.low().compareTo(r.entry()) > 0 || candle.high().compareTo(r.entry()) < 0) continue;
+                enteredThisCandle = true;
                 entered = true;
                 // Conservative gap treatment: if open is already worse than intended entry, fill at open.
                 BigDecimal raw = isLong ? r.entry().max(candle.open()) : r.entry().min(candle.open());
                 fill = slip(raw, r.slippagePercentPerSide(), isLong);
             }
             boolean hitStop = isLong ? candle.low().compareTo(r.stop()) <= 0 : candle.high().compareTo(r.stop()) >= 0;
-            boolean hitTarget = isLong ? candle.high().compareTo(r.target()) >= 0 : candle.low().compareTo(r.target()) <= 0;
+            // A target touched on the entry candle may have occurred before the entry fill.
+            // Never award this ambiguous profit without lower-timeframe execution evidence.
+            boolean hitTarget = !enteredThisCandle && (isLong
+                    ? candle.high().compareTo(r.target()) >= 0
+                    : candle.low().compareTo(r.target()) <= 0);
             if (hitStop || hitTarget) {
                 exitReason = hitStop ? "STOP" : "TARGET";
                 BigDecimal raw = hitStop ? (isLong ? r.stop().min(candle.open()) : r.stop().max(candle.open())) : r.target();
@@ -72,7 +93,7 @@ public final class FuturesReplayEngine {
                 .multiply(r.feePercentPerSide(), MC).divide(new BigDecimal("100"), MC);
         BigDecimal net = gross.subtract(fees, MC);
         return new Result(r.provenance(), exitReason, fill, exit, gross, fees, net,
-                "Candle-based replay only; ambiguous intra-bar ordering assumes STOP first. Funding, liquidation and venue constraints excluded.");
+                "Candle-based replay only; STOP wins ambiguous bars, and target on entry bar is ignored. Funding, liquidation and venue constraints excluded.");
     }
 
     private static BigDecimal slip(BigDecimal price, BigDecimal percent, boolean buy) {

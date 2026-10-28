@@ -714,3 +714,8 @@ Added FuturesIntradayDecisionEngine and five tests on main. The separate engine 
 ## 2026-10-28 — Experimental strategy-to-replay integration
 
 Added FuturesStrategyReplayPipeline and four tests. The pipeline joins offline 5m/15m decision outputs with future-only execution candles, side/provenance checks, replay outcomes, and aggregate performance; WAIT candidates produce no trade. This only checks supplied timestamps and provenance: score construction is not independently verified to exclude future data, and risk guard, CoinAPI adapter, historical ingestion, funding and liquidation remain unintegrated. Maven verification pending on phive-server; live Futures readiness remains BLOCKED.
+
+
+## 2026-10-28 — Replay candidate chronology hardening
+
+The experimental FuturesStrategyReplayPipeline now rejects nonascending decision timestamps and overlapping candidate candle windows. This deliberately conservative rule avoids counting overlapping sample windows as independent trades but also may exclude valid overlapping market opportunities. Two regression tests added. This is still an offline prototype; indicator provenance, execution realism, risk integration and historical backtesting remain open. Maven verify pending on phive-server; live readiness BLOCKED.

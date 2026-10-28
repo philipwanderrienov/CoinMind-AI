@@ -86,6 +86,7 @@ coinmind:
       - 1d
 
   futures:
+    fixtures-enabled: ${FUTURES_FIXTURES_ENABLED:false}
     market-data-enabled: ${FUTURES_MARKET_DATA_ENABLED:false}
     base-url: ${FUTURES_MARKET_DATA_BASE_URL:https://fapi.binance.com}
 

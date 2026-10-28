@@ -94,6 +94,8 @@ public final class FuturesHistoricalWalkForwardRunner {
                     || c.open().compareTo(c.low()) < 0 || c.open().compareTo(c.high()) > 0
                     || c.close().compareTo(c.low()) < 0 || c.close().compareTo(c.high()) > 0)
                 throw new IllegalArgumentException("Invalid or unordered OHLC");
+            if (c.time().getNano() != 0 || Math.floorMod(c.time().getEpochSecond(), frame.getSeconds()) != 0)
+                throw new IllegalArgumentException("Candle open must align to UTC timeframe boundary");
             if (previous != null && !c.time().equals(previous.plus(frame)))
                 throw new IllegalArgumentException("Missing or misaligned timeframe candle");
             previous = c.time();

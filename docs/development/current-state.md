@@ -709,3 +709,8 @@ Added FuturesOfflineValidationPipeline combining replay results and performance 
 ## 2026-10-28 — Experimental offline intraday decision engine
 
 Added FuturesIntradayDecisionEngine and five tests on main. The separate engine proposes WATCH_LONG/WATCH_SHORT only with offline provenance, completed candles, 5m/15m momentum agreement against 1h/4h trend; otherwise WAIT. Initial thresholds are hypotheses only and NOT empirically optimized, and the engine is not yet coupled to replay, risk guard, CoinAPI adapter, or live TradeSetup. Requires Maven validation on phive-server; no live Futures recommendation is authorized.
+
+
+## 2026-10-28 — Experimental strategy-to-replay integration
+
+Added FuturesStrategyReplayPipeline and four tests. The pipeline joins offline 5m/15m decision outputs with future-only execution candles, side/provenance checks, replay outcomes, and aggregate performance; WAIT candidates produce no trade. This only checks supplied timestamps and provenance: score construction is not independently verified to exclude future data, and risk guard, CoinAPI adapter, historical ingestion, funding and liquidation remain unintegrated. Maven verification pending on phive-server; live Futures readiness remains BLOCKED.

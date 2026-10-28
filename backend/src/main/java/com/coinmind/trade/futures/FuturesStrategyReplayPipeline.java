@@ -21,7 +21,7 @@ public final class FuturesStrategyReplayPipeline {
                 throw new IllegalArgumentException("Complete candidate required");
             var decisionInput = candidate.decisionInput();
             var replay = candidate.replayRequest();
-            if (!decisionInput.provenance().equals(replay.provenance())
+            if (decisionInput.provenance() == null || !decisionInput.provenance().equals(replay.provenance())
                     || (!"SYNTHETIC_FIXTURE".equals(replay.provenance())
                         && !"HISTORICAL_REPLAY".equals(replay.provenance())))
                 throw new IllegalArgumentException("Matching offline provenance required");

@@ -34,6 +34,13 @@ class FuturesHistoricalWalkForwardRunnerTest {
         assertEquals(result.candidates(), result.outcomes().size());
         assertTrue(result.busySkipped() > 0);
     }
+    @Test void entryExecutionOccursStrictlyAfterDecisionUnderTimestampContract() {
+        // A trending fixture produces real candidates; regression for execution
+        // candle opening at the exact decision timestamp (previously rejected).
+        var report = FuturesHistoricalWalkForwardRunner.run(input("SYNTHETIC_FIXTURE", true));
+        assertTrue(report.candidates() > 0);
+        assertFalse(report.liveSignalEligible());
+    }
     @Test void flatPricesProduceWaitAndZeroExecutedTrades() {
         var result = FuturesHistoricalWalkForwardRunner.run(input("HISTORICAL_REPLAY", false));
         assertEquals(0, result.candidates());

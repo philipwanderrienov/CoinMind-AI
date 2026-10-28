@@ -46,16 +46,21 @@ class FuturesStrategyReplayPipelineTest {
                 List.of(candidate(80, "SHORT", Instant.parse("2026-10-28T00:05:00Z")))));
     }
     @Test void rejectsOverlappingReplayWindows() {
-        assertThrows(IllegalArgumentException.class, () -> FuturesStrategyReplayPipeline.evaluate(List.of(
-                candidate(80, "LONG", Instant.parse("2026-10-28T00:05:00Z")),
-                candidate(80, "LONG", Instant.parse("2026-10-28T00:10:00Z")))));
+        var first = candidate(80, "LONG", Instant.parse("2026-10-28T00:05:00Z"));
+        var secondBase = candidate(80, "LONG", Instant.parse("2026-10-28T00:10:00Z"));
+        var second = new FuturesStrategyReplayPipeline.Candidate(
+                Instant.parse("2026-10-28T00:03:00Z"), secondBase.decisionInput(), secondBase.replayRequest());
+        var error = assertThrows(IllegalArgumentException.class,
+                () -> FuturesStrategyReplayPipeline.evaluate(List.of(first, second)));
+        assertTrue(error.getMessage().contains("overlaps"));
     }
 
     @Test void rejectsNonAscendingDecisionTimes() {
         var first = candidate(80, "LONG", Instant.parse("2026-10-28T00:05:00Z"));
         var second = candidate(80, "LONG", Instant.parse("2026-10-28T00:10:00Z"));
-        assertThrows(IllegalArgumentException.class, () -> FuturesStrategyReplayPipeline.evaluate(
-                List.of(first, second)));
+        var error = assertThrows(IllegalArgumentException.class,
+                () -> FuturesStrategyReplayPipeline.evaluate(List.of(first, second)));
+        assertTrue(error.getMessage().contains("ascending"));
     }
 
 }

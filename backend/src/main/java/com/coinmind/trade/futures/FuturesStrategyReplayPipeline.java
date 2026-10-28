@@ -15,10 +15,17 @@ public final class FuturesStrategyReplayPipeline {
         if (candidates == null) throw new IllegalArgumentException("Candidates required");
         List<FuturesReplayEngine.Result> results = new ArrayList<>();
         int waits = 0;
+        Instant previousDecision = null;
+        Instant previousWindowEnd = null;
         for (Candidate candidate : candidates) {
             if (candidate == null || candidate.decisionTime() == null
                     || candidate.decisionInput() == null || candidate.replayRequest() == null)
                 throw new IllegalArgumentException("Complete candidate required");
+            if (previousDecision != null && !candidate.decisionTime().isAfter(previousDecision))
+                throw new IllegalArgumentException("Candidates must have strictly ascending decision times");
+            if (previousWindowEnd != null && !candidate.decisionTime().isAfter(previousWindowEnd))
+                throw new IllegalArgumentException("Candidate overlaps a previous replay window");
+            previousDecision = candidate.decisionTime();
             var decisionInput = candidate.decisionInput();
             var replay = candidate.replayRequest();
             if (decisionInput.provenance() == null || !decisionInput.provenance().equals(replay.provenance())
@@ -32,6 +39,9 @@ public final class FuturesStrategyReplayPipeline {
                         || !candle.time().isAfter(candidate.decisionTime()))
                     throw new IllegalArgumentException("Execution candles must occur after decision time");
             }
+            // Reserve the full supplied candle window even if no entry occurs, avoiding
+            // overlapping sample windows that can inflate or duplicate trade statistics.
+            previousWindowEnd = replay.candles().get(replay.candles().size() - 1).time();
             var decision = FuturesIntradayDecisionEngine.evaluate(decisionInput);
             if ("WAIT".equals(decision.action())) { waits++; continue; }
             String requiredSide = switch (decision.action()) {
@@ -45,7 +55,7 @@ public final class FuturesStrategyReplayPipeline {
         }
         return new Report("OFFLINE_ONLY", false, waits, List.copyOf(results),
                 FuturesPerformanceAnalytics.summarize(results),
-                "Experimental score inputs must be built from closed pre-decision candles; timestamp checks alone cannot prove that. No funding, liquidation or exchange constraints.");
+                "Experimental score inputs must be built from closed pre-decision candles; timestamp checks alone cannot prove that. Candidate windows must not overlap, and this conservative restriction may omit valid trades. No funding, liquidation or exchange constraints.");
     }
 
     public record Candidate(Instant decisionTime,

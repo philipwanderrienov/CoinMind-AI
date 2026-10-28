@@ -314,3 +314,8 @@ Added FuturesHistoricalWalkForwardRunner and four tests. Offline-only walk-forwa
 ## 2026-10-28 — Fix historical walk-forward decision/entry timestamp collision
 
 Diagnosed likely cause of initial 73-test / 1-error Maven failure: decisionTime is close of 5m bar i, exactly equal to open of bar i+1; strategy replay requires strictly later execution candle timestamps. Runner now enters at open of bar i+2 (one extra 5m bar delay) and adjusts horizon bounds, preserving strict anti-lookahead. Added regression test for trending fixture path. This is a conservative experimental fill delay, not an exchange-realistic execution model. Verify with Maven on phive-server; Futures readiness remains BLOCKED.
+
+
+## 2026-10-28 — Strict UTC candle time boundary validation
+
+Updated FuturesHistoricalWalkForwardRunner to reject any OHLC open timestamp not aligned to its UTC timeframe boundary (5m, 15m, 1h, 4h) or having nonzero subsecond precision, in addition to existing contiguous-cadence checks. Added two regression tests: regularly spaced but minute-shifted 1h candles, and a subsecond-offset 5m candle. The checks validate supplied data shape, not market authenticity; no live signals enabled. Maven verification on phive-server pending and Futures readiness remains BLOCKED.

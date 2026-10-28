@@ -744,3 +744,8 @@ Diagnosed likely cause of initial 73-test / 1-error Maven failure: decisionTime 
 ## 2026-10-28 — Strict UTC candle time boundary validation
 
 Updated FuturesHistoricalWalkForwardRunner to reject any OHLC open timestamp not aligned to its UTC timeframe boundary (5m, 15m, 1h, 4h) or having nonzero subsecond precision, in addition to existing contiguous-cadence checks. Added two regression tests: regularly spaced but minute-shifted 1h candles, and a subsecond-offset 5m candle. The checks validate supplied data shape, not market authenticity; no live signals enabled. Maven verification on phive-server pending and Futures readiness remains BLOCKED.
+
+
+## 2026-10-28 — Risk-budgeted offline position sizing adapter
+
+Added FuturesPaperPositionSizer, wrapping the existing FuturesRiskCalculator for SYNTHETIC_FIXTURE/HISTORICAL_REPLAY only, with four new tests (LONG, SHORT, risk cap and live-data exclusion). Estimates quantity, risk budget, notional and initial margin on fixed reference equity; rejects unsuitable risk parameters via calculator. This is an isolated paper-only adapter and is NOT yet wired into FuturesHistoricalWalkForwardRunner. Sizing uses simplified fees and slippage, not funding, gap loss, liquidation, exchange minimum steps or real account state. Server Maven verification pending. Futures live readiness remains BLOCKED.

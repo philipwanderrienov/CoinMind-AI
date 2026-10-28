@@ -309,3 +309,8 @@ Added FuturesCandleStrategyPipeline, which builds offline 5m/15m/1h/4h scores fr
 ## 2026-10-28 — Experimental chronological historical runner
 
 Added FuturesHistoricalWalkForwardRunner and four tests. Offline-only walk-forward over contiguous 5m candles, with 15m/1h/4h closed-bar snapshots; constructs scores only using historical closed bars, executes fixed-horizon trades on future 5m bars, excludes overlap and reports aggregate PnL. Rejects missing cadence candles and LIVE_EXCHANGE provenance. Price for pending entry is the following candle's opening price (known only at execution, not scored); this is a simplified fill assumption, not exchange-realistic. No real historical feed, funding, liquidation, strategy optimization, fees by venue, portfolio sizing or end-to-end risk integration. Server Maven verification pending; Futures readiness remains BLOCKED.
+
+
+## 2026-10-28 — Fix historical walk-forward decision/entry timestamp collision
+
+Diagnosed likely cause of initial 73-test / 1-error Maven failure: decisionTime is close of 5m bar i, exactly equal to open of bar i+1; strategy replay requires strictly later execution candle timestamps. Runner now enters at open of bar i+2 (one extra 5m bar delay) and adjusts horizon bounds, preserving strict anti-lookahead. Added regression test for trending fixture path. This is a conservative experimental fill delay, not an exchange-realistic execution model. Verify with Maven on phive-server; Futures readiness remains BLOCKED.

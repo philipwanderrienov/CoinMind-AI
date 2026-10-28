@@ -16,7 +16,7 @@ public final class FuturesSignalGate {
 
     public static Decision evaluate(Request r, Instant now) {
         if (r == null || now == null) throw new IllegalArgumentException("Request and evaluation time required");
-        if (!SYMBOLS.contains(r.symbol())) return new Decision(false, "INVALID_SYMBOL");
+        if (r.symbol() == null || !SYMBOLS.contains(r.symbol())) return new Decision(false, "INVALID_SYMBOL");
         if (!"LIVE_EXCHANGE".equals(r.provenance())) return new Decision(false, "NON_LIVE_DATA");
         if (r.eventTime() == null || r.receivedAt() == null
                 || r.eventTime().isAfter(r.receivedAt())

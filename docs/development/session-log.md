@@ -304,3 +304,8 @@ Added FuturesClosedCandleScoring and four tests: calculates bounded [-100,100] c
 ## 2026-10-28 — Closed-candle strategy-to-replay pipeline
 
 Added FuturesCandleStrategyPipeline, which builds offline 5m/15m/1h/4h scores from completed candles, then feeds the existing FuturesStrategyReplayPipeline for chronological execution replay and net performance aggregation. Five regression tests check trade replay, WAIT, unclosed candle rejection, live-provenance rejection, and same-timestamp execution rejection. The existing standalone score-based API remains unchanged for compatibility. This is an experimental OFFLINE_ONLY pipeline: candle authenticity and a continuous historical data ingestion pipeline are not verified, the replay model excludes funding/liquidation/venue constraints, and no production decision endpoints or live futures signals were enabled. Maven verify pending on phive-server; Futures readiness remains BLOCKED.
+
+
+## 2026-10-28 — Experimental chronological historical runner
+
+Added FuturesHistoricalWalkForwardRunner and four tests. Offline-only walk-forward over contiguous 5m candles, with 15m/1h/4h closed-bar snapshots; constructs scores only using historical closed bars, executes fixed-horizon trades on future 5m bars, excludes overlap and reports aggregate PnL. Rejects missing cadence candles and LIVE_EXCHANGE provenance. Price for pending entry is the following candle's opening price (known only at execution, not scored); this is a simplified fill assumption, not exchange-realistic. No real historical feed, funding, liquidation, strategy optimization, fees by venue, portfolio sizing or end-to-end risk integration. Server Maven verification pending; Futures readiness remains BLOCKED.

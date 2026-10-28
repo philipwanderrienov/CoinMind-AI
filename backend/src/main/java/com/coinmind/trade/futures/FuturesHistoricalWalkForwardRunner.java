@@ -17,6 +17,21 @@ public final class FuturesHistoricalWalkForwardRunner {
     private FuturesHistoricalWalkForwardRunner() {}
 
     public static Report run(Input in) {
+        return runInternal(in, null);
+    }
+
+    /** Opt-in PAPER_ONLY sizing with fixed reference equity, not an equity curve. */
+    public static Report runWithPaperSizing(Input in, PaperSizing sizing) {
+        if (sizing == null || sizing.equityUsdt() == null || sizing.equityUsdt().signum() <= 0
+                || sizing.riskPercent() == null || sizing.riskPercent().signum() <= 0
+                || sizing.riskPercent().compareTo(BigDecimal.ONE) > 0
+                || sizing.leverage() == null || sizing.leverage().signum() <= 0
+                || sizing.leverage().compareTo(new BigDecimal("5")) > 0)
+            throw new IllegalArgumentException("Invalid paper sizing configuration");
+        return runInternal(in, sizing);
+    }
+
+    private static Report runInternal(Input in, PaperSizing sizing) {
         if (in == null || (!"SYNTHETIC_FIXTURE".equals(in.provenance())
                 && !"HISTORICAL_REPLAY".equals(in.provenance())))
             throw new IllegalArgumentException("Offline input required");
@@ -63,8 +78,17 @@ public final class FuturesHistoricalWalkForwardRunner {
             if (stop.signum() <= 0 || target.signum() <= 0)
                 throw new IllegalArgumentException("Stop/target outside positive price domain");
             var execution = List.copyOf(in.m5().subList(i + 2, i + 2 + in.horizonBars()));
+            BigDecimal quantity = in.quantity();
+            if (sizing != null) {
+                var sized = FuturesPaperPositionSizer.size(new FuturesPaperPositionSizer.Request(
+                        in.provenance(), side, sizing.equityUsdt(), entry, stop,
+                        sizing.riskPercent(), sizing.leverage(),
+                        in.feePercentPerSide(), in.slippagePercentPerSide()));
+                if (!sized.eligible()) continue;
+                quantity = sized.quantity();
+            }
             var request = new FuturesReplayEngine.Request(in.provenance(), side,
-                    entry, stop, target, in.quantity(), in.feePercentPerSide(),
+                    entry, stop, target, quantity, in.feePercentPerSide(),
                     in.slippagePercentPerSide(), execution);
             candidates.add(new FuturesCandleStrategyPipeline.Candidate(decisionTime,
                     five, fifteen, oneHour, fourHour, request));
@@ -74,7 +98,8 @@ public final class FuturesHistoricalWalkForwardRunner {
         return new Report("OFFLINE_ONLY", false, waits, busy, candidates.size(),
                 evaluated.performance(), evaluated.results(),
                 "Conservative one-bar-delayed open entry and fixed-horizon replay, not a realistic limit order fill. "
-                + "No funding, liquidation, margin tiers, contract rules, or out-of-sample validation.");
+                + (sizing == null ? "Fixed quantity mode. " : "Fixed reference equity risk-sizing mode. ")
+                + "No dynamic equity curve, funding, liquidation, margin tiers, contract rules, or out-of-sample validation.");
     }
 
     private static List<FuturesReplayEngine.Candle> closed(
@@ -101,6 +126,8 @@ public final class FuturesHistoricalWalkForwardRunner {
             previous = c.time();
         }
     }
+
+    public record PaperSizing(BigDecimal equityUsdt, BigDecimal riskPercent, BigDecimal leverage) {}
 
     public record Input(String provenance, List<FuturesReplayEngine.Candle> m5,
             List<FuturesReplayEngine.Candle> m15, List<FuturesReplayEngine.Candle> h1,

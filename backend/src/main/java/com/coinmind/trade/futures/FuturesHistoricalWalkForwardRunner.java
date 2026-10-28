@@ -35,7 +35,7 @@ public final class FuturesHistoricalWalkForwardRunner {
         int waits = 0;
         int busy = 0;
         Instant reservedUntil = Instant.MIN;
-        for (int i = 2; i + in.horizonBars() < in.m5().size(); i++) {
+        for (int i = 2; i + 2 + in.horizonBars() <= in.m5().size(); i++) {
             Instant decisionTime = in.m5().get(i).time().plus(Duration.ofMinutes(5));
             if (!decisionTime.isAfter(reservedUntil)) { busy++; continue; }
             var five = List.copyOf(in.m5().subList(i - 2, i + 1));
@@ -48,9 +48,10 @@ public final class FuturesHistoricalWalkForwardRunner {
             var decision = FuturesIntradayDecisionEngine.evaluate(score);
             if ("WAIT".equals(decision.action())) { waits++; continue; }
             String side = "WATCH_LONG".equals(decision.action()) ? "LONG" : "SHORT";
-            // The next candle's opening price is used only as the execution entry level,
-            // never as an input to the preceding decision.
-            BigDecimal entry = in.m5().get(i + 1).open();
+            // Strict replay timestamps require execution to start AFTER decisionTime.
+            // Decision at close(i) equals open(i+1), so enter at open(i+2).
+            // This conservatively adds one full 5m candle of execution delay.
+            BigDecimal entry = in.m5().get(i + 2).open();
             BigDecimal stopFactor = in.stopPercent().divide(new BigDecimal("100"), MC);
             BigDecimal targetFactor = in.targetPercent().divide(new BigDecimal("100"), MC);
             BigDecimal stop = side.equals("LONG")
@@ -61,7 +62,7 @@ public final class FuturesHistoricalWalkForwardRunner {
                     : entry.multiply(BigDecimal.ONE.subtract(targetFactor), MC);
             if (stop.signum() <= 0 || target.signum() <= 0)
                 throw new IllegalArgumentException("Stop/target outside positive price domain");
-            var execution = List.copyOf(in.m5().subList(i + 1, i + 1 + in.horizonBars()));
+            var execution = List.copyOf(in.m5().subList(i + 2, i + 2 + in.horizonBars()));
             var request = new FuturesReplayEngine.Request(in.provenance(), side,
                     entry, stop, target, in.quantity(), in.feePercentPerSide(),
                     in.slippagePercentPerSide(), execution);
@@ -72,7 +73,7 @@ public final class FuturesHistoricalWalkForwardRunner {
         var evaluated = FuturesCandleStrategyPipeline.evaluate(candidates);
         return new Report("OFFLINE_ONLY", false, waits, busy, candidates.size(),
                 evaluated.performance(), evaluated.results(),
-                "Fixed next-bar open entry and fixed-horizon replay, not a realistic limit order fill. "
+                "Conservative one-bar-delayed open entry and fixed-horizon replay, not a realistic limit order fill. "
                 + "No funding, liquidation, margin tiers, contract rules, or out-of-sample validation.");
     }
 

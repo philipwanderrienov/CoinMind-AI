@@ -31,6 +31,91 @@ public final class FuturesHistoricalWalkForwardRunner {
         return runInternal(in, sizing);
     }
 
+    /**
+     * Opt-in realized-equity compounding, applying a UTC daily stop before each entry.
+     * Uses the complete fixed replay horizon as a conservative occupancy window.
+     */
+    public static DynamicReport runWithDynamicEquity(Input in, PaperSizing sizing,
+                                                       BigDecimal dailyLossLimitPercent) {
+        if (sizing == null || sizing.equityUsdt() == null || sizing.equityUsdt().signum() <= 0
+                || sizing.riskPercent() == null || sizing.riskPercent().signum() <= 0
+                || sizing.riskPercent().compareTo(BigDecimal.ONE) > 0
+                || sizing.leverage() == null || sizing.leverage().signum() <= 0
+                || sizing.leverage().compareTo(new BigDecimal("5")) > 0
+                || dailyLossLimitPercent == null || dailyLossLimitPercent.signum() <= 0
+                || dailyLossLimitPercent.compareTo(new BigDecimal("100")) > 0)
+            throw new IllegalArgumentException("Invalid dynamic paper configuration");
+        // Reuse the existing ingestion/chronology validation without changing legacy outputs.
+        runInternal(in, null);
+        BigDecimal equity = sizing.equityUsdt(), peak = equity, maxDrawdown = BigDecimal.ZERO;
+        BigDecimal dayStart = equity, dayPnl = BigDecimal.ZERO;
+        java.time.LocalDate day = null;
+        Instant busyUntil = Instant.MIN;
+        int waits = 0, blocked = 0, executed = 0;
+        var points = new ArrayList<EquityPoint>();
+        var results = new ArrayList<FuturesReplayEngine.Result>();
+        for (int i = 2; i + 2 + in.horizonBars() <= in.m5().size(); i++) {
+            Instant decisionTime = in.m5().get(i).time().plus(Duration.ofMinutes(5));
+            if (!decisionTime.isAfter(busyUntil)) continue;
+            var fifteen = closed(in.m15(), Duration.ofMinutes(15), decisionTime);
+            var hourly = closed(in.h1(), Duration.ofHours(1), decisionTime);
+            var four = closed(in.h4(), Duration.ofHours(4), decisionTime);
+            if (fifteen.size() < 3 || hourly.size() < 3 || four.size() < 3) continue;
+            var five = List.copyOf(in.m5().subList(i - 2, i + 1));
+            var decision = FuturesIntradayDecisionEngine.evaluate(
+                    FuturesClosedCandleScoring.score(in.provenance(), decisionTime, five, fifteen, hourly, four));
+            if ("WAIT".equals(decision.action())) { waits++; continue; }
+            java.time.LocalDate currentDay = decisionTime.atZone(java.time.ZoneOffset.UTC).toLocalDate();
+            if (!currentDay.equals(day)) {
+                day = currentDay;
+                dayStart = equity;
+                dayPnl = BigDecimal.ZERO;
+            }
+            BigDecimal maxDailyLoss = dayStart.multiply(dailyLossLimitPercent, MC)
+                    .divide(new BigDecimal("100"), MC);
+            if (equity.signum() <= 0 || dayPnl.negate().compareTo(maxDailyLoss) >= 0) {
+                blocked++;
+                continue;
+            }
+            String side = "WATCH_LONG".equals(decision.action()) ? "LONG" : "SHORT";
+            BigDecimal entry = in.m5().get(i + 2).open();
+            BigDecimal stopFraction = in.stopPercent().divide(new BigDecimal("100"), MC);
+            BigDecimal targetFraction = in.targetPercent().divide(new BigDecimal("100"), MC);
+            BigDecimal stop = entry.multiply(side.equals("LONG")
+                    ? BigDecimal.ONE.subtract(stopFraction) : BigDecimal.ONE.add(stopFraction), MC);
+            BigDecimal target = entry.multiply(side.equals("LONG")
+                    ? BigDecimal.ONE.add(targetFraction) : BigDecimal.ONE.subtract(targetFraction), MC);
+            if (stop.signum() <= 0 || target.signum() <= 0)
+                throw new IllegalArgumentException("Invalid stop/target");
+            var size = FuturesPaperPositionSizer.size(new FuturesPaperPositionSizer.Request(
+                    in.provenance(), side, equity, entry, stop, sizing.riskPercent(), sizing.leverage(),
+                    in.feePercentPerSide(), in.slippagePercentPerSide()));
+            if (!size.eligible()) { blocked++; continue; }
+            var execution = List.copyOf(in.m5().subList(i + 2, i + 2 + in.horizonBars()));
+            var result = FuturesReplayEngine.run(new FuturesReplayEngine.Request(
+                    in.provenance(), side, entry, stop, target, size.quantity(),
+                    in.feePercentPerSide(), in.slippagePercentPerSide(), execution));
+            // All horizons reserved even if an early exit occurs. No equity marked while open.
+            busyUntil = execution.get(execution.size() - 1).time();
+            if (result.netPnl() != null) {
+                equity = equity.add(result.netPnl(), MC);
+                dayPnl = dayPnl.add(result.netPnl(), MC);
+                peak = peak.max(equity);
+                maxDrawdown = maxDrawdown.max(peak.subtract(equity, MC));
+                executed++;
+                points.add(new EquityPoint(busyUntil.plus(Duration.ofMinutes(5)), equity,
+                        result.netPnl()));
+            }
+            results.add(result);
+        }
+        return new DynamicReport("OFFLINE_ONLY", false, sizing.equityUsdt(), equity,
+                maxDrawdown, waits, blocked, executed, List.copyOf(points),
+                FuturesPerformanceAnalytics.summarize(results),
+                "Experimental realized-only simulated equity, UTC daily loss stop checked before entry. "
+                + "Profits/losses conservatively accounted at end of full horizon. "
+                + "No funding, liquidation, gap/margin realism, or live trading.");
+    }
+
     private static Report runInternal(Input in, PaperSizing sizing) {
         if (in == null || (!"SYNTHETIC_FIXTURE".equals(in.provenance())
                 && !"HISTORICAL_REPLAY".equals(in.provenance())))
@@ -126,6 +211,12 @@ public final class FuturesHistoricalWalkForwardRunner {
             previous = c.time();
         }
     }
+
+    public record EquityPoint(Instant realizedAt, BigDecimal equityUsdt, BigDecimal netPnlUsdt) {}
+    public record DynamicReport(String mode, boolean liveSignalEligible, BigDecimal initialEquity,
+                                BigDecimal finalEquity, BigDecimal maxDrawdownQuote, int waits,
+                                int riskBlocked, int executed, List<EquityPoint> equityCurve,
+                                FuturesPerformanceAnalytics.Summary performance, String limitations) {}
 
     public record PaperSizing(BigDecimal equityUsdt, BigDecimal riskPercent, BigDecimal leverage) {}
 

@@ -98,6 +98,13 @@ public final class FuturesHistoricalWalkForwardRunner {
             // All horizons reserved even if an early exit occurs. No equity marked while open.
             busyUntil = execution.get(execution.size() - 1).time();
             if (result.netPnl() != null) {
+                java.time.LocalDate settlementDay = busyUntil.plus(Duration.ofMinutes(5))
+                        .atZone(java.time.ZoneOffset.UTC).toLocalDate();
+                if (!settlementDay.equals(day)) {
+                    day = settlementDay;
+                    dayStart = equity;
+                    dayPnl = BigDecimal.ZERO;
+                }
                 equity = equity.add(result.netPnl(), MC);
                 dayPnl = dayPnl.add(result.netPnl(), MC);
                 peak = peak.max(equity);

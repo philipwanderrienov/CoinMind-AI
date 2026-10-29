@@ -764,3 +764,8 @@ Added FuturesPaperEquityLedger and four regression tests on main. This standalon
 ## 2026-10-29 — Opt-in dynamic equity walk-forward mode
 
 Added FuturesHistoricalWalkForwardRunner.runWithDynamicEquity(Input,PaperSizing,dailyLossLimitPercent) with three tests. Keeps legacy modes intact, sizes each eligible candidate against latest realized simulated equity, enforces UTC daily loss stop before candidate entry, computes equity points and realized peak drawdown, and attributes PnL to conservative full-horizon settlement date. All outputs remain OFFLINE_ONLY. It currently reuses the existing runner for data pre-validation (including its legacy simulation), then performs separate sequential dynamic replay. No unrealized equity, funding, liquidation, position netting, exchange rounding, adverse gaps or true execution fills; the full horizon is reserved even if stop/target is touched sooner. Maven verify still required on phive-server; Futures live readiness BLOCKED.
+
+
+## 2026-10-29 — Dynamic equity settlement chronology hardening
+
+Fixed runWithDynamicEquity so prior replay PnL is realized at the **close** of the final execution 5m candle, rather than its open. The occupancy guard now excludes candidate decisions through that settlement instant; this prevents next decisions consuming unclosed prior-trade PnL. Added one regression test for strictly ascending, UTC-aligned settlement timestamps. This is a targeted chronology fix, not proof of complete daily-stop enforcement across all scenarios. Future work: explicit loss-triggering stress fixtures, pre-entry settlement day boundaries, realistic time-to-exit, and account-state risk integration. Maven verification pending on phive-server; live Futures remains BLOCKED.

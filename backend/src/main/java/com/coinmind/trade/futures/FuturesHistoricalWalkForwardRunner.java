@@ -96,9 +96,10 @@ public final class FuturesHistoricalWalkForwardRunner {
                     in.provenance(), side, entry, stop, target, size.quantity(),
                     in.feePercentPerSide(), in.slippagePercentPerSide(), execution));
             // All horizons reserved even if an early exit occurs. No equity marked while open.
-            busyUntil = execution.get(execution.size() - 1).time();
+            // Never make the prior trade's PnL available before the final execution bar closes.
+            busyUntil = execution.get(execution.size() - 1).time().plus(Duration.ofMinutes(5));
             if (result.netPnl() != null) {
-                java.time.LocalDate settlementDay = busyUntil.plus(Duration.ofMinutes(5))
+                java.time.LocalDate settlementDay = busyUntil
                         .atZone(java.time.ZoneOffset.UTC).toLocalDate();
                 if (!settlementDay.equals(day)) {
                     day = settlementDay;
@@ -110,7 +111,7 @@ public final class FuturesHistoricalWalkForwardRunner {
                 peak = peak.max(equity);
                 maxDrawdown = maxDrawdown.max(peak.subtract(equity, MC));
                 executed++;
-                points.add(new EquityPoint(busyUntil.plus(Duration.ofMinutes(5)), equity,
+                points.add(new EquityPoint(busyUntil, equity,
                         result.netPnl()));
             }
             results.add(result);

@@ -142,4 +142,21 @@ class FuturesHistoricalWalkForwardRunnerTest {
                         new BigDecimal("2")));
     }
 
+    @Test void dynamicEquitySettlesOnlyAfterFullFinalCandleClose() {
+        var report = FuturesHistoricalWalkForwardRunner.runWithDynamicEquity(
+                input("SYNTHETIC_FIXTURE", true),
+                new FuturesHistoricalWalkForwardRunner.PaperSizing(
+                        new BigDecimal("1000"), new BigDecimal("1"), new BigDecimal("3")),
+                new BigDecimal("2"));
+        assertTrue(report.equityCurve().size() > 1);
+        for (var point : report.equityCurve()) {
+            assertEquals(0, Math.floorMod(point.realizedAt().getEpochSecond(), 300));
+            assertEquals(0, point.realizedAt().getNano());
+        }
+        for (int i = 1; i < report.equityCurve().size(); i++) {
+            assertTrue(report.equityCurve().get(i).realizedAt()
+                    .isAfter(report.equityCurve().get(i-1).realizedAt()));
+        }
+    }
+
 }

@@ -754,3 +754,8 @@ Added FuturesPaperPositionSizer, wrapping the existing FuturesRiskCalculator for
 ## 2026-10-28 — Opt-in paper sizing on historical runner
 
 Added FuturesHistoricalWalkForwardRunner.runWithPaperSizing(Input, PaperSizing) using existing FuturesPaperPositionSizer for per-candidate risk-budgeted quantity at fixed reference equity. Existing run(Input) retains fixed-quantity behavior. Strict paper constraints cap risk at 1%, leverage at 5x, with margin cap delegated to FuturesRiskCalculator. Two tests exercise sized vs legacy outcomes and invalid parameters. This is NOT compounding/equity-curve sizing; outcomes do not feed back into equity or risk controls. Exchange lot-size, adverse gaps, funding, liquidation and realized drawdown constraints remain unmodeled. Maven server verification pending. No live Futures signals; readiness BLOCKED.
+
+
+## 2026-10-29 — Experimental realized paper equity ledger
+
+Added FuturesPaperEquityLedger and four regression tests on main. This standalone OFFLINE_ONLY ledger tracks realized net PnL, sequential equity, peak-to-trough absolute drawdown, and a UTC-day loss stop which blocks subsequent submitted trades after the threshold is reached, resetting on the next UTC day. It rejects non-offline provenance and nonascending realized timestamps. **Not yet integrated into FuturesHistoricalWalkForwardRunner or live TradeSetup**: reports use externally supplied realized timestamps and cannot guarantee that trades were opened after a daily stop; equity does not yet dynamically determine the position size; no intratrade equity, unrealized PnL, funding, liquidation or exchange execution rules. Maven verify pending on phive-server. Futures readiness remains BLOCKED.

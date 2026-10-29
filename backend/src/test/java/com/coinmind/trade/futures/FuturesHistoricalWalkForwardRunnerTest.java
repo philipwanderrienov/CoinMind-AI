@@ -110,4 +110,36 @@ class FuturesHistoricalWalkForwardRunnerTest {
                                 new BigDecimal("1000"), new BigDecimal("2"), new BigDecimal("3"))));
     }
 
+    @Test void dynamicEquityModeCompoundsAndRemainsOffline() {
+        var data = input("SYNTHETIC_FIXTURE", true);
+        var sizing = new FuturesHistoricalWalkForwardRunner.PaperSizing(
+                new BigDecimal("1000"), new BigDecimal("1"), new BigDecimal("3"));
+        var report = FuturesHistoricalWalkForwardRunner.runWithDynamicEquity(
+                data, sizing, new BigDecimal("2"));
+        assertEquals("OFFLINE_ONLY", report.mode());
+        assertFalse(report.liveSignalEligible());
+        assertTrue(report.executed() > 0);
+        assertEquals(report.executed(), report.equityCurve().size());
+        assertEquals(0, report.finalEquity().compareTo(
+                report.equityCurve().get(report.equityCurve().size()-1).equityUsdt()));
+    }
+
+    @Test void dynamicEquityRejectsUnsafeDailyRisk() {
+        assertThrows(IllegalArgumentException.class, () ->
+                FuturesHistoricalWalkForwardRunner.runWithDynamicEquity(
+                        input("SYNTHETIC_FIXTURE", true),
+                        new FuturesHistoricalWalkForwardRunner.PaperSizing(
+                                new BigDecimal("1000"), new BigDecimal("1"), new BigDecimal("3")),
+                        new BigDecimal("101")));
+    }
+
+    @Test void dynamicEquityRejectsLiveProvenance() {
+        assertThrows(IllegalArgumentException.class, () ->
+                FuturesHistoricalWalkForwardRunner.runWithDynamicEquity(
+                        input("LIVE_EXCHANGE", true),
+                        new FuturesHistoricalWalkForwardRunner.PaperSizing(
+                                new BigDecimal("1000"), new BigDecimal("1"), new BigDecimal("3")),
+                        new BigDecimal("2")));
+    }
+
 }

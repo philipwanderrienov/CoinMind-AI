@@ -779,3 +779,8 @@ Added a targeted synthetic stress test for runWithDynamicEquity: strong closed-c
 ## 2026-10-30 — Offline daily risk dashboard snapshot model
 
 Added FuturesPaperRiskStatus and five tests: OFFLINE_ONLY status NORMAL, LOSS_MONITORING, DAILY_RISK_LOCK, remaining realized-loss allowance and UTC risk day. Data provenance restricted to SYNTHETIC_FIXTURE or HISTORICAL_REPLAY; results cannot authorize live signals. This standalone presentational snapshot is not yet wired into the Angular dashboard or dynamic runner, and callers must provide internally trustworthy ledger values. Limit uses day-start equity with realized PnL only and omits unrealized losses, funding, liquidation, exposure and external account reconciliation. Maven verify pending on phive-server; Futures live readiness remains BLOCKED.
+
+
+## 2026-10-30 — Offline dynamic replay to risk status adapter
+
+Added FuturesPaperRiskReport.fromReplay: a pure read-only adapter reconstructing day-start equity, realized daily PnL and FuturesPaperRiskStatus from a chronological DynamicReport, with four regression tests for intraday state, next-UTC-day reset, future equity event rejection, and LIVE_EXCHANGE rejection. API exposure and Angular dashboard integration are explicitly deferred until authenticated/trusted replay persistence exists; accepting arbitrary client-supplied replay/account state as authoritative would be unsafe. Still OFFLINE_ONLY, live Futures BLOCKED. Maven verify pending on phive-server.

@@ -349,3 +349,8 @@ Fixed runWithDynamicEquity so prior replay PnL is realized at the **close** of t
 ## 2026-10-30 — Adverse-day daily-loss stress regression
 
 Added a targeted synthetic stress test for runWithDynamicEquity: strong closed-candle bullish signals combined with adverse 5m lows that touch protective stops, a restrictive 0.5% daily realized-loss limit, blocked subsequent entries, and re-enabled entries after the next UTC day. The test also checks offline-only status and negative net equity. No production/live changes, and no exchange-side orders or automatic position closures. The daily rule remains realized-PnL based and can exceed its threshold on the triggering trade; funding, gaps, unrealized exposure and venue-specific liquidation are not modeled. Maven verify pending on phive-server; Futures readiness BLOCKED.
+
+
+## 2026-10-30 — Offline daily risk dashboard snapshot model
+
+Added FuturesPaperRiskStatus and five tests: OFFLINE_ONLY status NORMAL, LOSS_MONITORING, DAILY_RISK_LOCK, remaining realized-loss allowance and UTC risk day. Data provenance restricted to SYNTHETIC_FIXTURE or HISTORICAL_REPLAY; results cannot authorize live signals. This standalone presentational snapshot is not yet wired into the Angular dashboard or dynamic runner, and callers must provide internally trustworthy ledger values. Limit uses day-start equity with realized PnL only and omits unrealized losses, funding, liquidation, exposure and external account reconciliation. Maven verify pending on phive-server; Futures live readiness remains BLOCKED.

@@ -769,3 +769,8 @@ Added FuturesHistoricalWalkForwardRunner.runWithDynamicEquity(Input,PaperSizing,
 ## 2026-10-29 — Dynamic equity settlement chronology hardening
 
 Fixed runWithDynamicEquity so prior replay PnL is realized at the **close** of the final execution 5m candle, rather than its open. The occupancy guard now excludes candidate decisions through that settlement instant; this prevents next decisions consuming unclosed prior-trade PnL. Added one regression test for strictly ascending, UTC-aligned settlement timestamps. This is a targeted chronology fix, not proof of complete daily-stop enforcement across all scenarios. Future work: explicit loss-triggering stress fixtures, pre-entry settlement day boundaries, realistic time-to-exit, and account-state risk integration. Maven verification pending on phive-server; live Futures remains BLOCKED.
+
+
+## 2026-10-30 — Adverse-day daily-loss stress regression
+
+Added a targeted synthetic stress test for runWithDynamicEquity: strong closed-candle bullish signals combined with adverse 5m lows that touch protective stops, a restrictive 0.5% daily realized-loss limit, blocked subsequent entries, and re-enabled entries after the next UTC day. The test also checks offline-only status and negative net equity. No production/live changes, and no exchange-side orders or automatic position closures. The daily rule remains realized-PnL based and can exceed its threshold on the triggering trade; funding, gaps, unrealized exposure and venue-specific liquidation are not modeled. Maven verify pending on phive-server; Futures readiness BLOCKED.

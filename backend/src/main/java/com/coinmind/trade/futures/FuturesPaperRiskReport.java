@@ -25,6 +25,7 @@ public final class FuturesPaperRiskReport {
         BigDecimal pnl = BigDecimal.ZERO;
         LocalDate riskDay = asOf.atZone(ZoneOffset.UTC).toLocalDate();
         Instant last = null;
+        boolean seenToday = false;
         for (var point : curve) {
             if (point == null || point.realizedAt() == null || point.equityUsdt() == null
                     || point.netPnlUsdt() == null || point.realizedAt().isAfter(asOf)
@@ -33,28 +34,15 @@ public final class FuturesPaperRiskReport {
                 throw new IllegalArgumentException("Invalid or future realized equity event");
             last = point.realizedAt();
             LocalDate settlementDay = point.realizedAt().atZone(ZoneOffset.UTC).toLocalDate();
-            if (settlementDay.equals(riskDay) && pnl.signum() == 0) {
-                // Reconstructed explicitly below using the equity BEFORE the first event of the day.
-            }
             if (settlementDay.equals(riskDay)) {
-                if (pnl.signum() == 0 && !hasEarlierToday(curve, point, riskDay)) start = current;
+                if (!seenToday) { start = current; seenToday = true; }
                 pnl = pnl.add(point.netPnlUsdt());
             }
             current = point.equityUsdt();
         }
-        if (pnl.signum() == 0 && curve.stream().noneMatch(p ->
-                p.realizedAt().atZone(ZoneOffset.UTC).toLocalDate().equals(riskDay))) start = current;
+        if (!seenToday) start = current;
         return FuturesPaperRiskStatus.evaluate(new FuturesPaperRiskStatus.Input(
                 provenance, asOf, start, current, pnl, dailyLossLimitPercent));
     }
 
-    private static boolean hasEarlierToday(
-            java.util.List<FuturesHistoricalWalkForwardRunner.EquityPoint> curve,
-            FuturesHistoricalWalkForwardRunner.EquityPoint point, LocalDate day) {
-        for (var earlier : curve) {
-            if (earlier == point) return false;
-            if (earlier.realizedAt().atZone(ZoneOffset.UTC).toLocalDate().equals(day)) return true;
-        }
-        return false;
-    }
 }

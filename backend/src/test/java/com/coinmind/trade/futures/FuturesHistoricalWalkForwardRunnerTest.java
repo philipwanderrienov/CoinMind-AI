@@ -159,4 +159,33 @@ class FuturesHistoricalWalkForwardRunnerTest {
         }
     }
 
+    @Test void dailyLossBlocksFurtherEntriesAndResetsOnNextUtcDay() {
+        // Exponential 5m uptrend keeps entry signals strong; every future 5m bar
+        // also touches a 1% stop, deliberately causing realized losses.
+        var m5 = IntStream.range(0, 620).mapToObj(i -> {
+            BigDecimal price = new BigDecimal("100").multiply(
+                    new BigDecimal("1.02").pow(i, java.math.MathContext.DECIMAL64));
+            return new FuturesReplayEngine.Candle(
+                    START.plus(Duration.ofMinutes(5).multipliedBy(i)),
+                    price, price, price.multiply(new BigDecimal("0.98")), price);
+        }).toList();
+        var data = new FuturesHistoricalWalkForwardRunner.Input("SYNTHETIC_FIXTURE",
+                m5, bars(Duration.ofMinutes(15), 207, true),
+                bars(Duration.ofHours(1), 52, true),
+                bars(Duration.ofHours(4), 13, true),
+                2, new BigDecimal("1"), new BigDecimal("2"), BigDecimal.ONE,
+                new BigDecimal("0.05"), new BigDecimal("0.05"));
+        var report = FuturesHistoricalWalkForwardRunner.runWithDynamicEquity(data,
+                new FuturesHistoricalWalkForwardRunner.PaperSizing(
+                        new BigDecimal("1000"), new BigDecimal("1"), new BigDecimal("3")),
+                new BigDecimal("0.5"));
+        assertTrue(report.riskBlocked() > 0, "daily loss limit must block entry candidates");
+        assertTrue(report.executed() >= 2, "entries must resume on a later UTC day");
+        assertTrue(report.equityCurve().stream().map(p ->
+                p.realizedAt().atZone(java.time.ZoneOffset.UTC).toLocalDate())
+                .distinct().count() >= 2, "reset must permit later-day settled trades");
+        assertTrue(report.finalEquity().compareTo(report.initialEquity()) < 0);
+        assertFalse(report.liveSignalEligible());
+    }
+
 }

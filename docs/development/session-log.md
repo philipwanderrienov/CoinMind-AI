@@ -359,3 +359,8 @@ Added FuturesPaperRiskStatus and five tests: OFFLINE_ONLY status NORMAL, LOSS_MO
 ## 2026-10-30 — Offline dynamic replay to risk status adapter
 
 Added FuturesPaperRiskReport.fromReplay: a pure read-only adapter reconstructing day-start equity, realized daily PnL and FuturesPaperRiskStatus from a chronological DynamicReport, with four regression tests for intraday state, next-UTC-day reset, future equity event rejection, and LIVE_EXCHANGE rejection. API exposure and Angular dashboard integration are explicitly deferred until authenticated/trusted replay persistence exists; accepting arbitrary client-supplied replay/account state as authoritative would be unsafe. Still OFFLINE_ONLY, live Futures BLOCKED. Maven verify pending on phive-server.
+
+
+## 2026-11-01 — Gated internal offline replay snapshot read API (phase 1)
+
+Added process-local FuturesPaperReplayRegistry, registering only server-side OFFLINE_ONLY DynamicReport snapshots with strict provenance and chronology checks via FuturesPaperRiskReport. Added GET /api/v1/dev/futures-paper/replays/{id}/risk as a read-only endpoint, default disabled via FUTURES_PAPER_REPLAY_READ_ENABLED=false; missing IDs and disabled requests return HTTP 404. Added four unit tests covering disabled endpoint, registered snapshot, live rejection and future settlement rejection. **No public POST/write endpoint, no automatic runner registration, no persistent PostgreSQL storage, no Angular integration.** Process-local data disappears at restart; UUID lookup is not an authentication mechanism. Keep endpoint disabled on internet-facing deployments until authorization is designed. Maven verify pending on phive-server. Futures live readiness remains BLOCKED.

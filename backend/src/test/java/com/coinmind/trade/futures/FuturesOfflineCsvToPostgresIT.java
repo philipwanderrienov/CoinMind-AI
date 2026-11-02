@@ -118,7 +118,7 @@ class FuturesOfflineCsvToPostgresIT {
     }
 
     private static String trendingCsv(int fiveMinuteBarsPerCandle, int count) {
-        var csv = new StringBuilder("open_time_utc,open,high,low,close\\n");
+        var csv = new StringBuilder("open_time_utc,open,high,low,close\n");
         for (int i = 0; i < count; i++) {
             int first = i * fiveMinuteBarsPerCandle;
             int last = first + fiveMinuteBarsPerCandle - 1;
@@ -128,7 +128,7 @@ class FuturesOfflineCsvToPostgresIT {
                     .append(open.toPlainString()).append(',')
                     .append(close.toPlainString()).append(',')
                     .append(open.toPlainString()).append(',')
-                    .append(close.toPlainString()).append('\\n');
+                    .append(close.toPlainString()).append('\n');
         }
         return csv.toString();
     }

@@ -68,7 +68,7 @@ class FuturesOfflineCsvToPostgresIT {
         }
     }
     /**
-     * All four CSVs are aggregated from the SAME rising 5m fixture.
+     * All four CSVs are aggregated from the SAME strongly rising 5m fixture.\n     * A +0.01 increment per bar produced momentum scores far below the entry threshold;\n     * +1 per bar provides an explicit high-momentum fixture without changing strategy rules.
      * Tests a nonempty realized curve, arithmetic PnL reconciliation and DB readback.
      */
     @Test
@@ -122,8 +122,8 @@ class FuturesOfflineCsvToPostgresIT {
         for (int i = 0; i < count; i++) {
             int first = i * fiveMinuteBarsPerCandle;
             int last = first + fiveMinuteBarsPerCandle - 1;
-            var open = BigDecimal.valueOf(100).add(BigDecimal.valueOf(first, 2));
-            var close = BigDecimal.valueOf(100).add(BigDecimal.valueOf(last, 2));
+            var open = BigDecimal.valueOf(100L + first);
+            var close = BigDecimal.valueOf(100L + last);
             csv.append(START.plus(Duration.ofMinutes(5L * first))).append(',')
                     .append(open.toPlainString()).append(',')
                     .append(close.toPlainString()).append(',')

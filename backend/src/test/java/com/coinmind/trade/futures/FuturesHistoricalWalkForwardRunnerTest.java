@@ -120,6 +120,13 @@ class FuturesHistoricalWalkForwardRunnerTest {
         assertFalse(report.liveSignalEligible());
         assertTrue(report.executed() > 0);
         assertEquals(report.executed(), report.equityCurve().size());
+        assertEquals(report.executed(), report.trades().size());
+        for (int k = 0; k < report.trades().size(); k++) {
+            var t = report.trades().get(k);
+            assertTrue(java.util.Set.of("LONG", "SHORT").contains(t.side()));
+            assertEquals(0, t.grossPnl().subtract(t.tradingFees()).compareTo(t.netPnl()));
+            assertEquals(report.equityCurve().get(k).realizedAt(), t.settledAt());
+        }
         BigDecimal accumulated = report.initialEquity();
         for (var point : report.equityCurve()) {
             accumulated = accumulated.add(point.netPnlUsdt());

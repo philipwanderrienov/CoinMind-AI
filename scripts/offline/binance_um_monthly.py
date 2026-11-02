@@ -53,12 +53,28 @@ def normalize(zip_data, expected_csv_name, frame):
             continue
         if len(cells) != 12:
             raise ValueError("Expected 12 Binance kline fields")
-        stamp = int(cells[0])
-        if stamp % 1000:
-            raise ValueError("Non-millisecond UTC timestamp")
-        sec = stamp // 1000
-        if sec % step or (prior is not None and sec - prior != step):
-            raise ValueError("Unaligned, duplicate, or missing candles")
+        stamp_text = cells[0].strip()
+        if not stamp_text.isascii() or not stamp_text.isdecimal():
+            raise ValueError(f"{frame} row {count + 1}: invalid timestamp {stamp_text!r}")
+        stamp = int(stamp_text)
+        # Detect explicit 13-digit millisecond and 16-digit microsecond encoding.
+        if len(stamp_text) == 13:
+            divisor = 1000
+        elif len(stamp_text) == 16:
+            divisor = 1000000
+        else:
+            raise ValueError(f"{frame} row {count + 1}: unexpected timestamp units ({len(stamp_text)} digits)")
+        if stamp % divisor:
+            raise ValueError(f"{frame} row {count + 1}: subsecond candle open")
+        sec = stamp // divisor
+        if sec % step:
+            raise ValueError(f"{frame} row {count + 1}: unaligned candle open {datetime.fromtimestamp(sec, timezone.utc).isoformat()}")
+        if prior is not None and sec - prior != step:
+            raise ValueError(
+                f"{frame} row {count + 1}: noncontiguous open times, "
+                f"expected {datetime.fromtimestamp(prior + step, timezone.utc).isoformat()}, "
+                f"got {datetime.fromtimestamp(sec, timezone.utc).isoformat()}, "
+                f"delta_seconds={sec - prior}; no missing data were filled")
         from decimal import Decimal
         o, h, l, c = map(Decimal, cells[1:5])
         if min(o, h, l, c) <= 0 or h < max(o, c) or l > min(o, c):

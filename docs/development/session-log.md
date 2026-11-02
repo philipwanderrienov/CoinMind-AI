@@ -376,3 +376,8 @@ Added two further controller guard tests for fail-closed disabled routes and bou
 ## 2026-11-02 — Novice-friendly Angular Simulasi & Risiko workspace
 
 Added a dedicated sidebar view `paper-risk` to the existing single-shell Angular application, retaining the default Market dashboard. New standalone PaperRiskComponent provides an explicit simulation-only banner, explanations of NORMAL/LOSS_MONITORING/DAILY_RISK_LOCK, beginner definitions of equity/drawdown and UTC reset, refresh control, responsive historical replay cards, loading/disabled/empty/error states, and live-signal disclaimer. Uses read-only `GET /api/v1/dev/futures-paper/archive?limit=20`; does NOT fabricate summary metrics when archive is absent. Currently archive reads remain OFF by default and there is no automatic runner-to-PostgreSQL write flow, so expect the informative unavailable state. No authorization has been added: do not expose archive endpoints publicly or enable developer flags on internet-facing deployment. No backend live signal/order changes. `npm run build` pending on phive-server, no UI deployment performed. Future: authenticated archive access, verified DB integration and validated persisted replay records including time series for charts.
+
+
+## 2026-11-02 — Angular navigation compile fix
+
+Fixed `AppComponent.navigateToView` parameter union to accept `paper-risk`, matching sidebar template and activeSection. Resolves reported TS2345 at app.component.html line 40. Existing NG8102 nullish coalescing warnings are separate. Frontend `npm run build` pending verification on phive-server; no deployment performed.

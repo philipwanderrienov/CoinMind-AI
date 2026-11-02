@@ -881,3 +881,8 @@ Added opt-in `FuturesOfflineCsvToPostgresIT`: produces four synchronized synthet
 ## 2026-11-02 — Nonempty realized-PnL CSV-to-PostgreSQL scenario
 
 Extended isolated `FuturesOfflineCsvToPostgresIT` with a second end-to-end scenario constructing consistent rising synthetic 5m/15m/1h/4h CSV streams, invoking the real opt-in internal job, persisting through R2DBC, and independently reading back and reconciling the nonempty realized equity curve against net PnL and final equity. Existing zero-trade flat case remains. The fixture is synthetic; results must never be represented as genuine historical trading performance. This new test has NOT been executed on phive-server yet: run dedicated integration suite with isolated DB and report failures for correction. No production DB, live trading, HTTP route or scheduler changes. Futures live BLOCKED.
+
+
+## 2026-11-02 — Fix weak synthetic trend in CSV/PostgreSQL integration fixture
+
+The isolated `FuturesOfflineCsvToPostgresIT.trendingCsvProducesPersistedRealizedPnl` failed on phive-server with zero executed trades (5 tests; 1 failure). Investigated the actual decision engine: five/15m weighted momentum requires absolute score >=55; prior fixture increased price by only 0.01 per 5m bar and correctly triggered WAIT. Changed ONLY the test generator to rise by 1 price unit per 5m bar; higher-timeframe OHLC remains derived from the same 5m sequence. No lowered strategy thresholds, no production logic changes, no assertion weakening. Integration test on isolated PostgreSQL must be rerun and may uncover further constraints. Futures live BLOCKED.

@@ -99,8 +99,10 @@ def main():
     if args.month >= now:
         parser.error("Only completed months allowed")
     out = Path(args.output)
-    out.mkdir(parents=True, exist_ok=False)
+    if out.exists():
+        parser.error("Output directory already exists; choose a fresh path")
     manifests = []
+    generated = {}
     for frame in FRAMES:
         name = f"BTCUSDT-{frame}-{args.month}"
         url = f"{BASE}/BTCUSDT/{frame}/{name}.zip"
@@ -114,9 +116,9 @@ def main():
         if zip_hash.lower() != entry[0].lower():
             raise ValueError("Upstream SHA-256 ZIP checksum mismatch")
         normalized, count = normalize(blob, name + ".csv", frame)
-        dst = out / f"{frame}.csv"
-        dst.write_bytes(normalized)
-        manifests.append({"timeframe":frame, "file":dst.name, "source_url":url,
+        filename = f"{frame}.csv"
+        generated[filename] = normalized
+        manifests.append({"timeframe":frame, "file":filename, "source_url":url,
                           "upstream_zip_sha256":zip_hash,
                           "sha256":hashlib.sha256(normalized).hexdigest(), "candles":count})
     manifest = {"source":"Binance public USD-M monthly klines (CHECKSUM verified)",
@@ -124,6 +126,9 @@ def main():
                 "market":"USD_M_FUTURES", "symbol":"BTCUSDT",
                 "provenance":"HISTORICAL_REPLAY", "month_utc":args.month,
                 "files":manifests}
+    out.mkdir(parents=True, exist_ok=False)
+    for filename, normalized in generated.items():
+        (out / filename).write_bytes(normalized)
     (out / "manifest.json").write_text(json.dumps(manifest, indent=2)+"\n", encoding="utf-8")
     print(f"Downloaded and checksum-verified 4 BTCUSDT USD-M candle datasets to {out}")
     print("Inspect manifest/source provenance independently before running historical replay.")

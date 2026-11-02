@@ -202,4 +202,22 @@ class FuturesHistoricalWalkForwardRunnerTest {
         assertFalse(report.liveSignalEligible());
     }
 
+    @Test void diagnosticsPartitionAllRealizedTradesWithoutChangingPnL() {
+        var report = FuturesHistoricalWalkForwardRunner.runWithDynamicEquity(
+                input("SYNTHETIC_FIXTURE", true),
+                new FuturesHistoricalWalkForwardRunner.PaperSizing(
+                        new BigDecimal("1000"), BigDecimal.ONE, new BigDecimal("3")),
+                new BigDecimal("2"));
+        var bySide = FuturesBacktestDiagnostics.bySide(report);
+        var byExit = FuturesBacktestDiagnostics.byExit(report);
+        assertEquals(report.executed(), bySide.stream().mapToInt(FuturesBacktestDiagnostics.Group::count).sum());
+        assertEquals(report.executed(), byExit.stream().mapToInt(FuturesBacktestDiagnostics.Group::count).sum());
+        var sideNet = bySide.stream().map(FuturesBacktestDiagnostics.Group::netPnl)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        var exitNet = byExit.stream().map(FuturesBacktestDiagnostics.Group::netPnl)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        assertEquals(0, report.finalEquity().subtract(report.initialEquity()).compareTo(sideNet));
+        assertEquals(0, sideNet.compareTo(exitNet));
+    }
+
 }

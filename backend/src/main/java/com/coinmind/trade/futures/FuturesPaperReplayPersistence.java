@@ -1,26 +1,32 @@
 package com.coinmind.trade.futures;
 
 import java.util.UUID;
+import io.r2dbc.spi.ConnectionFactory;
+import org.springframework.r2dbc.connection.R2dbcTransactionManager;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 
 /**
  * Explicit internal-only archival of summary followed by realized equity curve.
  * No HTTP route, scheduler or automatic subscription. Requires opt-in schema.
- * Callers must handle partial failures (summary can exist before curve is complete).
+ * Summary and realized points commit as a single reactive R2DBC transaction.
  */
 @Service
 public final class FuturesPaperReplayPersistence {
     private final FuturesPaperReplayRegistry registry;
     private final FuturesPaperReplayArchive summaries;
     private final FuturesPaperEquityArchive curves;
+    private final TransactionalOperator transactions;
 
     public FuturesPaperReplayPersistence(FuturesPaperReplayRegistry registry,
                                          FuturesPaperReplayArchive summaries,
-                                         FuturesPaperEquityArchive curves) {
+                                         FuturesPaperEquityArchive curves,
+                                         ConnectionFactory connectionFactory) {
         this.registry = registry;
         this.summaries = summaries;
         this.curves = curves;
+        this.transactions = TransactionalOperator.create(new R2dbcTransactionManager(connectionFactory));
     }
 
     public Mono<FuturesPaperReplayArchive.Archived> archiveRegisteredWithCurve(UUID replayId) {
@@ -38,8 +44,8 @@ public final class FuturesPaperReplayPersistence {
             return Mono.error(new IllegalArgumentException("Final equity does not match curve"));
         if (points.isEmpty() && snapshot.finalEquity().compareTo(snapshot.initialEquity()) != 0)
             return Mono.error(new IllegalArgumentException("Empty curve must preserve initial equity"));
-        return summaries.saveTrusted(snapshot)
+        return transactions.transactional(summaries.saveTrusted(snapshot)
                 .flatMap(saved -> curves.saveTrusted(replayId, snapshot.initialEquity(),
-                        snapshot.completedAt(), points).thenReturn(saved));
+                        snapshot.completedAt(), points).thenReturn(saved)));
     }
 }

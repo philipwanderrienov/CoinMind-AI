@@ -866,3 +866,8 @@ Added `FuturesOfflineCandleImport` pure Java CSV reader with mandatory header `o
 ## 2026-11-02 — Cross-timeframe OHLC consistency gate
 
 `FuturesOfflineCandleImport.assemble()` now compares each 15m/1h/4h candle to the corresponding aggregate of 5m candles when the full higher-timeframe window is covered by the 5m input; open = first 5m open, close = last 5m close, high/low = max/min. Rejects mismatches before replay. Two unit tests cover matching and mismatching 15m examples. Partial edge windows are deliberately not compared, so this is not a complete data authenticity check; existing runner closed-bar/no-look-ahead validation remains separate. No new network, HTTP, scheduled job or production access. Prior user 132-unit-test build was successful; new 134-unit-test suite awaits verification on phive-server. Further work required for trusted file-bundle ingest and fully isolated CSV→job→PostgreSQL integration. Futures live BLOCKED.
+
+
+## 2026-11-02 — Four-stream offline CSV bundle ingestion
+
+Added `FuturesOfflineCsvBundle.read(...)` for four explicitly trusted Reader streams (5m/15m/1h/4h). It reuses strict CSV row parsing and the new complete-window cross-timeframe consistency gate, returning a validated `FuturesHistoricalWalkForwardRunner.Input` ready for a trusted caller to pass to the disabled-by-default internal job. No filesystem path handling, auto-discovery, exchange API call, scheduled trigger, or public HTTP endpoint. Added two tests for four-frame fixture and rejection of live provenance before reading. **136 unit tests expected**, pending Maven verification on phive-server. Import and job are not yet automatically connected to real historical datasets or production persistence. Futures live BLOCKED.

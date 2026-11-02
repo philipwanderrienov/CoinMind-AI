@@ -811,3 +811,8 @@ Fixed `AppComponent.navigateToView` parameter union to accept `paper-risk`, matc
 ## 2026-11-02 — Fix washed-out paper risk mobile theme and floating BTC overlay
 
 Replaced dark-theme fallback text and translucent cards in PaperRiskComponent with an accessible light palette: dark heading/body text, white cards, clear blue-violet reload action, visible borders, status accents, mobile vertical header/layout and extra bottom padding. On paper-risk view the redundant floating BTC selector is now hidden; on other mobile views its un-dragged form is compact (158px max) to reduce obstruction while retaining drag/menu functionality. No changes to market signals, storage, security flags or live trading. `npm run build` and visual mobile/desktop verification pending on phive-server; no deployment performed.
+
+
+## 2026-11-02 — Internal offline replay workflow bridge
+
+Added `FuturesPaperReplayWorkflow` as a Spring service with `runAndRegister()` to execute dynamic paper replay and register an internally computed snapshot, plus `archiveRegistered(UUID)` to explicitly persist that trusted snapshot using the existing R2DBC archive when enabled. No HTTP POST, no automatic archive subscriptions, no production migration or API flag changes. Added three regression tests for fail-closed input/live/unknown ID. Archive persistence remains opt-in and must be independently validated against PostgreSQL after manually applying its schema. Existing archive GET endpoints remain disabled by default and unauthenticated; do not enable them on an internet-facing server. Maven verify pending on phive-server; Futures live readiness BLOCKED.

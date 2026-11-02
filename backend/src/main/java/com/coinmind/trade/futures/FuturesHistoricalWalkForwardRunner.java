@@ -106,10 +106,10 @@ public final class FuturesHistoricalWalkForwardRunner {
                     dayStart = equity;
                     dayPnl = BigDecimal.ZERO;
                 }
-                equity = equity.add(result.netPnl(), MC);
-                dayPnl = dayPnl.add(result.netPnl(), MC);
+                equity = equity.add(result.netPnl());
+                dayPnl = dayPnl.add(result.netPnl());
                 peak = peak.max(equity);
-                maxDrawdown = maxDrawdown.max(peak.subtract(equity, MC));
+                maxDrawdown = maxDrawdown.max(peak.subtract(equity));
                 executed++;
                 points.add(new EquityPoint(busyUntil, equity,
                         result.netPnl()));

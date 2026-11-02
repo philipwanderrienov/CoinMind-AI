@@ -391,3 +391,8 @@ Replaced dark-theme fallback text and translucent cards in PaperRiskComponent wi
 ## 2026-11-02 — Internal offline replay workflow bridge
 
 Added `FuturesPaperReplayWorkflow` as a Spring service with `runAndRegister()` to execute dynamic paper replay and register an internally computed snapshot, plus `archiveRegistered(UUID)` to explicitly persist that trusted snapshot using the existing R2DBC archive when enabled. No HTTP POST, no automatic archive subscriptions, no production migration or API flag changes. Added three regression tests for fail-closed input/live/unknown ID. Archive persistence remains opt-in and must be independently validated against PostgreSQL after manually applying its schema. Existing archive GET endpoints remain disabled by default and unauthenticated; do not enable them on an internet-facing server. Maven verify pending on phive-server; Futures live readiness BLOCKED.
+
+
+## 2026-11-02 — Optional PostgreSQL archive integration validation
+
+Added `FuturesPaperReplayPostgresIT` (manual opt-in JUnit test) which runs only when `FUTURES_ARCHIVE_TEST_CONFIRM=ISOLATED_TEST_DATABASE_ONLY` and explicit test R2DBC URL are supplied. Refuses the standard `/coinmind` database name, inserts a random-id synthetic OFFLINE_ONLY summary, reads it through a separately created repository object, checks history/idempotent insert, and removes its test row. Instructions: `docs/development/paper-replay-postgres-test.md`. This is NOT enabled in normal `mvn verify` and has NOT been run against a live database yet. No schema applied or production flags changed. Further work needed for secure archive API, automated persistence and persisted equity time series. Futures live remains BLOCKED.

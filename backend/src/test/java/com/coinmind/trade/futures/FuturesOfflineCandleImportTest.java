@@ -42,4 +42,24 @@ class FuturesOfflineCandleImportTest {
                         java.math.BigDecimal.ONE, java.math.BigDecimal.ONE, java.math.BigDecimal.ONE,
                         java.math.BigDecimal.ZERO, java.math.BigDecimal.ZERO));
     }
+    @Test void acceptsMatchingAggregatedFifteenMinuteBars() throws Exception {
+        var m5 = FuturesOfflineCandleImport.parse(new StringReader(VALID), Duration.ofMinutes(5));
+        var higher = java.util.List.of(new FuturesReplayEngine.Candle(
+                java.time.Instant.parse("2026-11-02T00:00:00Z"),
+                new java.math.BigDecimal("100"), new java.math.BigDecimal("115"),
+                new java.math.BigDecimal("90"), new java.math.BigDecimal("110")));
+        assertDoesNotThrow(() -> FuturesOfflineCandleImport.validateCrossTimeframe(
+                m5, higher, Duration.ofMinutes(15)));
+    }
+
+    @Test void rejectsMismatchedAggregatedFifteenMinuteBars() throws Exception {
+        var m5 = FuturesOfflineCandleImport.parse(new StringReader(VALID), Duration.ofMinutes(5));
+        var higher = java.util.List.of(new FuturesReplayEngine.Candle(
+                java.time.Instant.parse("2026-11-02T00:00:00Z"),
+                new java.math.BigDecimal("100"), new java.math.BigDecimal("116"),
+                new java.math.BigDecimal("90"), new java.math.BigDecimal("110")));
+        assertThrows(IllegalArgumentException.class, () -> FuturesOfflineCandleImport.validateCrossTimeframe(
+                m5, higher, Duration.ofMinutes(15)));
+    }
+
 }

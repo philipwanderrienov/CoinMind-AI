@@ -67,9 +67,46 @@ public final class FuturesOfflineCandleImport {
             throw new IllegalArgumentException("Offline provenance required");
         check(m5,Duration.ofMinutes(5)); check(m15,Duration.ofMinutes(15));
         check(h1,Duration.ofHours(1)); check(h4,Duration.ofHours(4));
+        validateCrossTimeframe(m5,m15,Duration.ofMinutes(15));
+        validateCrossTimeframe(m5,h1,Duration.ofHours(1));
+        validateCrossTimeframe(m5,h4,Duration.ofHours(4));
         return new FuturesHistoricalWalkForwardRunner.Input(provenance, List.copyOf(m5),
                 List.copyOf(m15), List.copyOf(h1), List.copyOf(h4), horizonBars,
                 stopPercent, targetPercent, quantity, feePercentPerSide, slippagePercentPerSide);
+    }
+
+
+    /**
+     * Only compare higher-timeframe bars with complete 5m coverage.
+     * Partial edge windows are not compared; downstream replay still enforces closed-bar rules.
+     */
+    static void validateCrossTimeframe(List<FuturesReplayEngine.Candle> m5,
+                                      List<FuturesReplayEngine.Candle> higher, Duration frame) {
+        int step = Math.toIntExact(frame.toMinutes() / 5);
+        if (m5.size() < step) return;
+        java.util.Map<Instant, FuturesReplayEngine.Candle> byTime = new java.util.HashMap<>();
+        for (var candle : m5) byTime.put(candle.time(),candle);
+        for (var parent : higher) {
+            var first = byTime.get(parent.time());
+            if (first == null) continue;
+            var last = byTime.get(parent.time().plus(Duration.ofMinutes(5L*(step-1))));
+            if (last == null) continue;
+            BigDecimal high = first.high(), low = first.low();
+            boolean complete = true;
+            for (int j=1;j<step;j++) {
+                var child = byTime.get(parent.time().plus(Duration.ofMinutes(5L*j)));
+                if (child == null) { complete = false; break; }
+                high = high.max(child.high());
+                low = low.min(child.low());
+            }
+            if (!complete) continue;
+            if (parent.open().compareTo(first.open()) != 0
+                    || parent.close().compareTo(last.close()) != 0
+                    || parent.high().compareTo(high) != 0
+                    || parent.low().compareTo(low) != 0)
+                throw new IllegalArgumentException("OHLC mismatch between 5m and "
+                        + frame.toMinutes() + "m candle at " + parent.time());
+        }
     }
 
     private static void check(List<FuturesReplayEngine.Candle> candles, Duration frame) {

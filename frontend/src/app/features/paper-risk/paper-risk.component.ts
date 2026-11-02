@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 
 interface ReplayRow {
   id: string;
@@ -70,7 +70,7 @@ interface ReplayRow {
               <article class="paper-card">
                 <div class="paper-card-title">
                   <strong>{{ entry.provenance === 'SYNTHETIC_FIXTURE' ? 'Data buatan untuk pengujian' : 'Replay historis' }}</strong>
-                  <span>{{ entry.completedAt | date:'medium':'':'id' }}</span>
+                  <span>{{ entry.completedAt | date:'medium' }}</span>
                 </div>
                 <p class="paper-status" [class.paper-locked]="entry.riskStatus === 'DAILY_RISK_LOCK'">
                   {{ label(entry.riskStatus) }}
@@ -119,7 +119,8 @@ interface ReplayRow {
     @media(max-width:760px) { .paper-root { padding:12px; } .paper-guide,.paper-grid { grid-template-columns:1fr; } .paper-heading { align-items:center; } .paper-heading button { font-size:12px; padding:9px; } }
   `]
 })
-export class PaperRiskComponent {
+export class PaperRiskComponent implements OnInit {
+  ngOnInit(): void { this.refresh(); }
   private readonly http = inject(HttpClient);
   readonly rows = signal<ReplayRow[]>([]);
   readonly loading = signal(false);

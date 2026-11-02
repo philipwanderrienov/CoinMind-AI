@@ -9,7 +9,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.r2dbc.core.DatabaseClient;
-import io.r2dbc.spi.ConnectionFactories;
 import reactor.core.publisher.Mono;
 
 /**
@@ -21,14 +20,7 @@ class FuturesPaperReplayPostgresIT {
     @Test
     @EnabledIfEnvironmentVariable(named = "FUTURES_ARCHIVE_TEST_CONFIRM", matches = "ISOLATED_TEST_DATABASE_ONLY")
     void insertsReadsListsAndPersistsAcrossNewRepositoryInstance() {
-        String url = System.getenv("FUTURES_ARCHIVE_TEST_R2DBC_URL");
-        if (url == null || !url.startsWith("r2dbc:postgresql://"))
-            throw new IllegalArgumentException("Explicit dedicated PostgreSQL test URL required");
-        // Fail closed on accidentally reusing the standard application coinmind database.
-        if (url.matches("(?i).*/coinmind(?:\\?.*)?$"))
-            throw new IllegalArgumentException("Never run integration test against coinmind production database");
-
-        DatabaseClient client = DatabaseClient.create(ConnectionFactories.get(url));
+        DatabaseClient client = DatabaseClient.create(FuturesArchiveTestConnection.create());
         FuturesPaperReplayArchive writer = new FuturesPaperReplayArchive(client, true);
         FuturesPaperReplayArchive readerAfterRestart = new FuturesPaperReplayArchive(client, true);
         UUID id = UUID.randomUUID();

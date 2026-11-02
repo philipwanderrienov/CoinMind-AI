@@ -14,6 +14,17 @@ class FuturesPaperReplayArchiveControllerTest {
         StepVerifier.create(controller.recent(20, null))
                 .expectError(ResponseStatusException.class).verify();
     }
+    @Test void deniesMissingOrInvalidReadKey() {
+        var controller = new FuturesPaperReplayArchiveController(null, null, true,
+                "12345678901234567890123456789012");
+        StepVerifier.create(controller.recent(20, null))
+                .expectError(ResponseStatusException.class).verify();
+        StepVerifier.create(controller.one(UUID.randomUUID(), "incorrect"))
+                .expectError(ResponseStatusException.class).verify();
+        StepVerifier.create(controller.equity(UUID.randomUUID(), "incorrect"))
+                .expectError(ResponseStatusException.class).verify();
+    }
+
     @Test void rejectsUnboundedHistoryLimitBeforeDatabaseAccess() {
         var controller = new FuturesPaperReplayArchiveController(null, null, true, "12345678901234567890123456789012");
         StepVerifier.create(controller.recent(0, "bad-key"))

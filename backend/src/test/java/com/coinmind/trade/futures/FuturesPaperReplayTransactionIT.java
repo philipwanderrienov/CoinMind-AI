@@ -34,6 +34,10 @@ class FuturesPaperReplayTransactionIT {
                     equity.saveTrusted(success, new BigDecimal("1000"), AT, points).thenReturn(saved))).block();
             assertNotNull(summary.find(success).block());
             assertEquals(1, equity.points(success).collectList().block().size());
+            var history = new FuturesPaperReplayHistory(summary, equity).findComplete(success).block();
+            assertNotNull(history);
+            assertEquals(1, history.equityCurve().size());
+            assertEquals(0, history.summary().finalEquity().compareTo(new BigDecimal("992")));
 
             // Deliberate DB failure AFTER summary INSERT, inside the same transaction.
             // A duplicate existing point index triggers PostgreSQL unique violation.
@@ -52,6 +56,7 @@ class FuturesPaperReplayTransactionIT {
                                     .thenReturn(saved))).block());
             assertNull(summary.find(failed).block(), "Summary must roll back on equity write failure");
             assertEquals(0, equity.points(failed).count().block());
+            assertNull(new FuturesPaperReplayHistory(summary, equity).findComplete(failed).block());
         } finally {
             for (UUID id : List.of(success, failed)) {
                 client.sql("DELETE FROM futures_paper_replay_archive WHERE id=:id")

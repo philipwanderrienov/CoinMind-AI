@@ -34,6 +34,18 @@
       </a>
 
       <a
+        href="#paper-risk"
+        [class.active]="activeSection() === 'paper-risk'"
+        [attr.aria-current]="activeSection() === 'paper-risk' ? 'page' : null"
+        (click)="navigateToView('paper-risk', $event)">
+        <span class="sidebar-nav-icon">R</span>
+        <span>
+          <strong>Simulasi & Risiko</strong>
+          <small>Modal latihan, rugi & alasan entry ditahan</small>
+        </span>
+      </a>
+
+      <a
         href="#news"
         [class.active]="activeSection() === 'news'"
         [attr.aria-current]="activeSection() === 'news' ? 'page' : null"
@@ -294,7 +306,10 @@
   }
 
   <main>
-    <section class="workspace-grid">
+    @if (activeSection() === 'paper-risk') {
+      <app-paper-risk />
+    }
+    <section class="workspace-grid" [style.display]="activeSection() === 'paper-risk' ? 'none' : null">
 
 
       <article

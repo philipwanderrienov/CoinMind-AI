@@ -108,7 +108,6 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly floatingCoinDragging = signal(false);
   readonly activeSection = signal<'dashboard' | 'trade' | 'news' | 'ai' | 'billing' | 'paper-risk'>('dashboard');
   readonly sidebarOpen = signal(false);
-  readonly paperRiskRefresh = signal(0);
   private floatingCoinDrag: {
     pointerId: number;
     offsetX: number;
@@ -468,7 +467,6 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   ): void {
     event?.preventDefault();
     this.activeSection.set(view);
-    if (view === 'paper-risk') this.paperRiskRefresh.update(value => value + 1);
     this.sidebarOpen.set(false);
 
     if (typeof window !== 'undefined') {

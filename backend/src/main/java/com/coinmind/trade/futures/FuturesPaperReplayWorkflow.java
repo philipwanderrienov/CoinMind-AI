@@ -36,6 +36,23 @@ public final class FuturesPaperReplayWorkflow {
                 dailyLossLimitPercent, completedAt);
     }
 
+    /**
+     * Internal all-in-one offline replay and atomic archival.
+     * The resulting Mono must be subscribed by a trusted caller; no public route.
+     */
+    public Mono<FuturesPaperReplayArchive.Archived> runAndArchive(
+            FuturesHistoricalWalkForwardRunner.Input input,
+            FuturesHistoricalWalkForwardRunner.PaperSizing sizing,
+            BigDecimal dailyLossLimitPercent, Instant completedAt,
+            FuturesPaperReplayPersistence persistence) {
+        return Mono.defer(() -> {
+            if (persistence == null)
+                return Mono.error(new IllegalArgumentException("Replay persistence required"));
+            UUID id = runAndRegister(input, sizing, dailyLossLimitPercent, completedAt);
+            return persistence.archiveRegisteredWithCurve(id);
+        });
+    }
+
     /** Explicit opt-in archival step. Never subscribe internally or swallow database errors. */
     public Mono<FuturesPaperReplayArchive.Archived> archiveRegistered(UUID id) {
         var snapshot = registry.find(id);

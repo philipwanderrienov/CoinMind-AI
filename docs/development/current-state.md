@@ -806,3 +806,8 @@ Added a dedicated sidebar view `paper-risk` to the existing single-shell Angular
 ## 2026-11-02 — Angular navigation compile fix
 
 Fixed `AppComponent.navigateToView` parameter union to accept `paper-risk`, matching sidebar template and activeSection. Resolves reported TS2345 at app.component.html line 40. Existing NG8102 nullish coalescing warnings are separate. Frontend `npm run build` pending verification on phive-server; no deployment performed.
+
+
+## 2026-11-02 — Fix washed-out paper risk mobile theme and floating BTC overlay
+
+Replaced dark-theme fallback text and translucent cards in PaperRiskComponent with an accessible light palette: dark heading/body text, white cards, clear blue-violet reload action, visible borders, status accents, mobile vertical header/layout and extra bottom padding. On paper-risk view the redundant floating BTC selector is now hidden; on other mobile views its un-dragged form is compact (158px max) to reduce obstruction while retaining drag/menu functionality. No changes to market signals, storage, security flags or live trading. `npm run build` and visual mobile/desktop verification pending on phive-server; no deployment performed.

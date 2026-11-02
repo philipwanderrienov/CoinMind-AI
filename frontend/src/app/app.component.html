@@ -224,6 +224,7 @@
 
   <div
     class="mobile-floating-coin"
+    [class.paper-risk-hidden]="activeSection() === 'paper-risk'"
     [class.dragged]="floatingCoinPosition()"
     [class.menu-open]="floatingCoinMenuOpen()"
     [class.menu-below]="floatingCoinMenuDirection() === 'down'"

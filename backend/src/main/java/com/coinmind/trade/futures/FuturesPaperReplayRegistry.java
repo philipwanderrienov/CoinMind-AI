@@ -42,6 +42,13 @@ public final class FuturesPaperReplayRegistry {
                         entry.dailyLossLimitPercent(), entry.completedAt()));
     }
 
+    /** Copy of validated server-computed realized equity points; never user supplied. */
+    public java.util.List<FuturesHistoricalWalkForwardRunner.EquityPoint> equityCurve(UUID id) {
+        if (id == null) return java.util.List.of();
+        Entry entry = entries.get(id);
+        return entry == null ? java.util.List.of() : java.util.List.copyOf(entry.report().equityCurve());
+    }
+
     private record Entry(String provenance,
             FuturesHistoricalWalkForwardRunner.DynamicReport report,
             BigDecimal dailyLossLimitPercent, Instant completedAt) {}

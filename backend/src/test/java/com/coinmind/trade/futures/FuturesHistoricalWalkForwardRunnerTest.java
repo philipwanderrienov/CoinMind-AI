@@ -120,6 +120,13 @@ class FuturesHistoricalWalkForwardRunnerTest {
         assertFalse(report.liveSignalEligible());
         assertTrue(report.executed() > 0);
         assertEquals(report.executed(), report.equityCurve().size());
+        BigDecimal accumulated = report.initialEquity();
+        for (var point : report.equityCurve()) {
+            accumulated = accumulated.add(point.netPnlUsdt());
+            assertEquals(0, accumulated.compareTo(point.equityUsdt()),
+                    "Every realized equity point must reconcile without second-rounding");
+        }
+        assertEquals(0, accumulated.compareTo(report.finalEquity()));
         assertEquals(0, report.finalEquity().compareTo(
                 report.equityCurve().get(report.equityCurve().size()-1).equityUsdt()));
     }

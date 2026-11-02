@@ -4,8 +4,8 @@ CREATE TABLE IF NOT EXISTS futures_paper_replay_equity (
     replay_id UUID NOT NULL REFERENCES futures_paper_replay_archive(id) ON DELETE CASCADE,
     point_index INTEGER NOT NULL CHECK (point_index >= 0),
     realized_at TIMESTAMPTZ NOT NULL,
-    equity_usdt NUMERIC(28,10) NOT NULL,
-    net_pnl_usdt NUMERIC(28,10) NOT NULL,
+    equity_usdt NUMERIC NOT NULL,
+    net_pnl_usdt NUMERIC NOT NULL,
     PRIMARY KEY (replay_id, point_index)
 );
 CREATE INDEX IF NOT EXISTS idx_futures_paper_replay_equity_time

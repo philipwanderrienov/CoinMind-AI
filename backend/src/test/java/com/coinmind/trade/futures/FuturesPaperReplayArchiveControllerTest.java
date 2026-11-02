@@ -8,17 +8,17 @@ import reactor.test.StepVerifier;
 
 class FuturesPaperReplayArchiveControllerTest {
     @Test void disabledArchiveRoutesFailClosedWithoutDatabaseAccess() {
-        var controller = new FuturesPaperReplayArchiveController(null, false);
-        StepVerifier.create(controller.one(UUID.randomUUID()))
+        var controller = new FuturesPaperReplayArchiveController(null, null, false, "");
+        StepVerifier.create(controller.one(UUID.randomUUID(), null))
                 .expectError(ResponseStatusException.class).verify();
-        StepVerifier.create(controller.recent(20))
+        StepVerifier.create(controller.recent(20, null))
                 .expectError(ResponseStatusException.class).verify();
     }
     @Test void rejectsUnboundedHistoryLimitBeforeDatabaseAccess() {
-        var controller = new FuturesPaperReplayArchiveController(null, true);
-        StepVerifier.create(controller.recent(0))
+        var controller = new FuturesPaperReplayArchiveController(null, null, true, "12345678901234567890123456789012");
+        StepVerifier.create(controller.recent(0, "bad-key"))
                 .expectError(ResponseStatusException.class).verify();
-        StepVerifier.create(controller.recent(101))
+        StepVerifier.create(controller.recent(101, "bad-key"))
                 .expectError(ResponseStatusException.class).verify();
     }
 }

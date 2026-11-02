@@ -54,6 +54,7 @@ public final class FuturesHistoricalWalkForwardRunner {
         int waits = 0, blocked = 0, executed = 0;
         var points = new ArrayList<EquityPoint>();
         var results = new ArrayList<FuturesReplayEngine.Result>();
+        var tradeDetails = new ArrayList<TradeDetail>();
         for (int i = 2; i + 2 + in.horizonBars() <= in.m5().size(); i++) {
             Instant decisionTime = in.m5().get(i).time().plus(Duration.ofMinutes(5));
             if (!decisionTime.isAfter(busyUntil)) continue;
@@ -111,6 +112,10 @@ public final class FuturesHistoricalWalkForwardRunner {
                 peak = peak.max(equity);
                 maxDrawdown = maxDrawdown.max(peak.subtract(equity));
                 executed++;
+                tradeDetails.add(new TradeDetail(decisionTime, execution.getFirst().time(),
+                        busyUntil, side, decision.reason(), result.exitReason(),
+                        result.entryFill(), result.exitFill(), result.grossPnl(),
+                        result.tradingFees(), result.netPnl()));
                 points.add(new EquityPoint(busyUntil, equity,
                         result.netPnl()));
             }
@@ -121,7 +126,7 @@ public final class FuturesHistoricalWalkForwardRunner {
                 FuturesPerformanceAnalytics.summarize(results),
                 "Experimental realized-only simulated equity, UTC daily loss stop checked before entry. "
                 + "Profits/losses conservatively accounted at end of full horizon. "
-                + "No funding, liquidation, gap/margin realism, or live trading.");
+                + "No funding, liquidation, gap/margin realism, or live trading.", List.copyOf(tradeDetails));
     }
 
     private static Report runInternal(Input in, PaperSizing sizing) {
@@ -221,10 +226,26 @@ public final class FuturesHistoricalWalkForwardRunner {
     }
 
     public record EquityPoint(Instant realizedAt, BigDecimal equityUsdt, BigDecimal netPnlUsdt) {}
+    public record TradeDetail(Instant decisionAt, Instant executionWindowOpen,
+                              Instant settledAt, String side, String entryReason, String exitReason,
+                              BigDecimal entryFill, BigDecimal exitFill, BigDecimal grossPnl,
+                              BigDecimal tradingFees, BigDecimal netPnl) {}
     public record DynamicReport(String mode, boolean liveSignalEligible, BigDecimal initialEquity,
                                 BigDecimal finalEquity, BigDecimal maxDrawdownQuote, int waits,
                                 int riskBlocked, int executed, List<EquityPoint> equityCurve,
-                                FuturesPerformanceAnalytics.Summary performance, String limitations) {}
+                                FuturesPerformanceAnalytics.Summary performance, String limitations,
+                                List<TradeDetail> trades) {
+        public DynamicReport(String mode, boolean liveSignalEligible, BigDecimal initialEquity,
+                             BigDecimal finalEquity, BigDecimal maxDrawdownQuote, int waits,
+                             int riskBlocked, int executed, List<EquityPoint> equityCurve,
+                             FuturesPerformanceAnalytics.Summary performance, String limitations) {
+            this(mode, liveSignalEligible, initialEquity, finalEquity, maxDrawdownQuote,
+                 waits, riskBlocked, executed, equityCurve, performance, limitations, List.of());
+        }
+        public DynamicReport {
+            trades = List.copyOf(trades);
+        }
+    }
 
     public record PaperSizing(BigDecimal equityUsdt, BigDecimal riskPercent, BigDecimal leverage) {}
 

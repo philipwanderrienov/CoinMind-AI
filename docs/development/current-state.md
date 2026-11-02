@@ -851,3 +851,8 @@ Updated previously unsafe developer archive GET routes to fail closed unless rea
 ## 2026-11-02 — Trusted run-and-archive convenience path
 
 `FuturesPaperReplayWorkflow.runAndArchive(input, sizing, dailyLossLimitPercent, completedAt, persistence)` now composes vetted offline dynamic replay -> internal registry -> transactional summary+equity archival in a deferred Mono. No scheduler, unattended automatic execution, or public HTTP writes; a trusted caller still must supply vetted candles and subscribe. Pending server Maven/DB/Angular verification and a production-ready authenticated user flow. Do not turn on developer archive endpoints on public deployments just to make the chart populate.
+
+
+## 2026-11-02 — Opt-in internal Offline Replay Job
+
+Added `FuturesOfflineReplayJob`, disabled by default via `coinmind.futures.offline-replay-job-enabled:false`. A trusted internal caller may invoke `execute(input,sizing,dailyLossLimitPercent)` with vetted OFFLINE_ONLY fixture/historical bars; it composes the previously tested `FuturesPaperReplayWorkflow.runAndArchive` into transactional PostgreSQL summary+equity archival. It uses boundedElastic for CPU replay work, a process-local single-flight guard to prevent overlapping replay jobs, and a maximum of 100,000 5m candles. No scheduled trigger, HTTP endpoint, CLI, live feed or automatic ingestion was introduced. Existing archive flags still default OFF and production credentials/schema are untouched. Added three fail-closed unit tests. Build and integration checks still need running on phive-server; do NOT enable job or archive reads in public deployments until ingest validation, safe internal trigger and production-grade auth are in place. Futures live remains BLOCKED.

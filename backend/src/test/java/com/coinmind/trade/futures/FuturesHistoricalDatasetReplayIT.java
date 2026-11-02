@@ -99,6 +99,36 @@ class FuturesHistoricalDatasetReplayIT {
                     + " fees=" + trade.tradingFees()
                     + " netPnl=" + trade.netPnl());
         }
+        for (var group : FuturesBacktestDiagnostics.bySide(result))
+            System.out.println("COINMIND HISTORICAL GROUP side=" + group.category()
+                    + " count=" + group.count() + " wins=" + group.wins()
+                    + " losses=" + group.losses() + " gross=" + group.grossPnl()
+                    + " fees=" + group.fees() + " net=" + group.netPnl()
+                    + " averageNet=" + group.averageNetPnl());
+        for (var group : FuturesBacktestDiagnostics.byExit(result))
+            System.out.println("COINMIND HISTORICAL GROUP exit=" + group.category()
+                    + " count=" + group.count() + " wins=" + group.wins()
+                    + " losses=" + group.losses() + " gross=" + group.grossPnl()
+                    + " fees=" + group.fees() + " net=" + group.netPnl()
+                    + " averageNet=" + group.averageNetPnl());
+        for (int horizon : new int[]{2,3,6}) {
+            var scenario = new FuturesHistoricalWalkForwardRunner.Input(input.provenance(),
+                    input.m5(), input.m15(), input.h1(), input.h4(), horizon,
+                    input.stopPercent(), input.targetPercent(), input.quantity(),
+                    input.feePercentPerSide(), input.slippagePercentPerSide());
+            var alternative = FuturesHistoricalWalkForwardRunner.runWithDynamicEquity(
+                    scenario, new FuturesHistoricalWalkForwardRunner.PaperSizing(
+                            new BigDecimal("1000"), BigDecimal.ONE, new BigDecimal("3")),
+                    new BigDecimal("2"));
+            var summary = alternative.performance();
+            System.out.println("COINMIND HORIZON EXPLORATION bars=" + horizon
+                    + " executed=" + alternative.executed()
+                    + " winRate=" + summary.winRatePercent()
+                    + " profitFactor=" + summary.profitFactor()
+                    + " netPnl=" + alternative.finalEquity().subtract(alternative.initialEquity())
+                    + " maxDrawdownQuote=" + alternative.maxDrawdownQuote()
+                    + " DISCLAIMER=in_sample_exploratory_not_parameter_selection");
+        }
         var stats = result.performance();
         System.out.println("COINMIND HISTORICAL OFFLINE REPORT month=" + month
                 + " market=USD_M_FUTURES symbol=BTCUSDT"

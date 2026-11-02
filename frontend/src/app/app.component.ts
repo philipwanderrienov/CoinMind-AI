@@ -31,12 +31,13 @@ import {
 import { MarketApiService } from './core/services/market-api.service';
 import { PushDeviceStatus, PushNotificationService } from './core/services/push-notification.service';
 import { MarketChartComponent } from './features/market-chart/market-chart.component';
+import { PaperRiskComponent } from './features/paper-risk/paper-risk.component';
 import { formatCompact, formatPrice } from './shared/price-format';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, MarketChartComponent],
+  imports: [CommonModule, MarketChartComponent, PaperRiskComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -105,8 +106,9 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly floatingCoinMenuOpen = signal(false);
   readonly floatingCoinMenuDirection = signal<'up' | 'down'>('up');
   readonly floatingCoinDragging = signal(false);
-  readonly activeSection = signal<'dashboard' | 'trade' | 'news' | 'ai' | 'billing'>('dashboard');
+  readonly activeSection = signal<'dashboard' | 'trade' | 'news' | 'ai' | 'billing' | 'paper-risk'>('dashboard');
   readonly sidebarOpen = signal(false);
+  readonly paperRiskRefresh = signal(0);
   private floatingCoinDrag: {
     pointerId: number;
     offsetX: number;
@@ -466,6 +468,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   ): void {
     event?.preventDefault();
     this.activeSection.set(view);
+    if (view === 'paper-risk') this.paperRiskRefresh.update(value => value + 1);
     this.sidebarOpen.set(false);
 
     if (typeof window !== 'undefined') {
@@ -494,7 +497,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     const hashView = rawHash.startsWith('view=')
       ? rawHash.slice('view='.length)
       : '';
-    const knownViews = ['dashboard', 'trade', 'news', 'ai', 'billing'] as const;
+    const knownViews = ['dashboard', 'trade', 'news', 'ai', 'billing', 'paper-risk'] as const;
 
     window.history.scrollRestoration = 'manual';
 

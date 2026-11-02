@@ -462,7 +462,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   navigateToView(
-    view: 'dashboard' | 'trade' | 'news' | 'ai' | 'billing',
+    view: 'dashboard' | 'trade' | 'news' | 'ai' | 'billing' | 'paper-risk',
     event?: MouseEvent
   ): void {
     event?.preventDefault();

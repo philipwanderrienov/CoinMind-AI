@@ -10380,3 +10380,31 @@ main {
   }
 }
 
+
+/* Mobile usability: selector remains available on Market/Trade, but never masks paper risk. */
+@media (max-width: 760px) {
+  .mobile-floating-coin.paper-risk-hidden {
+    display: none !important;
+  }
+  .mobile-floating-coin:not(.dragged) {
+    right: 8px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    width: min(158px, calc(100vw - 20px));
+    min-height: 48px;
+    padding: 0;
+    border-radius: 14px;
+  }
+  .mobile-floating-coin:not(.dragged) .mobile-floating-coin-content {
+    min-height: 48px;
+    padding: 6px 24px 6px 9px;
+    column-gap: 6px;
+    border-radius: 14px;
+  }
+  .mobile-floating-coin:not(.dragged) .mobile-floating-chevron {
+    right: 9px;
+    top: 19px;
+  }
+  .mobile-floating-coin:not(.dragged).menu-open .mobile-floating-chevron {
+    top: 22px;
+  }
+}

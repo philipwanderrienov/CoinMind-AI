@@ -81,6 +81,24 @@ class FuturesHistoricalDatasetReplayIT {
             assertEquals(0, reconciled.compareTo(point.equityUsdt()));
         }
         assertEquals(0, reconciled.compareTo(result.finalEquity()));
+        assertEquals(result.executed(), result.trades().size());
+        for (var trade : result.trades()) {
+            assertNotNull(trade.side());
+            assertNotNull(trade.entryReason());
+            assertNotNull(trade.exitReason());
+            System.out.println("COINMIND HISTORICAL TRADE"
+                    + " decisionUtc=" + trade.decisionAt()
+                    + " executionWindowOpenUtc=" + trade.executionWindowOpen()
+                    + " settledUtc=" + trade.settledAt()
+                    + " side=" + trade.side()
+                    + " entryReason=" + trade.entryReason()
+                    + " exitReason=" + trade.exitReason()
+                    + " entryFill=" + trade.entryFill()
+                    + " exitFill=" + trade.exitFill()
+                    + " grossPnl=" + trade.grossPnl()
+                    + " fees=" + trade.tradingFees()
+                    + " netPnl=" + trade.netPnl());
+        }
         var stats = result.performance();
         System.out.println("COINMIND HISTORICAL OFFLINE REPORT month=" + month
                 + " market=USD_M_FUTURES symbol=BTCUSDT"

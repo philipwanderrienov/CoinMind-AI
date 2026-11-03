@@ -134,6 +134,32 @@ class FuturesHistoricalDatasetReplayIT {
                     var observations = FuturesMarketRegimeDiagnostics.observe(scenario, alternative);
                     var regimeGroups = FuturesMarketRegimeDiagnostics.byVolatility(observations);
                     assertEquals(alternative.executed(), observations.size());
+                    BigDecimal observationNet = BigDecimal.ZERO;
+                    BigDecimal observationFees = BigDecimal.ZERO;
+                    for (var observation : observations) {
+                        observationNet = observationNet.add(observation.netPnl());
+                        observationFees = observationFees.add(observation.tradingFees());
+                        System.out.println("COINMIND ENTRY DIAGNOSTIC month=" + month
+                                + " direction=" + direction + " bars=" + horizon
+                                + " decisionUtc=" + observation.decisionAt()
+                                + " side=" + observation.side()
+                                + " volatility=" + observation.volatilityBand()
+                                + " rangePercent=" + observation.lastThreeFiveMinuteRangePercent()
+                                + " momentum5m=" + observation.fiveMinuteMomentum()
+                                + " momentum15m=" + observation.fifteenMinuteMomentum()
+                                + " momentum1h=" + observation.oneHourMomentum()
+                                + " momentum4h=" + observation.fourHourMomentum()
+                                + " strength=" + observation.entryStrength()
+                                + " aligned=" + observation.alignedTimeframes()
+                                + " decelerating=" + observation.fiveMinuteMomentumDecelerating()
+                                + " gross=" + observation.grossPnl()
+                                + " fees=" + observation.tradingFees()
+                                + " net=" + observation.netPnl()
+                                + " DISCLAIMER=descriptive_no_trade_gate");
+                    }
+                    assertEquals(0, alternative.finalEquity().subtract(alternative.initialEquity())
+                            .compareTo(observationNet), "Entry diagnostic net must reconcile");
+                    assertTrue(observationFees.signum() >= 0);
                     for (var group : regimeGroups) {
                         System.out.println("COINMIND REGIME DIAGNOSTIC month=" + month
                                 + " direction=" + direction + " bars=" + horizon

@@ -220,4 +220,45 @@ class FuturesHistoricalWalkForwardRunnerTest {
         assertEquals(0, sideNet.compareTo(exitNet));
     }
 
+    @Test void experimentalBothExactlyMatchesUnchangedBaseline() {
+        var data = input("SYNTHETIC_FIXTURE", true);
+        var sizing = new FuturesHistoricalWalkForwardRunner.PaperSizing(
+                new BigDecimal("1000"), BigDecimal.ONE, new BigDecimal("3"));
+        var baseline = FuturesHistoricalWalkForwardRunner.runWithDynamicEquity(
+                data, sizing, new BigDecimal("2"));
+        var experiment = FuturesHistoricalWalkForwardRunner.runWithDynamicEquityExperimental(
+                data, sizing, new BigDecimal("2"),
+                FuturesHistoricalWalkForwardRunner.ExperimentalDirection.BOTH);
+        assertEquals(baseline, experiment);
+    }
+
+    @Test void experimentalLongOnlySkipsShortsBeforeExecutionAndRiskAccounting() {
+        var origin = input("SYNTHETIC_FIXTURE", true);
+        java.util.function.Function<List<FuturesReplayEngine.Candle>,
+                List<FuturesReplayEngine.Candle>> falling = candles ->
+                java.util.stream.IntStream.range(0, candles.size()).mapToObj(i -> {
+                    var price = BigDecimal.valueOf(10000.0 / (1 + 0.12 * i));
+                    return new FuturesReplayEngine.Candle(candles.get(i).time(),
+                            price, price, price, price);
+                }).toList();
+        var bearish = new FuturesHistoricalWalkForwardRunner.Input(origin.provenance(),
+                falling.apply(origin.m5()), falling.apply(origin.m15()),
+                falling.apply(origin.h1()), falling.apply(origin.h4()),
+                origin.horizonBars(), origin.stopPercent(), origin.targetPercent(),
+                origin.quantity(), origin.feePercentPerSide(), origin.slippagePercentPerSide());
+        var sizing = new FuturesHistoricalWalkForwardRunner.PaperSizing(
+                new BigDecimal("1000"), BigDecimal.ONE, new BigDecimal("3"));
+        var baseline = FuturesHistoricalWalkForwardRunner.runWithDynamicEquity(
+                bearish, sizing, new BigDecimal("2"));
+        assertTrue(baseline.trades().stream().anyMatch(t -> "SHORT".equals(t.side())),
+                "Fixture must generate SHORT trades, otherwise the test is inconclusive");
+        var onlyLong = FuturesHistoricalWalkForwardRunner.runWithDynamicEquityExperimental(
+                bearish, sizing, new BigDecimal("2"),
+                FuturesHistoricalWalkForwardRunner.ExperimentalDirection.LONG_ONLY);
+        assertTrue(onlyLong.trades().stream().allMatch(t -> "LONG".equals(t.side())));
+        assertEquals(0, onlyLong.executed());
+        assertEquals(0, onlyLong.initialEquity().compareTo(onlyLong.finalEquity()));
+        assertTrue(onlyLong.equityCurve().isEmpty());
+    }
+
 }

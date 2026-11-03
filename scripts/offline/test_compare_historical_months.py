@@ -1,5 +1,5 @@
 import unittest
-from compare_historical_months import parse_report, parse_groups
+from compare_historical_months import parse_report, parse_groups, parse_scenarios
 
 
 class ComparisonParserTest(unittest.TestCase):
@@ -50,6 +50,29 @@ class ComparisonParserTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             parse_groups("COINMIND HISTORICAL GROUP side=LONG count=1", "2026-09",
                          {"executed": "1", "netPnl": "0"})
+
+    def test_fixed_experimental_grid_and_baseline_match(self):
+        rows = []
+        for bars in (2, 3, 6, 12):
+            for direction in ("BOTH", "LONG_ONLY"):
+                rows.append(
+                    f"COINMIND EXPERIMENTAL SCENARIO month=2026-09 "
+                    f"direction={direction} bars={bars} executed=3 wins=1 losses=2 "
+                    "winRate=33.333 profitFactor=0.25 netPnl=-2 "
+                    "maxDrawdownQuote=4 DISCLAIMER=in_sample_exploratory_only")
+        baseline = {"executed":"3", "wins":"1", "losses":"2",
+                    "netPnl":"-2", "maxDrawdownQuote":"4"}
+        parsed = parse_scenarios("\n".join(rows), "2026-09", baseline)
+        self.assertEqual(8, len(parsed))
+        self.assertEqual(4, sum(row["direction"] == "LONG_ONLY" for row in parsed))
+
+    def test_rejects_incomplete_experimental_grid(self):
+        with self.assertRaises(ValueError):
+            parse_scenarios(
+                "COINMIND EXPERIMENTAL SCENARIO month=2026-09 "
+                "direction=BOTH bars=2 executed=3",
+                "2026-09", {"executed":"3", "wins":"1", "losses":"2",
+                             "netPnl":"-2", "maxDrawdownQuote":"4"})
 
 
 if __name__ == "__main__":

@@ -111,23 +111,34 @@ class FuturesHistoricalDatasetReplayIT {
                     + " losses=" + group.losses() + " gross=" + group.grossPnl()
                     + " fees=" + group.fees() + " net=" + group.netPnl()
                     + " averageNet=" + group.averageNetPnl());
-        for (int horizon : new int[]{2,3,6}) {
+        // Fixed research grid; parameter search is descriptive, not production selection.
+        for (int horizon : new int[]{2,3,6,12}) {
             var scenario = new FuturesHistoricalWalkForwardRunner.Input(input.provenance(),
                     input.m5(), input.m15(), input.h1(), input.h4(), horizon,
                     input.stopPercent(), input.targetPercent(), input.quantity(),
                     input.feePercentPerSide(), input.slippagePercentPerSide());
-            var alternative = FuturesHistoricalWalkForwardRunner.runWithDynamicEquity(
-                    scenario, new FuturesHistoricalWalkForwardRunner.PaperSizing(
-                            new BigDecimal("1000"), BigDecimal.ONE, new BigDecimal("3")),
-                    new BigDecimal("2"));
-            var summary = alternative.performance();
-            System.out.println("COINMIND HORIZON EXPLORATION bars=" + horizon
-                    + " executed=" + alternative.executed()
-                    + " winRate=" + summary.winRatePercent()
-                    + " profitFactor=" + summary.profitFactor()
-                    + " netPnl=" + alternative.finalEquity().subtract(alternative.initialEquity())
-                    + " maxDrawdownQuote=" + alternative.maxDrawdownQuote()
-                    + " DISCLAIMER=in_sample_exploratory_not_parameter_selection");
+            for (var direction : FuturesHistoricalWalkForwardRunner.ExperimentalDirection.values()) {
+                var alternative = FuturesHistoricalWalkForwardRunner.runWithDynamicEquityExperimental(
+                        scenario, new FuturesHistoricalWalkForwardRunner.PaperSizing(
+                                new BigDecimal("1000"), BigDecimal.ONE, new BigDecimal("3")),
+                        new BigDecimal("2"), direction);
+                var summary = alternative.performance();
+                assertEquals(alternative.executed(), alternative.trades().size());
+                assertEquals(alternative.executed(), alternative.equityCurve().size());
+                if (direction == FuturesHistoricalWalkForwardRunner.ExperimentalDirection.LONG_ONLY)
+                    assertTrue(alternative.trades().stream().allMatch(t -> "LONG".equals(t.side())));
+                if (horizon == 2 && direction == FuturesHistoricalWalkForwardRunner.ExperimentalDirection.BOTH)
+                    assertEquals(result, alternative, "Baseline must remain identical");
+                System.out.println("COINMIND EXPERIMENTAL SCENARIO month=" + month
+                        + " direction=" + direction + " bars=" + horizon
+                        + " executed=" + alternative.executed()
+                        + " wins=" + summary.wins() + " losses=" + summary.losses()
+                        + " winRate=" + summary.winRatePercent()
+                        + " profitFactor=" + summary.profitFactor()
+                        + " netPnl=" + alternative.finalEquity().subtract(alternative.initialEquity())
+                        + " maxDrawdownQuote=" + alternative.maxDrawdownQuote()
+                        + " DISCLAIMER=in_sample_exploratory_only");
+            }
         }
         var stats = result.performance();
         System.out.println("COINMIND HISTORICAL OFFLINE REPORT month=" + month

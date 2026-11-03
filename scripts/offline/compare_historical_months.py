@@ -92,7 +92,7 @@ def parse_scenarios(output, expected_month, monthly_report):
     for line in output.splitlines():
         if "COINMIND EXPERIMENTAL SCENARIO month=" not in line:
             continue
-        fields = dict(re.findall(r"([A-Za-z]+)=([^\\s]+)", line))
+        fields = dict(re.findall(r"([A-Za-z]+)=([^\s]+)", line))
         if any(name not in fields for name in SCENARIO_FIELDS):
             raise ValueError("Incomplete experimental scenario")
         if fields["month"] != expected_month or fields["direction"] not in ("BOTH", "LONG_ONLY"):
@@ -105,9 +105,7 @@ def parse_scenarios(output, expected_month, monthly_report):
         raise ValueError("Expected eight distinct experimental scenarios")
     baseline = next(row for row in rows if row["direction"] == "BOTH" and row["bars"] == "2")
     for key in ("executed", "netPnl", "wins", "losses", "maxDrawdownQuote"):
-        if (Decimal(baseline[key]) != Decimal(monthly_report[key])
-                if key != "executed" and key != "wins" and key != "losses"
-                else int(baseline[key]) != int(monthly_report[key])):
+        if Decimal(baseline[key]) != Decimal(monthly_report[key]):
             raise ValueError("Experimental baseline disagrees with historical report")
     for row in rows:
         executed, wins, losses = (int(row[k]) for k in ("executed", "wins", "losses"))

@@ -35,8 +35,26 @@ public final class FuturesHistoricalWalkForwardRunner {
      * Opt-in realized-equity compounding, applying a UTC daily stop before each entry.
      * Uses the complete fixed replay horizon as a conservative occupancy window.
      */
+    public enum ExperimentalDirection { BOTH, LONG_ONLY }
+
+    /** Research-only: filter candidate directions BEFORE sizing, occupancy, and equity updates.
+     * The baseline method above delegates to BOTH; no live trading behavior is changed.
+     */
+    public static DynamicReport runWithDynamicEquityExperimental(
+            Input in, PaperSizing sizing, BigDecimal dailyLossLimitPercent,
+            ExperimentalDirection direction) {
+        if (direction == null)
+            throw new IllegalArgumentException("Explicit experimental direction required");
+        return runDynamicEquity(in, sizing, dailyLossLimitPercent, direction);
+    }
+
     public static DynamicReport runWithDynamicEquity(Input in, PaperSizing sizing,
                                                        BigDecimal dailyLossLimitPercent) {
+        return runDynamicEquity(in, sizing, dailyLossLimitPercent, ExperimentalDirection.BOTH);
+    }
+
+    private static DynamicReport runDynamicEquity(Input in, PaperSizing sizing,
+            BigDecimal dailyLossLimitPercent, ExperimentalDirection direction) {
         if (sizing == null || sizing.equityUsdt() == null || sizing.equityUsdt().signum() <= 0
                 || sizing.riskPercent() == null || sizing.riskPercent().signum() <= 0
                 || sizing.riskPercent().compareTo(BigDecimal.ONE) > 0
@@ -66,6 +84,9 @@ public final class FuturesHistoricalWalkForwardRunner {
             var decision = FuturesIntradayDecisionEngine.evaluate(
                     FuturesClosedCandleScoring.score(in.provenance(), decisionTime, five, fifteen, hourly, four));
             if ("WAIT".equals(decision.action())) { waits++; continue; }
+            // Rejected SHORT signals consume no risk budget or execution window.
+            if (direction == ExperimentalDirection.LONG_ONLY
+                    && "WATCH_SHORT".equals(decision.action())) continue;
             java.time.LocalDate currentDay = decisionTime.atZone(java.time.ZoneOffset.UTC).toLocalDate();
             if (!currentDay.equals(day)) {
                 day = currentDay;

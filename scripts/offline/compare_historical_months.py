@@ -130,6 +130,13 @@ def main():
         writer.writerows(all_groups)
     print("Read-only historical comparison saved:", output)
     print("Trade side/exit diagnostics saved:", group_output)
+    total_net = sum((Decimal(row["netPnl"]) for row in results), Decimal(0))
+    side_groups = [row for row in all_groups if row["dimension"] == "side"]
+    total_fees = sum((Decimal(row["fees"]) for row in side_groups), Decimal(0))
+    print("COINMIND MULTI-MONTH DIAGNOSTICS months=" + str(len(results))
+          + " trades=" + str(sum(int(row["executed"]) for row in results))
+          + " netPnl=" + str(total_net) + " tradingFees=" + str(total_fees)
+          + " DISCLAIMER=independent_monthly_replays_not_compounded_portfolio")
     print("No parameter selection: July/August are earlier holdout comparisons, not prospective validation.")
 
 

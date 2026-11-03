@@ -22,7 +22,9 @@ public final class FuturesMarketRegimeDiagnostics {
                               BigDecimal lastThreeFiveMinuteRangePercent,
                               BigDecimal fiveMinuteMomentum, BigDecimal fifteenMinuteMomentum,
                               BigDecimal oneHourMomentum, BigDecimal fourHourMomentum,
-                              BigDecimal entryStrength, BigDecimal netPnl) {}
+                              BigDecimal entryStrength, BigDecimal netPnl,
+                              int alignedTimeframes, boolean fiveMinuteMomentumDecelerating,
+                              BigDecimal grossPnl, BigDecimal tradingFees) {}
 
     public record Group(String volatilityBand, int count, int wins, int losses,
                         BigDecimal netPnl, BigDecimal averageNetPnl) {}
@@ -59,10 +61,23 @@ public final class FuturesMarketRegimeDiagnostics {
                     .divide(reference, MC);
             String band = range.compareTo(HALF_PERCENT) < 0 ? "LOW"
                     : range.compareTo(ONE_PERCENT) < 0 ? "MEDIUM" : "HIGH";
+            int sign = "LONG".equals(trade.side()) ? 1 : -1;
+            int aligned = 0;
+            for (var momentum : List.of(score.fiveMinuteScore(), score.fifteenMinuteScore(),
+                    score.oneHourTrend(), score.fourHourTrend()))
+                if (momentum.signum() == sign) aligned++;
+            // A descriptive three-closed-candle exhaustion proxy: the signed last
+            // 5m close-to-close change is weaker than the preceding 5m change.
+            BigDecimal previousChange = five.get(1).close().subtract(five.get(0).close())
+                    .multiply(BigDecimal.valueOf(sign));
+            BigDecimal latestChange = five.get(2).close().subtract(five.get(1).close())
+                    .multiply(BigDecimal.valueOf(sign));
+            boolean decelerating = latestChange.compareTo(previousChange) < 0;
             observations.add(new Observation(when, trade.side(), band, range,
                     score.fiveMinuteScore(), score.fifteenMinuteScore(),
                     score.oneHourTrend(), score.fourHourTrend(),
-                    decision.entryScore().abs(), trade.netPnl()));
+                    decision.entryScore().abs(), trade.netPnl(), aligned, decelerating,
+                    trade.grossPnl(), trade.tradingFees()));
         }
         return List.copyOf(observations);
     }

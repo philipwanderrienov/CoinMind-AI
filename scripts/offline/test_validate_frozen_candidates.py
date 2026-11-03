@@ -1,5 +1,5 @@
 import unittest
-from validate_frozen_candidates import frozen_comparison, FROZEN
+from validate_frozen_candidates import frozen_comparison, FROZEN, parse_regimes
 
 
 class FrozenResearchValidationTest(unittest.TestCase):
@@ -26,6 +26,26 @@ class FrozenResearchValidationTest(unittest.TestCase):
     def test_rejects_incomplete_grid(self):
         with self.assertRaisesRegex(ValueError, "Incomplete research grid"):
             frozen_comparison("2026-06", {"netPnl": "-5"}, self.scenarios()[:-1])
+
+    def test_regime_bands_reconcile_all_frozen_scenarios(self):
+        scenarios = self.scenarios()
+        lines = []
+        for direction, bars in FROZEN:
+            for band, count, wins, losses, pnl in (
+                    ("LOW", 2, 1, 1, "-5" if bars == "2" else "1"),
+                    ("MEDIUM", 0, 0, 0, "0"), ("HIGH", 0, 0, 0, "0")):
+                lines.append(
+                    f"COINMIND REGIME DIAGNOSTIC month=2026-06 direction={direction} "
+                    f"bars={bars} volatility={band} count={count} wins={wins} losses={losses} "
+                    f"netPnl={pnl} averageNet={'null' if count == 0 else '-2.5'}")
+        rows = parse_regimes("\n".join(lines), "2026-06", scenarios)
+        self.assertEqual(9, len(rows))
+
+    def test_regime_missing_band_fails_closed(self):
+        with self.assertRaisesRegex(ValueError, "nine distinct"):
+            parse_regimes("COINMIND REGIME DIAGNOSTIC month=2026-06 "
+                          "direction=BOTH bars=2 volatility=LOW count=1 wins=1 losses=0 "
+                          "netPnl=1 averageNet=1", "2026-06", self.scenarios())
 
 
 if __name__ == "__main__":

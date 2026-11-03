@@ -43,6 +43,12 @@ class FuturesMarketRegimeDiagnosticsTest {
                 .compareTo(groups.stream().map(FuturesMarketRegimeDiagnostics.Group::netPnl)
                         .reduce(BigDecimal.ZERO, BigDecimal::add)));
         assertTrue(observations.stream().allMatch(o -> o.lastThreeFiveMinuteRangePercent().signum() >= 0));
+        assertTrue(observations.stream().allMatch(o -> o.alignedTimeframes() >= 0
+                && o.alignedTimeframes() <= 4));
+        assertTrue(observations.stream().allMatch(o -> o.tradingFees().signum() >= 0));
+        for (var o : observations)
+            assertEquals(0, o.grossPnl().subtract(o.tradingFees(), java.math.MathContext.DECIMAL64)
+                    .compareTo(o.netPnl()), "Entry quality cost metrics must reconcile");
         assertFalse(report.liveSignalEligible());
     }
 

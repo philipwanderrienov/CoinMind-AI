@@ -2,6 +2,7 @@
 """Read-only monthly out-of-sample backtest launcher. No orders or DB writes."""
 import argparse
 import csv
+from decimal import Decimal, InvalidOperation
 import os
 import re
 import subprocess
@@ -26,12 +27,69 @@ def parse_report(output, expected_month):
     return {key: fields[key] for key in REQUIRED}
 
 
+GROUP_FIELDS = ("month", "dimension", "category", "count", "wins", "losses",
+                "gross", "fees", "net", "averageNet")
+GROUP_CATEGORIES = {"side": ("LONG", "SHORT"),
+                    "exit": ("STOP", "TARGET", "TIME_EXIT")}
+
+
+def parse_groups(output, expected_month, monthly_report):
+    """Require complete grouping of every realized trade; reject partial Maven output."""
+    rows = []
+    for line in output.splitlines():
+        if "COINMIND HISTORICAL GROUP " not in line:
+            continue
+        fields = dict(re.findall(r"([A-Za-z]+)=([^\\s]+)", line))
+        dimensions = [name for name in GROUP_CATEGORIES if name in fields]
+        if len(dimensions) != 1:
+            raise ValueError("Ambiguous historical group dimension")
+        dimension = dimensions[0]
+        category = fields[dimension]
+        if category not in GROUP_CATEGORIES[dimension]:
+            raise ValueError("Unknown historical trade category")
+        if any(key not in fields for key in ("count", "wins", "losses",
+                                             "gross", "fees", "net", "averageNet")):
+            raise ValueError("Incomplete historical trade breakdown")
+        row = {"month": expected_month, "dimension": dimension, "category": category}
+        row.update({key: fields[key] for key in GROUP_FIELDS[3:]})
+        rows.append(row)
+    if len(rows) != 5 or len({(r["dimension"], r["category"]) for r in rows}) != 5:
+        raise ValueError("Expected exactly five unique historical trade groups")
+    total_trades = int(monthly_report["executed"])
+    expected_pnl = Decimal(monthly_report["netPnl"])
+    for dimension, categories in GROUP_CATEGORIES.items():
+        part = [r for r in rows if r["dimension"] == dimension]
+        if {r["category"] for r in part} != set(categories):
+            raise ValueError("Missing trade group")
+        if sum(int(r["count"]) for r in part) != total_trades:
+            raise ValueError("Grouped trade count disagrees with monthly total")
+        if sum((Decimal(r["net"]) for r in part), Decimal(0)) != expected_pnl:
+            raise ValueError("Grouped net PnL disagrees with monthly total")
+        for group in part:
+            count = int(group["count"])
+            wins = int(group["wins"])
+            losses = int(group["losses"])
+            if min(count, wins, losses) < 0 or wins + losses > count:
+                raise ValueError("Invalid group win/loss count")
+            if Decimal(group["fees"]) < 0:
+                raise ValueError("Negative transaction fees")
+            # Existing engine uses decimal64 for per-trade PnL, so allow only
+            # tiny rounding difference when comparing grouped gross-fees.
+            if abs(Decimal(group["gross"]) - Decimal(group["fees"])
+                   - Decimal(group["net"])) > Decimal("0.00000001"):
+                raise ValueError("Inconsistent grouped gross/fees/net PnL")
+            if count == 0 and group["averageNet"] != "null":
+                raise ValueError("Missing group must have null average")
+    return rows
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--backend", default="backend")
     parser.add_argument("--dataset-root", required=True, help="Directory holding coinmind-btcusdt-YYYY-MM folders")
     parser.add_argument("--months", nargs="+", default=["2026-07", "2026-08", "2026-09"])
-    parser.add_argument("--output", required=True, help="New CSV output path")
+    parser.add_argument("--output", required=True, help="New monthly CSV output path")
+    parser.add_argument("--groups-output", required=True, help="New per-side/exit CSV output path")
     args = parser.parse_args()
     if len(set(args.months)) != len(args.months):
         parser.error("Duplicate months")
@@ -40,9 +98,11 @@ def main():
     backend = Path(args.backend).resolve(strict=True)
     root = Path(args.dataset_root).resolve(strict=True)
     output = Path(args.output)
-    if output.exists():
-        parser.error("Output already exists; choose a new path")
+    group_output = Path(args.groups_output)
+    if output == group_output or output.exists() or group_output.exists():
+        parser.error("Both output paths must be distinct and nonexistent")
     results = []
+    all_groups = []
     for month in args.months:
         dataset = (root / ("coinmind-btcusdt-" + month)).resolve(strict=True)
         if not dataset.is_dir() or not dataset.is_relative_to(root):
@@ -56,13 +116,20 @@ def main():
             sys.stderr.write(result.stdout[-3500:] + result.stderr[-1500:])
             raise RuntimeError(f"Verified replay failed for {month}; comparison aborted")
         row = parse_report(result.stdout, month)
+        groups = parse_groups(result.stdout, month, row)
         results.append(row)
+        all_groups.extend(groups)
         print("Validated:", month, "executed:", row["executed"], "netPnl:", row["netPnl"])
     with output.open("x", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=REQUIRED)
         writer.writeheader()
         writer.writerows(results)
+    with group_output.open("x", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=GROUP_FIELDS)
+        writer.writeheader()
+        writer.writerows(all_groups)
     print("Read-only historical comparison saved:", output)
+    print("Trade side/exit diagnostics saved:", group_output)
     print("No parameter selection: July/August are earlier holdout comparisons, not prospective validation.")
 
 

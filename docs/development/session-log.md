@@ -533,3 +533,16 @@ python3 scripts/offline/binance_um_monthly.py --month 2026-06 --output /home/phi
 python3 scripts/offline/validate_frozen_candidates.py --backend backend --dataset-root /home/phive --month 2026-06 --output /home/phive/coinmind-frozen-candidates-2026-06.csv
 ```
 Use a fresh output path; do not deploy/restart backend. Futures live BLOCKED.
+
+
+## 2026-11-03 — Observational market-volatility diagnostics (June failure analysis)
+
+User confirmed July–Sep strategy exploration was followed by June 2026 frozen-candidate retrospective validation: Python 15/15 passed, June Binance USD-M manifest and four TF archives validated, frozen BOTH/10m 48 trades net -76.279794191323238, drawdown 76.279794191323238; BOTH/60m 37 trades net -89.441860214026280, drawdown 92.246225210551555; LONG_ONLY/60m 10 trades net -29.210092881331277, drawdown 29.210092881331277. All three lost money; a 60m horizon is NOT robust. Implemented read-only `FuturesMarketRegimeDiagnostics` which reconstructs last three fully CLOSED candles at each actual historical trade decision across 5m/15m/1h/4h, computes existing scoring input, checks reconstructed side matches trade, records the four timeframe momentum values, entry strength and 5m three-candle high-low range %, and bins the range into descriptive LOW (<0.5%), MEDIUM (0.5% to <1%), HIGH (>=1%). **The bins are descriptive research labels only, not validated volatility or market-regime thresholds.** Existing manifest-gated historical JUnit test emits 3 bands for each of the 3 frozen scenarios BOTH/2, BOTH/12, LONG_ONLY/12 after existing replay. Added Java JUnit tests for reconciliation and failure on mismatched decision/provenance. `validate_frozen_candidates.py` gained optional `--regimes-output`, validating every 3x3 band partition's exact trade counts, wins/losses and net PnL match the frozen scenario before writing CSV; added two Python tests for valid/invalid partition. Existing scenarios and strategy, entry/exit, risk, fees, DB and APIs unchanged, Futures live BLOCKED. Java backend now expected 144 default JUnit tests, Python 17; **not run yet on phive-server**. Run:
+```bash
+cd /home/phive/Documents/CoinMind-AI
+git pull --ff-only origin main
+cd backend && mvn clean verify && cd ..
+python3 -m unittest discover -s scripts/offline -p 'test_*.py'
+python3 scripts/offline/validate_frozen_candidates.py --backend backend --dataset-root /home/phive --month 2026-06 --output /home/phive/coinmind-frozen-candidates-2026-06-v2.csv --regimes-output /home/phive/coinmind-regime-diagnostics-2026-06.csv
+```
+Do not reuse an existing CSV output path. June is an already inspected retrospective month, not untouched holdout and certainly not prospective OOS; further regime findings are exploratory only. No production deployment/restart required.

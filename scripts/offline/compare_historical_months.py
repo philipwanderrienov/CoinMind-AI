@@ -82,6 +82,41 @@ def parse_groups(output, expected_month, monthly_report):
                 raise ValueError("Missing group must have null average")
     return rows
 
+SCENARIO_FIELDS = ("month", "direction", "bars", "executed", "wins", "losses",
+                   "winRate", "profitFactor", "netPnl", "maxDrawdownQuote")
+
+
+def parse_scenarios(output, expected_month, monthly_report):
+    """Exactly the predeclared 2x4 research grid, no post-hoc selection."""
+    rows = []
+    for line in output.splitlines():
+        if "COINMIND EXPERIMENTAL SCENARIO month=" not in line:
+            continue
+        fields = dict(re.findall(r"([A-Za-z]+)=([^\\s]+)", line))
+        if any(name not in fields for name in SCENARIO_FIELDS):
+            raise ValueError("Incomplete experimental scenario")
+        if fields["month"] != expected_month or fields["direction"] not in ("BOTH", "LONG_ONLY"):
+            raise ValueError("Unexpected experiment identity")
+        if fields["bars"] not in ("2", "3", "6", "12"):
+            raise ValueError("Unexpected experimental horizon")
+        rows.append({name: fields[name] for name in SCENARIO_FIELDS})
+    keys = {(row["direction"], row["bars"]) for row in rows}
+    if len(rows) != 8 or len(keys) != 8:
+        raise ValueError("Expected eight distinct experimental scenarios")
+    baseline = next(row for row in rows if row["direction"] == "BOTH" and row["bars"] == "2")
+    for key in ("executed", "netPnl", "wins", "losses", "maxDrawdownQuote"):
+        if (Decimal(baseline[key]) != Decimal(monthly_report[key])
+                if key != "executed" and key != "wins" and key != "losses"
+                else int(baseline[key]) != int(monthly_report[key])):
+            raise ValueError("Experimental baseline disagrees with historical report")
+    for row in rows:
+        executed, wins, losses = (int(row[k]) for k in ("executed", "wins", "losses"))
+        if min(executed, wins, losses) < 0 or wins + losses > executed:
+            raise ValueError("Invalid experimental outcome counts")
+        if not Decimal(row["netPnl"]).is_finite() or Decimal(row["maxDrawdownQuote"]) < 0:
+            raise ValueError("Nonfinite experimental statistics")
+    return rows
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -90,6 +125,7 @@ def main():
     parser.add_argument("--months", nargs="+", default=["2026-07", "2026-08", "2026-09"])
     parser.add_argument("--output", required=True, help="New monthly CSV output path")
     parser.add_argument("--groups-output", required=True, help="New per-side/exit CSV output path")
+    parser.add_argument("--experiments-output", help="Optional new scenario comparison CSV path")
     args = parser.parse_args()
     if len(set(args.months)) != len(args.months):
         parser.error("Duplicate months")
@@ -99,10 +135,13 @@ def main():
     root = Path(args.dataset_root).resolve(strict=True)
     output = Path(args.output)
     group_output = Path(args.groups_output)
-    if output == group_output or output.exists() or group_output.exists():
-        parser.error("Both output paths must be distinct and nonexistent")
+    experiments_output = Path(args.experiments_output) if args.experiments_output else None
+    paths = [output, group_output] + ([experiments_output] if experiments_output else [])
+    if len(set(paths)) != len(paths) or any(path.exists() for path in paths):
+        parser.error("All output paths must be distinct and nonexistent")
     results = []
     all_groups = []
+    all_scenarios = []
     for month in args.months:
         dataset = (root / ("coinmind-btcusdt-" + month)).resolve(strict=True)
         if not dataset.is_dir() or not dataset.is_relative_to(root):
@@ -119,6 +158,8 @@ def main():
         groups = parse_groups(result.stdout, month, row)
         results.append(row)
         all_groups.extend(groups)
+        if experiments_output:
+            all_scenarios.extend(parse_scenarios(result.stdout, month, row))
         print("Validated:", month, "executed:", row["executed"], "netPnl:", row["netPnl"])
     with output.open("x", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=REQUIRED)
@@ -128,6 +169,12 @@ def main():
         writer = csv.DictWriter(handle, fieldnames=GROUP_FIELDS)
         writer.writeheader()
         writer.writerows(all_groups)
+    if experiments_output:
+        with experiments_output.open("x", newline="", encoding="utf-8") as handle:
+            writer = csv.DictWriter(handle, fieldnames=SCENARIO_FIELDS)
+            writer.writeheader()
+            writer.writerows(all_scenarios)
+        print("Research scenario comparison saved:", experiments_output)
     print("Read-only historical comparison saved:", output)
     print("Trade side/exit diagnostics saved:", group_output)
     total_net = sum((Decimal(row["netPnl"]) for row in results), Decimal(0))

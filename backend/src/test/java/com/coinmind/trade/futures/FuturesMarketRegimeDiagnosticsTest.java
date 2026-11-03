@@ -56,9 +56,18 @@ class FuturesMarketRegimeDiagnosticsTest {
                 input.m5(), input.m15(), input.h1(), input.h4(), 2,
                 input.stopPercent(), input.targetPercent(), input.quantity(),
                 input.feePercentPerSide(), input.slippagePercentPerSide());
-        // Same candles but provenance change should not bypass the offline checks.
+        // Offline historical provenance remains accepted with identical closed candles.
         assertEquals(report.executed(),
                 FuturesMarketRegimeDiagnostics.observe(invalid, report).size());
+        var flat = input.m5().stream().map(c ->
+                new FuturesReplayEngine.Candle(c.time(), new BigDecimal("100"),
+                        new BigDecimal("100"), new BigDecimal("100"), new BigDecimal("100"))).toList();
+        var mismatched = new FuturesHistoricalWalkForwardRunner.Input("SYNTHETIC_FIXTURE",
+                flat, input.m15(), input.h1(), input.h4(), 2,
+                input.stopPercent(), input.targetPercent(), input.quantity(),
+                input.feePercentPerSide(), input.slippagePercentPerSide());
+        assertThrows(IllegalArgumentException.class,
+                () -> FuturesMarketRegimeDiagnostics.observe(mismatched, report));
         var live = new FuturesHistoricalWalkForwardRunner.Input("LIVE_EXCHANGE",
                 input.m5(), input.m15(), input.h1(), input.h4(), 2,
                 input.stopPercent(), input.targetPercent(), input.quantity(),

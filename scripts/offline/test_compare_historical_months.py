@@ -30,7 +30,7 @@ class ComparisonParserTest(unittest.TestCase):
             "COINMIND HISTORICAL GROUP exit=TARGET count=0 wins=0 losses=0 gross=0 fees=0 net=0 averageNet=null",
             "COINMIND HISTORICAL GROUP exit=TIME_EXIT count=2 wins=1 losses=1 gross=0 fees=1 net=-1 averageNet=-0.5",
         ]
-        groups = parse_groups("\\n".join(lines), "2026-09", report)
+        groups = parse_groups("\n".join(lines), "2026-09", report)
         self.assertEqual(5, len(groups))
         self.assertEqual("LONG", groups[0]["category"])
 
@@ -44,7 +44,7 @@ class ComparisonParserTest(unittest.TestCase):
             "COINMIND HISTORICAL GROUP exit=TIME_EXIT count=0 wins=0 losses=0 gross=0 fees=0 net=0 averageNet=null",
         ]
         with self.assertRaises(ValueError):
-            parse_groups("\\n".join(lines), "2026-09", report)
+            parse_groups("\n".join(lines), "2026-09", report)
 
     def test_rejects_incomplete_group_output(self):
         with self.assertRaises(ValueError):

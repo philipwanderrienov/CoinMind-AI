@@ -129,6 +129,21 @@ class FuturesHistoricalDatasetReplayIT {
                     assertTrue(alternative.trades().stream().allMatch(t -> "LONG".equals(t.side())));
                 if (horizon == 2 && direction == FuturesHistoricalWalkForwardRunner.ExperimentalDirection.BOTH)
                     assertEquals(result, alternative, "Baseline must remain identical");
+                if (horizon == 2 && direction == FuturesHistoricalWalkForwardRunner.ExperimentalDirection.BOTH
+                        || horizon == 12) {
+                    var observations = FuturesMarketRegimeDiagnostics.observe(scenario, alternative);
+                    var regimeGroups = FuturesMarketRegimeDiagnostics.byVolatility(observations);
+                    assertEquals(alternative.executed(), observations.size());
+                    for (var group : regimeGroups) {
+                        System.out.println("COINMIND REGIME DIAGNOSTIC month=" + month
+                                + " direction=" + direction + " bars=" + horizon
+                                + " volatility=" + group.volatilityBand()
+                                + " count=" + group.count() + " wins=" + group.wins()
+                                + " losses=" + group.losses() + " netPnl=" + group.netPnl()
+                                + " averageNet=" + group.averageNetPnl()
+                                + " DISCLAIMER=descriptive_not_predictive");
+                    }
+                }
                 System.out.println("COINMIND EXPERIMENTAL SCENARIO month=" + month
                         + " direction=" + direction + " bars=" + horizon
                         + " executed=" + alternative.executed()

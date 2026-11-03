@@ -115,6 +115,71 @@ def parse_scenarios(output, expected_month, monthly_report):
             raise ValueError("Nonfinite experimental statistics")
     return rows
 
+ENTRY_FIELDS = ("month", "direction", "bars", "decisionUtc", "side", "volatility",
+                "rangePercent", "momentum5m", "momentum15m", "momentum1h",
+                "momentum4h", "strength", "aligned", "decelerating",
+                "gross", "fees", "net")
+ENTRY_CANDIDATES = (("BOTH", "2"), ("BOTH", "12"), ("LONG_ONLY", "12"))
+
+
+def parse_entries(output, expected_month, scenarios):
+    """Closed-candle descriptors for settled trades, no scenario selection."""
+    from datetime import datetime
+    rows = []
+    for line in output.splitlines():
+        if "COINMIND ENTRY DIAGNOSTIC month=" not in line:
+            continue
+        fields = dict(re.findall(r"([A-Za-z0-9]+)=([^\s]+)", line))
+        if any(name not in fields for name in ENTRY_FIELDS):
+            raise ValueError("Incomplete entry diagnostic")
+        row = {name: fields[name] for name in ENTRY_FIELDS}
+        key = row["direction"], row["bars"]
+        if row["month"] != expected_month or key not in ENTRY_CANDIDATES:
+            raise ValueError("Unexpected entry diagnostic identity")
+        if row["side"] not in ("LONG", "SHORT") or (row["direction"] == "LONG_ONLY" and row["side"] != "LONG"):
+            raise ValueError("Invalid entry diagnostic side")
+        if row["volatility"] not in ("LOW", "MEDIUM", "HIGH"):
+            raise ValueError("Invalid volatility category")
+        if row["decelerating"] not in ("true", "false"):
+            raise ValueError("Invalid deceleration flag")
+        if not row["aligned"].isdigit() or not 0 <= int(row["aligned"]) <= 4:
+            raise ValueError("Invalid alignment count")
+        try:
+            when = datetime.fromisoformat(row["decisionUtc"].replace("Z", "+00:00"))
+            if when.utcoffset() is None:
+                raise ValueError("Decision timestamp must have UTC offset")
+        except ValueError as exc:
+            raise ValueError("Invalid decision UTC timestamp") from exc
+        for name in ("rangePercent", "momentum5m", "momentum15m", "momentum1h",
+                     "momentum4h", "strength", "gross", "fees", "net"):
+            if not Decimal(row[name]).is_finite():
+                raise ValueError("Nonfinite entry metric")
+        if min(Decimal(row["rangePercent"]), Decimal(row["strength"]),
+               Decimal(row["fees"])) < 0:
+            raise ValueError("Invalid negative range, strength, or fee")
+        if abs(Decimal(row["gross"]) - Decimal(row["fees"])
+               - Decimal(row["net"])) > Decimal("0.00000001"):
+            raise ValueError("Entry gross less fees does not reconcile")
+        rows.append(row)
+    indexes = {(r["direction"], r["bars"], r["decisionUtc"]) for r in rows}
+    if len(indexes) != len(rows):
+        raise ValueError("Repeated decision in entry diagnostics")
+    by_key = {(r["direction"], r["bars"]): r for r in scenarios}
+    for key in ENTRY_CANDIDATES:
+        if key not in by_key:
+            raise ValueError("Frozen scenario missing from diagnostics")
+        selection = [r for r in rows if (r["direction"], r["bars"]) == key]
+        scenario = by_key[key]
+        if len(selection) != int(scenario["executed"]):
+            raise ValueError("Entry diagnostic count disagrees with scenario")
+        if sum((Decimal(r["net"]) for r in selection), Decimal(0)) != Decimal(scenario["netPnl"]):
+            raise ValueError("Entry diagnostic net disagrees with scenario")
+        if sum(Decimal(r["net"]) > 0 for r in selection) != int(scenario["wins"]):
+            raise ValueError("Entry diagnostic wins disagree with scenario")
+        if sum(Decimal(r["net"]) < 0 for r in selection) != int(scenario["losses"]):
+            raise ValueError("Entry diagnostic losses disagree with scenario")
+    return rows
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -124,6 +189,7 @@ def main():
     parser.add_argument("--output", required=True, help="New monthly CSV output path")
     parser.add_argument("--groups-output", required=True, help="New per-side/exit CSV output path")
     parser.add_argument("--experiments-output", help="Optional new scenario comparison CSV path")
+    parser.add_argument("--entries-output", help="Optional new descriptive per-trade entry CSV path")
     args = parser.parse_args()
     if len(set(args.months)) != len(args.months):
         parser.error("Duplicate months")
@@ -134,12 +200,14 @@ def main():
     output = Path(args.output)
     group_output = Path(args.groups_output)
     experiments_output = Path(args.experiments_output) if args.experiments_output else None
-    paths = [output, group_output] + ([experiments_output] if experiments_output else [])
+    entries_output = Path(args.entries_output) if args.entries_output else None
+    paths = [output, group_output] + ([experiments_output] if experiments_output else []) + ([entries_output] if entries_output else [])
     if len(set(paths)) != len(paths) or any(path.exists() for path in paths):
         parser.error("All output paths must be distinct and nonexistent")
     results = []
     all_groups = []
     all_scenarios = []
+    all_entries = []
     for month in args.months:
         dataset = (root / ("coinmind-btcusdt-" + month)).resolve(strict=True)
         if not dataset.is_dir() or not dataset.is_relative_to(root):
@@ -156,8 +224,12 @@ def main():
         groups = parse_groups(result.stdout, month, row)
         results.append(row)
         all_groups.extend(groups)
-        if experiments_output:
-            all_scenarios.extend(parse_scenarios(result.stdout, month, row))
+        if experiments_output or entries_output:
+            scenarios = parse_scenarios(result.stdout, month, row)
+            if experiments_output:
+                all_scenarios.extend(scenarios)
+            if entries_output:
+                all_entries.extend(parse_entries(result.stdout, month, scenarios))
         print("Validated:", month, "executed:", row["executed"], "netPnl:", row["netPnl"])
     with output.open("x", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=REQUIRED)
@@ -173,6 +245,12 @@ def main():
             writer.writeheader()
             writer.writerows(all_scenarios)
         print("Research scenario comparison saved:", experiments_output)
+    if entries_output:
+        with entries_output.open("x", newline="", encoding="utf-8") as handle:
+            writer = csv.DictWriter(handle, fieldnames=ENTRY_FIELDS)
+            writer.writeheader()
+            writer.writerows(all_entries)
+        print("Descriptive entry quality records saved:", entries_output)
     print("Read-only historical comparison saved:", output)
     print("Trade side/exit diagnostics saved:", group_output)
     total_net = sum((Decimal(row["netPnl"]) for row in results), Decimal(0))

@@ -2,7 +2,7 @@
 """Read-only monthly out-of-sample backtest launcher. No orders or DB writes."""
 import argparse
 import csv
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 import os
 import re
 import subprocess
@@ -39,7 +39,7 @@ def parse_groups(output, expected_month, monthly_report):
     for line in output.splitlines():
         if "COINMIND HISTORICAL GROUP " not in line:
             continue
-        fields = dict(re.findall(r"([A-Za-z]+)=([^\\s]+)", line))
+        fields = dict(re.findall(r"([A-Za-z]+)=([^\s]+)", line))
         dimensions = [name for name in GROUP_CATEGORIES if name in fields]
         if len(dimensions) != 1:
             raise ValueError("Ambiguous historical group dimension")

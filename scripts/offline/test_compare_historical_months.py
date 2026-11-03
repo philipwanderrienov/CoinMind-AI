@@ -1,5 +1,5 @@
 import unittest
-from compare_historical_months import parse_report, parse_groups, parse_scenarios
+from compare_historical_months import parse_report, parse_groups, parse_scenarios, parse_entries
 
 
 class ComparisonParserTest(unittest.TestCase):
@@ -73,6 +73,35 @@ class ComparisonParserTest(unittest.TestCase):
                 "direction=BOTH bars=2 executed=3",
                 "2026-09", {"executed":"3", "wins":"1", "losses":"2",
                              "netPnl":"-2", "maxDrawdownQuote":"4"})
+
+    def test_entry_quality_rows_reconcile_without_future_data(self):
+        scenarios = [
+            {"direction": direction, "bars": bars, "executed": "1", "wins": "1",
+             "losses": "0", "netPnl": "0.5"}
+            for bars in ("2", "3", "6", "12")
+            for direction in ("BOTH", "LONG_ONLY")
+        ]
+        rows = []
+        for direction, bars in (("BOTH", "2"), ("BOTH", "12"), ("LONG_ONLY", "12")):
+            rows.append(
+                "COINMIND ENTRY DIAGNOSTIC month=2026-06 "
+                f"direction={direction} bars={bars} decisionUtc=2026-06-12T12:00:00Z "
+                "side=LONG volatility=MEDIUM rangePercent=0.6 "
+                "momentum5m=60 momentum15m=72 momentum1h=30 momentum4h=35 "
+                "strength=64 aligned=4 decelerating=false gross=1 fees=0.5 net=0.5")
+        parsed = parse_entries("\n".join(rows), "2026-06", scenarios)
+        self.assertEqual(3, len(parsed))
+        self.assertEqual("60", parsed[0]["momentum5m"])
+
+    def test_entry_quality_rejects_missing_trade_rows(self):
+        scenarios = [
+            {"direction": direction, "bars": bars, "executed": "1", "wins": "1",
+             "losses": "0", "netPnl": "0.5"}
+            for bars in ("2", "3", "6", "12")
+            for direction in ("BOTH", "LONG_ONLY")
+        ]
+        with self.assertRaisesRegex(ValueError, "count disagrees"):
+            parse_entries("", "2026-06", scenarios)
 
 
 if __name__ == "__main__":

@@ -1047,3 +1047,17 @@ python3 scripts/offline/capture_news_rss.py --feed-url https://www.federalreserv
 python3 scripts/offline/capture_news_rss.py --feed-url 'https://www.coindesk.com/arc/outboundfeeds/rss/' --source "CoinDesk" --archive /home/phive/coinmind-news-first-seen.csv
 ```
 Only feed sources which are accessible from phive-server; failed feeds should not be fabricated. The archive must be polled repeatedly to build genuine firstSeen history. Do NOT run future holdout before Jan 2027, DO NOT deploy/restart backend, do NOT enable live futures.
+
+
+## 2026-11-04 — Server feedback: holdout regex + publisher RSS redirect corrections (PENDING re-test)
+
+User ran `git pull` to `1b53ead`; prior Java `mvn clean verify` passed 147/147 and previous Python 39/39. New Python suite ran 46 with **one failure**: `test_future_holdout_requires_post_freeze_complete_month` reached `Distinct YYYY-MM months required` because new `validate_evaluation_months` had an accidental double-backslash raw regex `r"20\\\\d{2}..."`. Fixed to proper `r"20\\d{2}..."` to recognize valid calendar months while retaining the post-Nov 4 frozen criteria. **15 Federal Reserve RSS articles successfully captured** to `/home/phive/coinmind-news-first-seen.csv`; preserve that CSV. Original CoinDesk `https://www.coindesk.com/arc/outboundfeeds/rss/` was rejected due to its HTTP redirect under strict no-redirect policy. Updated `capture_news_rss.py` to allow only HTTPS redirect destinations within approved publisher domains, bounded at 3 hops, and still validate final URL. No redirect to external domains, HTTP or unapproved hosts. One extra synthetic redirect regression test; documented alternative publisher XML URL `https://www.coindesk.com/arc/outboundfeeds/rss/?outputType=xml` that may avoid redirects. No guarantee server egress/CDN will permit CoinDesk. Did not alter stored news, production news, volume replay, or trading.
+
+**Needs revalidation on phive-server**; expected **47 Python tests** now (prior 46 + new redirect test). Run:
+```bash
+cd /home/phive/Documents/CoinMind-AI
+git pull --ff-only origin main
+python3 -m unittest discover -s scripts/offline -p 'test_*.py'
+python3 scripts/offline/capture_news_rss.py --feed-url 'https://www.coindesk.com/arc/outboundfeeds/rss/?outputType=xml' --source 'CoinDesk' --archive /home/phive/coinmind-news-first-seen.csv
+```
+If approved redirect still fails, inspect final 3xx Location via read-only `curl -sSI` or use verified approved publisher alternate; don't silently whitelist unknown third-party domains. No Maven, deploy, or restarts required for these changes. Futures live BLOCKED.

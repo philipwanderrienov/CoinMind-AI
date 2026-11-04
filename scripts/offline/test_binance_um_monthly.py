@@ -1,7 +1,7 @@
 import io
 import unittest
 import zipfile
-from binance_um_monthly import normalize
+from binance_um_monthly import normalize, normalize_volume
 
 
 def sample_archive(rows, name="BTCUSDT-5m-2026-10.csv"):
@@ -42,6 +42,34 @@ class NormalizeTests(unittest.TestCase):
             for i in (0, 1, 3))
         with self.assertRaisesRegex(ValueError, "expected .* got .* delta_seconds=600"):
             normalize(sample_archive(rows), "BTCUSDT-5m-2026-10.csv", "5m")
+
+    def test_volume_sidecar_reads_exact_binance_columns(self):
+        rows = "".join(
+            f"{1790812800000 + 300000*i},100,110,90,105,20,"
+            f"{1790813099999 + 300000*i},2100,33,8,840,0\\n"
+            for i in range(3))
+        result, count = normalize_volume(sample_archive(rows),
+                                         "BTCUSDT-5m-2026-10.csv", "5m")
+        self.assertEqual(3, count)
+        self.assertEqual("open_time_utc,base_volume,quote_volume,trades,taker_buy_base_volume,taker_buy_quote_volume",
+                         result.decode().splitlines()[0])
+        self.assertEqual("20,2100,33,8,840", result.decode().splitlines()[1].split(",", 1)[1])
+
+    def test_volume_rejects_taker_buy_over_total(self):
+        rows = "".join(
+            f"{1790812800000 + 300000*i},100,110,90,105,20,"
+            f"{1790813099999 + 300000*i},2100,33,21,840,0\\n"
+            for i in range(3))
+        with self.assertRaisesRegex(ValueError, "exceeds"):
+            normalize_volume(sample_archive(rows), "BTCUSDT-5m-2026-10.csv", "5m")
+
+    def test_volume_rejects_missing_intervals(self):
+        rows = "".join(
+            f"{1790812800000 + 300000*i},100,110,90,105,20,"
+            f"{1790813099999 + 300000*i},2100,33,8,840,0\\n"
+            for i in (0, 1, 3))
+        with self.assertRaisesRegex(ValueError, "contiguous"):
+            normalize_volume(sample_archive(rows), "BTCUSDT-5m-2026-10.csv", "5m")
 
 
 if __name__ == "__main__":

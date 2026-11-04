@@ -559,3 +559,18 @@ python3 scripts/offline/compare_historical_months.py --backend backend --dataset
 python3 scripts/offline/summarize_entry_quality.py --entries /home/phive/coinmind-entry-quality-v1.csv
 ```
 New CSV output paths must not exist. Expected Java default tests still 144; Python suite grows from 17 to 21. Do not deploy production backend; Futures live BLOCKED.
+
+
+## 2026-11-04 — Real Binance volume research sidecar + closed-candle RVOL20 (pending server verification)
+
+User requested trading-volume diagnostics alongside momentum. Added opt-in `--include-volume` to `scripts/offline/binance_um_monthly.py`; its existing OHLC output (5m/15m/1h/4h, five CSV columns, manifest file list) is **unchanged**, preserving all verified Java replays. Opt-in additionally extracts genuine 5m Binance USD-M kline column 5 base-volume, 7 quote-volume, 8 trade count, 9 taker-buy base-volume, 10 taker-buy quote-volume into `volume-5m.csv`; checks monotonic aligned timestamps, raw fields nonnegative finite, taker buys <= total, exact OHLC timestamp parity, and adds dedicated `volume_5m` schema/provenance/checksum to manifest. This is an *additional historical dataset*, never a fabricated OHLC-derived volume. New `scripts/offline/analyze_entry_volume.py` verifies manifest identity, hash of both volume sidecar and 5m OHLC, full 5m month count/timestamp continuity, and joins an existing `--entries-output` CSV (from the previous verified multi-month runner) by each recorded decision UTC. RVOL20 = last fully closed 5m candle's base volume / mean BASE volume of the **20 immediately preceding closed 5m candles**, excluding the current reference candle; also exports quote volume, trade count and taker buy base/quote ratios. Refuses missing history or mismatched timestamps. Three new unit tests for sidecar normalization/invalid volume/gaps and three for no-lookahead join/missing history (Python suite expected 27, Java still 144). These are diagnostics only: RVOL20 is not CVD/order-book pressure; taker buy portion is not an order-book imbalance estimate. No changes to strategy, trade decisions, execution, fees, Java backend, API, DB, or production. Four historical months June–September 2026 are already inspected, all retrospective and hypothesis-generating, NOT unseen out-of-sample evidence. **Changes not tested on phive-server yet.** User can run:
+```bash
+cd /home/phive/Documents/CoinMind-AI
+git pull --ff-only origin main
+python3 -m unittest discover -s scripts/offline -p 'test_*.py'
+for month in 2026-06 2026-07 2026-08 2026-09; do
+  python3 scripts/offline/binance_um_monthly.py --month "$month" --include-volume --output "/home/phive/coinmind-btcusdt-$month-volume" || break
+done
+python3 scripts/offline/analyze_entry_volume.py --dataset-root /home/phive --entries /home/phive/coinmind-entry-quality-v1.csv --output /home/phive/coinmind-entry-with-volume-v1.csv
+```
+Only use fresh directory/output names. DO NOT deploy; Futures live BLOCKED.

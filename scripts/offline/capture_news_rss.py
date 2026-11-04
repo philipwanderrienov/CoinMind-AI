@@ -38,18 +38,25 @@ def safe_feed_url(url):
     return url
 
 
-class NoRedirect(HTTPRedirectHandler):
+class ApprovedPublisherRedirect(HTTPRedirectHandler):
+    """Allow only HTTPS redirect hops to explicitly allowlisted publishers."""
+    MAX_HOPS = 3
+
     def redirect_request(self, req, fp, code, msg, headers, newurl):
-        raise ValueError("Publisher feed redirected; set the final approved HTTPS URL explicitly")
+        safe_feed_url(newurl)
+        visited = getattr(req, "redirect_dict", {})
+        if sum(visited.values()) >= self.MAX_HOPS:
+            raise ValueError("Publisher feed exceeded redirect hop limit")
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
 def fetch_feed(url):
     safe_feed_url(url)
-    opener = build_opener(HTTPSHandler(), HTTPHandler(), NoRedirect())
+    opener = build_opener(HTTPSHandler(), HTTPHandler(), ApprovedPublisherRedirect())
     request = Request(url, headers={"User-Agent": "CoinMind-Research-RSS-Capture/1.0"})
     with opener.open(request, timeout=20) as response:
-        if response.geturl() != url:
-            raise ValueError("Redirected publisher feed rejected")
+        # The final effective URL must still be a trusted publisher endpoint.
+        safe_feed_url(response.geturl())
         content = response.read(MAX_BYTES + 1)
         if len(content) > MAX_BYTES:
             raise ValueError("RSS response exceeds capture bound")

@@ -1,5 +1,5 @@
 import unittest
-from compare_volume_replays import parse_volume_replays
+from compare_volume_replays import parse_volume_replays, validate_evaluation_months
 
 
 class VolumeReplayComparisonTests(unittest.TestCase):
@@ -38,6 +38,24 @@ class VolumeReplayComparisonTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Empty gated replay"):
             parse_volume_replays(self.output().replace("gatedTrades=2", "gatedTrades=0"),
                                  "2026-06", self.scenarios())
+
+    def test_future_holdout_requires_post_freeze_complete_month(self):
+        with self.assertRaisesRegex(ValueError, "pre-December"):
+            validate_evaluation_months(["2026-06"], "future_holdout", "2027-01")
+        with self.assertRaisesRegex(ValueError, "fully completed"):
+            validate_evaluation_months(["2026-12"], "future_holdout", "2026-12")
+        self.assertTrue(validate_evaluation_months(
+            ["2026-12"], "future_holdout", "2027-01"))
+        self.assertTrue(validate_evaluation_months(
+            ["2026-06"], "retrospective", "2026-11"))
+
+    def test_rejects_duplicate_or_invalid_validation_months(self):
+        with self.assertRaisesRegex(ValueError, "Distinct"):
+            validate_evaluation_months(["2026-12", "2026-12"],
+                                       "future_holdout", "2027-02")
+        with self.assertRaisesRegex(ValueError, "Distinct"):
+            validate_evaluation_months(["2026-13"],
+                                       "retrospective", "2027-02")
 
 
 if __name__ == "__main__":

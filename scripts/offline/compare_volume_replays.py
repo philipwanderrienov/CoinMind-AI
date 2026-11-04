@@ -71,7 +71,7 @@ def validate_evaluation_months(months, phase, current_month):
     if phase not in ("retrospective", "future_holdout"):
         raise ValueError("Unknown validation phase")
     if len(months) != len(set(months)) or any(
-            not re.fullmatch(r"20\\d{2}-(0[1-9]|1[0-2])", month) for month in months):
+            not re.fullmatch(r"20\d{2}-(0[1-9]|1[0-2])", month) for month in months):
         raise ValueError("Distinct YYYY-MM months required")
     if phase == "future_holdout":
         if any(month < "2026-12" for month in months):

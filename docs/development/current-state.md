@@ -999,3 +999,15 @@ done
 python3 scripts/offline/analyze_entry_volume.py --dataset-root /home/phive --entries /home/phive/coinmind-entry-quality-v1.csv --output /home/phive/coinmind-entry-with-volume-v1.csv
 ```
 Only use fresh directory/output names. DO NOT deploy; Futures live BLOCKED.
+
+
+## 2026-11-04 — Taker buy/sell pressure diagnostics (research-only; pending validation)
+
+User shared June–September 2026 per-month BOTH/60m results showing HIGH RVOL + STABLE LONG was not consistently profitable (June -15.80, July +1.29, August +20.49, September -0.53 USDT). High volume alone is insufficient; the user requested continued real development. Added `scripts/offline/analyze_taker_pressure.py` to **read** the existing `/home/phive/coinmind-entry-with-volume-v1.csv` (199 verified historical entry-volume rows produced on phive-server). This tool groups the three fixed candidates BOTH/2, BOTH/12, LONG_ONLY/12 separately by month, side, taker buy base-volume share (>0.5 = BUY_DOMINANT; <0.5 = SELL_DOMINANT; exactly 0.5 = BALANCED; null due to no volume = NO_VOLUME) and 5m momentum deceleration. Exports new CSV with trades, wins, losses, net PnL, average PnL, average taker buy share and RVOL; validates complete existing input columns, allowed candidate/side combinations, nonfinite/negative volume, impossible zero volume, range of taker ratios (base and quote), nonnegative integer trade count, unique (month,candidate,decision timestamp) keys, and total trade/realized PnL reconciliation. Adds five Python tests for exact 50% boundary, month/direction separation, duplicate rejection, nonfinite/invalid shares, zero-volume handling. This is descriptive observational grouping only, **NOT** a filter backtest, nor CVD / live order flow. Do not select rules by the same four months; an actual opt-in execution-time gate needs to operate BEFORE sizing/occupancy/equity in the Java replay with the independently verified original 5m volume sidecar, and must be evaluated on separate reserved data. No changes to Java strategy, entry, exit, API, DB, production, or live trading. New Python code **NOT YET RUN** on phive-server (previous 27-test volume suite was not explicitly verified by user). Run:
+```bash
+cd /home/phive/Documents/CoinMind-AI
+git pull --ff-only origin main
+python3 -m unittest discover -s scripts/offline -p 'test_*.py'
+python3 scripts/offline/analyze_taker_pressure.py --input /home/phive/coinmind-entry-with-volume-v1.csv --output /home/phive/coinmind-taker-pressure-v1.csv
+```
+Total expected Python tests: 32 (previous suite 27 + five new tests). Output path must be new. Futures live BLOCKED, and no deploy/restart needed.

@@ -37,6 +37,12 @@ def load_verified_month(directory, month):
     payload = (directory / "volume-5m.csv").read_bytes()
     if len(payload) > 32_000_000 or hashlib.sha256(payload).hexdigest() != meta.get("sha256"):
         raise ValueError("Volume sidecar hash mismatch")
+    prices_bytes = (directory / "5m.csv").read_bytes()
+    files = manifest.get("files")
+    if not isinstance(files, list) or len(files) != 4 or files[0].get("file") != "5m.csv":
+        raise ValueError("Legacy OHLC manifest missing")
+    if hashlib.sha256(prices_bytes).hexdigest() != files[0].get("sha256"):
+        raise ValueError("Legacy OHLC checksum mismatch")
     with (directory / "5m.csv").open(newline="", encoding="utf-8") as handle:
         prices = list(csv.DictReader(handle))
     with (directory / "volume-5m.csv").open(newline="", encoding="utf-8") as handle:

@@ -1028,3 +1028,22 @@ python3 -m unittest discover -s scripts/offline -p 'test_*.py'
 python3 scripts/offline/compare_volume_replays.py --backend backend --dataset-root /home/phive --months 2026-06 2026-07 2026-08 2026-09 --output /home/phive/coinmind-volume-filter-replay-v1.csv
 ```
 Verified volume directories expected: `/home/phive/coinmind-btcusdt-2026-{06,07,08,09}-volume`, created in earlier phase. Output CSV path must be new. Do not claim filter profits until user shares actual replay; because all months are previously inspected, results are retrospective and not valid prospective OOS evidence. Production deploy/restart NOT required. Historical news archive capture collection is a prerequisite for meaningful news-augmented trading simulation.
+
+
+## 2026-11-04 — Future-only real RSS capture and locked volume holdout mode (code committed; tests PENDING server)
+
+The user's 2026-11-04 phive-server run of prior development passed **147/147 Java tests**, **39/39 Python tests**, and 12 checksum-gated volume-filter replay comparisons across June–September. Retrospective total USDT net PnL sums: BOTH/2 baseline -111.520956 vs gated -96.447671; BOTH/12 baseline -72.441201 vs gated -37.679710; LONG_ONLY/12 baseline -10.437672 vs gated +9.491776. These monthly runs independently reset to USDT 1000; August drives much of the LONG_ONLY gain, and September worsens. Results are NOT prospective proof, and no strategy/threshold changes follow.
+
+Implemented `scripts/offline/capture_news_rss.py`: **opt-in real network fetch from user-specified HTTPS official/publisher RSS 2.0/Atom feeds**, restricted to allowlisted domains federalreserve.gov/coindesk.com/cointelegraph.com, rejects redirects and oversized feeds, requires publisher timestamp with explicit timezone, excludes unparseable/future-dated items, sets `firstSeenUtc` from actual UTC successful fetch time and only appends new first-seen metadata. File is CSV compatible with `audit_news_at_decision.py`: `newsId,source,url,publishedUtc,firstSeenUtc`. Exclusive local file lock, no-follow symlink protection, restricted new-file perms, fsync and preservation of preexisting records, fail-closed on corrupt prior rows. Five unit tests exercise RSS, Atom, first-seen immutability, approved domains, and corrupt file rejection. This captures NOW and cannot magically supply an authentic 2026-06..09 contemporaneous news archive. Real news sentiment, classification and price-impact testing are NOT implemented; existing production NewsService is untouched. Capture remains manual/opt-in (no scheduling/daemon deployed).
+
+Extended `compare_volume_replays.py` with `--phase retrospective|future_holdout`. Holdout guard rejects all months before **2026-12**, and months not yet completed. December 2026 is first ENTIRE calendar month after the frozen Nov 4 experiment, so eligible only from Jan 2027 when archives actually become available; strict integrity checks still apply. No claim that eligibility proves data were unseen. Added two Python tests on holdout guard and distinct valid month checks. Added `docs/research/news-capture-and-validation.md` with real Fed/Coindesk feed invocation and future-only replay examples; updated `AGENTS.md` to reflect Manifold Markets ONLY (prior AGENTS mistakenly referenced removed Polymarket) and the Futures live BLOCKED boundary.
+
+**Current changes not yet verified by user/server.** Expected defaults: Java 147 unchanged; Python **46** (prior 39 plus 5 new RSS tests plus 2 guard tests). Handoff:
+```bash
+cd /home/phive/Documents/CoinMind-AI
+git pull --ff-only origin main
+python3 -m unittest discover -s scripts/offline -p 'test_*.py'
+python3 scripts/offline/capture_news_rss.py --feed-url https://www.federalreserve.gov/feeds/press_monetary.xml --source "Federal Reserve" --archive /home/phive/coinmind-news-first-seen.csv
+python3 scripts/offline/capture_news_rss.py --feed-url 'https://www.coindesk.com/arc/outboundfeeds/rss/' --source "CoinDesk" --archive /home/phive/coinmind-news-first-seen.csv
+```
+Only feed sources which are accessible from phive-server; failed feeds should not be fabricated. The archive must be polled repeatedly to build genuine firstSeen history. Do NOT run future holdout before Jan 2027, DO NOT deploy/restart backend, do NOT enable live futures.

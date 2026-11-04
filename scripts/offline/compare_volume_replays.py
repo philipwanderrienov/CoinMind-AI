@@ -87,10 +87,14 @@ def main():
     parser.add_argument("--dataset-root", required=True)
     parser.add_argument("--months", nargs="+", required=True)
     parser.add_argument("--output", required=True)
+    parser.add_argument("--phase", choices=("retrospective", "future_holdout"),
+                        default="retrospective")
     args = parser.parse_args()
-    if len(args.months) != len(set(args.months)) or any(
-            not re.fullmatch(r"20\d{2}-(0[1-9]|1[0-2])", month) for month in args.months):
-        parser.error("Distinct YYYY-MM months required")
+    try:
+        validate_evaluation_months(args.months, args.phase,
+                                   datetime.now(timezone.utc).strftime("%Y-%m"))
+    except ValueError as exc:
+        parser.error(str(exc))
     dest = Path(args.output)
     if dest.exists():
         parser.error("Output path already exists")

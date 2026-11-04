@@ -28,7 +28,9 @@ Do not treat chat history as the canonical project state. The handoff files in t
 - Mobile UX is currently the more polished view. Do not regress it while fixing desktop.
 - Desktop dashboard composition and proportions are the main open UI priority.
 - Technical/multi-timeframe analysis remains the primary decision source.
-- AI News Intelligence and Polymarket are bounded supporting signals only.
+- AI News Intelligence is a bounded supporting signal; historic replays require genuine first-seen provenance (no future leakage).
+- Manifold Markets is the ONLY approved prediction-market provider. Never restore Polymarket, Kalshi or FinFeedAPI as a provider or fallback.
+- Offline Futures research never activates production Futures trading, which remains BLOCKED.
 
 ## Project layout
 

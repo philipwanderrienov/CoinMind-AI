@@ -49,7 +49,7 @@ class TakerPressureResearchTests(unittest.TestCase):
             aggregate([self.entry(volumeBase="0", takerBuyBaseShare="null")])
 
     def test_no_volume_is_not_mislabeled_directional_pressure(self):
-        result = aggregate([self.entry(volumeBase="0", volumeQuote="0",
+        result = aggregate([self.entry(rvol20="0", volumeBase="0", volumeQuote="0",
                                        takerBuyBaseShare="null", takerBuyQuoteShare="null")])
         self.assertEqual("NO_VOLUME", result[0]["takerPressure"])
         self.assertEqual("null", result[0]["avgTakerBuyBaseShare"])

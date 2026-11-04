@@ -33,12 +33,12 @@ Example CoinDesk RSS feed (publisher feed, independently validate content):
 
 ```bash
 python3 scripts/offline/capture_news_rss.py \
-  --feed-url 'https://www.coindesk.com/arc/outboundfeeds/rss/' \
+  --feed-url 'https://www.coindesk.com/arc/outboundfeeds/rss/?outputType=xml' \
   --source "CoinDesk" \
   --archive /home/phive/coinmind-news-first-seen.csv
 ```
 
-Repeated invocations append only unseen article IDs, preserving firstSeenUtc
+RSS collector follows at most 3 redirect hops, and **every redirect destination must remain HTTPS and inside the approved publisher domain allowlist**. Publisher feeds that redirect externally fail closed; use an operator-confirmed approved final URL instead. CoinDesk's `?outputType=xml` URL is a documented alternate XML endpoint and may avoid a redirect, but success depends on server-side network access. The 2026-11-04 server run of the original CoinDesk URL was blocked by the original fail-closed redirect policy, not by the archive parser. Verify first before scheduling collection.\n\nRepeated invocations append only unseen article IDs, preserving firstSeenUtc
 of all prior records, protected by an exclusive local file lock and `fsync`.
 The file records **metadata only**: newsId, source, URL, publication timestamp
 and first-capture timestamp. It does not store the article body or sentiment,

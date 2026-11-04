@@ -135,11 +135,12 @@ def append_first_seen(archive, observations):
         fcntl.flock(fd, fcntl.LOCK_EX)
         with os.fdopen(fd, "r+", encoding="utf-8", newline="") as handle:
             fd = -1
-            existing = list(csv.DictReader(handle)) if os.fstat(handle.fileno()).st_size else []
-            if existing:
-                validate_news(existing)
-            elif os.fstat(handle.fileno()).st_size:
-                raise ValueError("Nonempty archive has no valid news records")
+            size = os.fstat(handle.fileno()).st_size
+            reader = csv.DictReader(handle) if size else None
+            if reader is not None and tuple(reader.fieldnames or ()) != NEWS_FIELDS:
+                raise ValueError("Existing news archive has unexpected schema")
+            existing = list(reader) if reader is not None else []
+            validate_news(existing)
             known = {r["newsId"] for r in existing}
             fresh = [r for r in observations if r["newsId"] not in known]
             if len(existing) + len(fresh) > MAX_ROWS:
@@ -147,7 +148,7 @@ def append_first_seen(archive, observations):
             validate_news(existing + fresh)
             handle.seek(0, os.SEEK_END)
             writer = csv.DictWriter(handle, fieldnames=NEWS_FIELDS, lineterminator="\n")
-            if not existing:
+            if not size:
                 writer.writeheader()
             writer.writerows(fresh)
             handle.flush()

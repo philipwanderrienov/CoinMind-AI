@@ -59,8 +59,8 @@ def aggregate(rows):
             raise ValueError("Incomplete entry-volume dataset")
         if row["direction"] not in ("BOTH", "LONG_ONLY") or row["bars"] not in ("2", "12"):
             raise ValueError("Unexpected strategy configuration")
-        if (row["direction"], row["bars"]) not in
-                (("BOTH", "2"), ("BOTH", "12"), ("LONG_ONLY", "12")):
+        if (row["direction"], row["bars"]) not in (
+                ("BOTH", "2"), ("BOTH", "12"), ("LONG_ONLY", "12")):
             raise ValueError("Unexpected LONG_ONLY horizon")
         if row["side"] not in ("LONG", "SHORT") or (row["direction"] == "LONG_ONLY" and row["side"] != "LONG"):
             raise ValueError("Invalid trade side")

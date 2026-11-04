@@ -61,7 +61,7 @@ def aggregate(rows):
             raise ValueError("Unexpected strategy configuration")
         if (row["direction"], row["bars"]) not in (
                 ("BOTH", "2"), ("BOTH", "12"), ("LONG_ONLY", "12")):
-            raise ValueError("Unexpected LONG_ONLY horizon")
+            raise ValueError("Unexpected frozen strategy/horizon")
         if row["side"] not in ("LONG", "SHORT") or (row["direction"] == "LONG_ONLY" and row["side"] != "LONG"):
             raise ValueError("Invalid trade side")
         if row["decelerating"] not in ("true", "false"):
@@ -81,6 +81,11 @@ def aggregate(rows):
             raise ValueError("Negative volume or RVOL")
         if (base == 0) != (quote == 0):
             raise ValueError("Invalid zero-volume share")
+        if base == 0 and rvol != 0:
+            raise ValueError("Zero-volume candle must have zero RVOL")
+        trade_count = row["tradeCount"]
+        if not trade_count.isascii() or not trade_count.isdecimal():
+            raise ValueError("Invalid trade count")
         share_text = row["takerBuyBaseShare"]
         quote_share_text = row["takerBuyQuoteShare"]
         if share_text == "null":

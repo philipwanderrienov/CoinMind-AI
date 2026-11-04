@@ -6,6 +6,7 @@ unlike filtering historical winner/loser rows. No orders, APIs or DB.
 """
 import argparse
 import csv
+from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 import os
 from pathlib import Path
@@ -61,6 +62,25 @@ def parse_volume_replays(output, month, scenarios):
     return rows
 
 
+def validate_evaluation_months(months, phase, current_month):
+    """Guard against relabeling previously inspected months as prospective.
+
+    Frozen gate parameters were established Nov 4, 2026. December is the
+    first complete calendar month whose entirety follows that decision.
+    """
+    if phase not in ("retrospective", "future_holdout"):
+        raise ValueError("Unknown validation phase")
+    if len(months) != len(set(months)) or any(
+            not re.fullmatch(r"20\\d{2}-(0[1-9]|1[0-2])", month) for month in months):
+        raise ValueError("Distinct YYYY-MM months required")
+    if phase == "future_holdout":
+        if any(month < "2026-12" for month in months):
+            raise ValueError("All pre-December 2026 months are excluded from prospective full-month validation")
+        if any(month >= current_month for month in months):
+            raise ValueError("Holdout month must be fully completed before replay")
+    return True
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--backend", default="backend")
@@ -103,7 +123,10 @@ def main():
         writer.writeheader()
         writer.writerows(rows)
     print("Saved:", dest)
-    print("RESEARCH ONLY: all supplied months were previously inspected; no prospective evidence.")
+    if args.phase == "future_holdout":
+        print("FUTURE CALENDAR HOLDOUT: dates eligible; actual uninspected status must be verified.")
+    else:
+        print("RESEARCH ONLY: retrospective data; no prospective evidence.")
 
 
 if __name__ == "__main__":

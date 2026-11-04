@@ -15,7 +15,7 @@ from analyze_entry_volume import HEADER
 
 OUTPUT_FIELDS = (
     "month", "direction", "bars", "side", "takerPressure",
-    "decelerating", "trades", "wins", "losses", "grossNetPnl",
+    "decelerating", "trades", "wins", "losses", "netPnl",
     "avgNetPnl", "avgTakerBuyBaseShare", "avgRvol20"
 )
 # Labels only; threshold 50% is not an optimized trade filter.
@@ -59,7 +59,8 @@ def aggregate(rows):
             raise ValueError("Incomplete entry-volume dataset")
         if row["direction"] not in ("BOTH", "LONG_ONLY") or row["bars"] not in ("2", "12"):
             raise ValueError("Unexpected strategy configuration")
-        if row["direction"] == "LONG_ONLY" and row["bars"] != "12":
+        if (row["direction"], row["bars"]) not in
+                (("BOTH", "2"), ("BOTH", "12"), ("LONG_ONLY", "12")):
             raise ValueError("Unexpected LONG_ONLY horizon")
         if row["side"] not in ("LONG", "SHORT") or (row["direction"] == "LONG_ONLY" and row["side"] != "LONG"):
             raise ValueError("Invalid trade side")
@@ -78,10 +79,12 @@ def aggregate(rows):
         quote = _dec(row["volumeQuote"])
         if min(rvol, base, quote) < 0:
             raise ValueError("Negative volume or RVOL")
+        if (base == 0) != (quote == 0):
+            raise ValueError("Invalid zero-volume share")
         share_text = row["takerBuyBaseShare"]
         quote_share_text = row["takerBuyQuoteShare"]
         if share_text == "null":
-            if base != 0 or quote_share_text != "null" and quote == 0:
+            if base != 0:
                 raise ValueError("Invalid zero-volume share")
             share = None
         else:
@@ -115,7 +118,7 @@ def aggregate(rows):
             "trades": str(group["trades"]),
             "wins": str(group["wins"]),
             "losses": str(group["losses"]),
-            "grossNetPnl": str(group["net"]),
+            "netPnl": str(group["net"]),
             "avgNetPnl": str(group["net"] / group["trades"]),
             "avgTakerBuyBaseShare": (
                 str(group["share_sum"] / group["share_count"])
@@ -125,7 +128,7 @@ def aggregate(rows):
         summaries.append(result)
     if sum(int(row["trades"]) for row in summaries) != overall_count:
         raise ValueError("Grouping lost trades")
-    if sum((Decimal(row["grossNetPnl"]) for row in summaries), Decimal(0)) != overall_net:
+    if sum((Decimal(row["netPnl"]) for row in summaries), Decimal(0)) != overall_net:
         raise ValueError("Grouping PnL does not reconcile")
     return summaries
 
@@ -151,7 +154,7 @@ def main():
     for row in summaries:
         print("month={month} direction={direction} bars={bars} side={side} pressure={takerPressure} "
               "decelerating={decelerating} trades={trades} wins={wins} losses={losses} "
-              "netPnl={grossNetPnl}".format(**row))
+              "netPnl={netPnl}".format(**row))
     print("Saved:", output)
     print("DESCRIPTIVE ONLY: not a replayed/validated filter; no changes to trading.")
 

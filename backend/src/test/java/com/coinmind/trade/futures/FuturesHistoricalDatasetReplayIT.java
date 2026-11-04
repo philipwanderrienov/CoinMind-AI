@@ -181,6 +181,66 @@ class FuturesHistoricalDatasetReplayIT {
                         + " DISCLAIMER=in_sample_exploratory_only");
             }
         }
+        // Optional checksum-gated offline volume research. Legacy OHLC datasets
+        // produce identical historical output and never require a volume sidecar.
+        if (manifest.has("volume_5m")) {
+            var meta = manifest.path("volume_5m");
+            assertEquals("BINANCE_UM_5M_VOLUME_V1", meta.path("schema").asText());
+            assertEquals("volume-5m.csv", meta.path("file").asText());
+            assertEquals("https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/5m/"
+                    + "BTCUSDT-5m-" + month + ".zip", meta.path("source_url").asText());
+            Path volumeFile = dir.resolve("volume-5m.csv").toRealPath();
+            assertTrue(volumeFile.startsWith(dir) && Files.isRegularFile(volumeFile));
+            assertTrue(Files.size(volumeFile) <= 24_000_000);
+            String volumeCsv = Files.readString(volumeFile, StandardCharsets.UTF_8);
+            assertEquals(meta.path("sha256").asText(), FuturesOfflineVerifiedDataset.sha256(volumeCsv));
+            var volumeBars = FuturesOfflineVolumeCsv.parse(volumeCsv, input.m5());
+            assertEquals(meta.path("candles").asInt(), volumeBars.size());
+            var volumeGate = new FuturesOfflineVolumeConfirmation(volumeBars, input.m5());
+            for (var candidate : List.of(
+                    new String[]{"BOTH", "2"}, new String[]{"BOTH", "12"},
+                    new String[]{"LONG_ONLY", "12"})) {
+                var direction = FuturesHistoricalWalkForwardRunner.ExperimentalDirection
+                        .valueOf(candidate[0]);
+                int bars = Integer.parseInt(candidate[1]);
+                var scenario = new FuturesHistoricalWalkForwardRunner.Input(input.provenance(),
+                        input.m5(), input.m15(), input.h1(), input.h4(), bars,
+                        input.stopPercent(), input.targetPercent(), input.quantity(),
+                        input.feePercentPerSide(), input.slippagePercentPerSide());
+                var sizing = new FuturesHistoricalWalkForwardRunner.PaperSizing(
+                        new BigDecimal("1000"), BigDecimal.ONE, new BigDecimal("3"));
+                var baseline = FuturesHistoricalWalkForwardRunner.runWithDynamicEquityExperimental(
+                        scenario, sizing, new BigDecimal("2"), direction);
+                var gated = FuturesHistoricalWalkForwardRunner.runWithDynamicEquityVolumeResearch(
+                        scenario, sizing, new BigDecimal("2"), direction, volumeGate);
+                assertFalse(gated.liveSignalEligible());
+                assertEquals("OFFLINE_ONLY", gated.mode());
+                assertEquals(gated.executed(), gated.trades().size());
+                assertEquals(gated.executed(), gated.equityCurve().size());
+                for (var trade : gated.trades()) {
+                    int signalIndex = (int) (Duration.between(
+                            input.m5().getFirst().time(), trade.decisionAt()).toMinutes() / 5) - 1;
+                    assertTrue(volumeGate.permits(signalIndex, trade.decisionAt(),
+                            trade.side(), input.m5()), "Every executed gated trade must qualify");
+                }
+                BigDecimal total = gated.trades().stream().map(
+                        FuturesHistoricalWalkForwardRunner.TradeDetail::netPnl)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                assertEquals(0, gated.finalEquity().subtract(gated.initialEquity())
+                        .compareTo(total));
+                System.out.println("COINMIND VOLUME REPLAY month=" + month
+                        + " direction=" + direction + " bars=" + bars
+                        + " baselineTrades=" + baseline.executed()
+                        + " baselineNet=" + baseline.finalEquity().subtract(baseline.initialEquity())
+                        + " gatedTrades=" + gated.executed()
+                        + " gatedNet=" + gated.finalEquity().subtract(gated.initialEquity())
+                        + " gatedDrawdown=" + gated.maxDrawdownQuote()
+                        + " gatedFees=" + gated.trades().stream()
+                                .map(FuturesHistoricalWalkForwardRunner.TradeDetail::tradingFees)
+                                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                        + " DISCLAIMER=retrospective_replayed_not_prospective");
+            }
+        }
         var stats = result.performance();
         System.out.println("COINMIND HISTORICAL OFFLINE REPORT month=" + month
                 + " market=USD_M_FUTURES symbol=BTCUSDT"

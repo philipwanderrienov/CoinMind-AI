@@ -88,10 +88,65 @@ def normalize(zip_data, expected_csv_name, frame):
     return ("\n".join(output) + "\n").encode("utf-8"), count
 
 
+VOLUME_HEADER = ("open_time_utc,base_volume,quote_volume,trades,"
+                 "taker_buy_base_volume,taker_buy_quote_volume")
+
+
+def normalize_volume(zip_data, expected_csv_name, frame):
+    """Actual Binance kline volume fields; no OHLC changes."""
+    from decimal import Decimal, InvalidOperation
+    with zipfile.ZipFile(io.BytesIO(zip_data)) as z:
+        members = z.infolist()
+        if len(members) != 1 or members[0].filename != expected_csv_name:
+            raise ValueError("Unexpected archive members")
+        if members[0].file_size > MAX_CSV_BYTES:
+            raise ValueError("Extracted volume CSV too large")
+        raw = z.read(members[0])
+    lines = csv.reader(io.StringIO(raw.decode("utf-8-sig")))
+    output = [VOLUME_HEADER]
+    step = {"5m": 300, "15m": 900, "1h": 3600, "4h": 14400}[frame]
+    previous = None
+    count = 0
+    for cells in lines:
+        if cells and cells[0].strip().lower() in ("open_time", "open time"):
+            continue
+        if len(cells) != 12:
+            raise ValueError("Expected 12 Binance kline fields")
+        stamp_text = cells[0].strip()
+        if not stamp_text.isascii() or not stamp_text.isdecimal() or len(stamp_text) not in (13, 16):
+            raise ValueError("Invalid volume candle timestamp")
+        stamp = int(stamp_text)
+        divisor = 1000 if len(stamp_text) == 13 else 1000000
+        if stamp % divisor:
+            raise ValueError("Subsecond volume candle timestamp")
+        seconds = stamp // divisor
+        if seconds % step or (previous is not None and seconds - previous != step):
+            raise ValueError("Volume candles not aligned or contiguous")
+        try:
+            base, quote, buy_base, buy_quote = (Decimal(cells[index]) for index in (5, 7, 9, 10))
+        except (InvalidOperation, ValueError) as exc:
+            raise ValueError("Invalid kline volume field") from exc
+        if any(not value.is_finite() or value < 0 for value in (base, quote, buy_base, buy_quote)):
+            raise ValueError("Nonfinite or negative volume")
+        if buy_base > base or buy_quote > quote:
+            raise ValueError("Taker buy volume exceeds total volume")
+        trades_text = cells[8].strip()
+        if not trades_text.isascii() or not trades_text.isdecimal():
+            raise ValueError("Invalid trade count")
+        timestamp = datetime.fromtimestamp(seconds, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        output.append(",".join((timestamp, cells[5], cells[7], trades_text, cells[9], cells[10])))
+        previous = seconds
+        count += 1
+    if count < 3 or count > 100_000:
+        raise ValueError("Invalid volume candle count")
+    return ("\n".join(output) + "\n").encode("utf-8"), count
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--month", required=True, help="Completed UTC month YYYY-MM")
     parser.add_argument("--output", required=True, help="New output directory")
+    parser.add_argument("--include-volume", action="store_true", help="Add actual 5m volume sidecar")
     args = parser.parse_args()
     if not re.fullmatch(r"20\d{2}-(0[1-9]|1[0-2])", args.month):
         parser.error("Month must be YYYY-MM")
@@ -118,6 +173,15 @@ def main():
         normalized, count = normalize(blob, name + ".csv", frame)
         filename = f"{frame}.csv"
         generated[filename] = normalized
+        if args.include_volume and frame == "5m":
+            volume_data, volume_count = normalize_volume(blob, name + ".csv", frame)
+            if volume_count != count:
+                raise ValueError("Volume/OHLC count mismatch")
+            for price_row, volume_row in zip(normalized.decode("utf-8").splitlines()[1:],
+                                              volume_data.decode("utf-8").splitlines()[1:], strict=True):
+                if price_row.split(",", 1)[0] != volume_row.split(",", 1)[0]:
+                    raise ValueError("Volume/OHLC timestamp mismatch")
+            generated["volume-5m.csv"] = volume_data
         manifests.append({"timeframe":frame, "file":filename, "source_url":url,
                           "upstream_zip_sha256":zip_hash,
                           "sha256":hashlib.sha256(normalized).hexdigest(), "candles":count})
@@ -126,6 +190,13 @@ def main():
                 "market":"USD_M_FUTURES", "symbol":"BTCUSDT",
                 "provenance":"HISTORICAL_REPLAY", "month_utc":args.month,
                 "files":manifests}
+    if args.include_volume:
+        manifest["volume_5m"] = {
+            "file": "volume-5m.csv", "schema": "BINANCE_UM_5M_VOLUME_V1",
+            "sha256": hashlib.sha256(generated["volume-5m.csv"]).hexdigest(),
+            "candles": volume_count,
+            "source_url": f"{BASE}/BTCUSDT/5m/BTCUSDT-5m-{args.month}.zip",
+        }
     out.mkdir(parents=True, exist_ok=False)
     for filename, normalized in generated.items():
         (out / filename).write_bytes(normalized)

@@ -3,8 +3,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
+from urllib.request import Request
 
-from capture_news_rss import safe_feed_url, parse_feed, append_first_seen
+from capture_news_rss import safe_feed_url, parse_feed, append_first_seen, ApprovedPublisherRedirect
 
 RSS = b"""<?xml version="1.0"?>
 <rss version="2.0"><channel>
@@ -55,6 +56,25 @@ class NewsCaptureTests(unittest.TestCase):
                     "https://federalreserve.gov.evil.example/feed"):
             with self.assertRaises(ValueError):
                 safe_feed_url(url)
+
+    def test_redirect_stays_within_approved_https_publishers(self):
+        redirect = ApprovedPublisherRedirect()
+        original = Request("https://www.coindesk.com/arc/outboundfeeds/rss/")
+        allowed = redirect.redirect_request(
+            original, None, 302, "Found", {},
+            "https://coindesk.com/arc/outboundfeeds/rss")
+        self.assertIsNotNone(allowed)
+        self.assertEqual("https://coindesk.com/arc/outboundfeeds/rss", allowed.full_url)
+        with self.assertRaisesRegex(ValueError, "approved publisher"):
+            redirect.redirect_request(original, None, 302, "Found", {},
+                                      "https://evil.example/feed")
+        with self.assertRaisesRegex(ValueError, "approved publisher"):
+            redirect.redirect_request(original, None, 302, "Found", {},
+                                      "http://coindesk.com/feed")
+        original.redirect_dict = {"a": 3}
+        with self.assertRaisesRegex(ValueError, "hop limit"):
+            redirect.redirect_request(original, None, 302, "Found", {},
+                                      "https://coindesk.com/feed")
 
     def test_malformed_archive_fails_without_overwriting(self):
         with TemporaryDirectory() as folder:

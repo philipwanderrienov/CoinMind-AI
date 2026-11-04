@@ -48,6 +48,20 @@ public final class FuturesHistoricalWalkForwardRunner {
         return runDynamicEquity(in, sizing, dailyLossLimitPercent, direction);
     }
 
+    /**
+     * Offline only: recompute chronology, daily stop, occupancy, equity, fees and sizing
+     * from the start. Rejected candidates never reserve an execution window.
+     * The required volume sidecar must be validated before constructing the gate.
+     */
+    public static DynamicReport runWithDynamicEquityVolumeResearch(
+            Input in, PaperSizing sizing, BigDecimal dailyLossLimitPercent,
+            ExperimentalDirection direction, FuturesOfflineVolumeConfirmation gate) {
+        if (direction == null || gate == null || in == null
+                || !"HISTORICAL_REPLAY".equals(in.provenance()))
+            throw new IllegalArgumentException("Verified offline volume experiment required");
+        return runDynamicEquity(in, sizing, dailyLossLimitPercent, direction, gate);
+    }
+
     public static DynamicReport runWithDynamicEquity(Input in, PaperSizing sizing,
                                                        BigDecimal dailyLossLimitPercent) {
         return runDynamicEquity(in, sizing, dailyLossLimitPercent, ExperimentalDirection.BOTH);
@@ -55,6 +69,12 @@ public final class FuturesHistoricalWalkForwardRunner {
 
     private static DynamicReport runDynamicEquity(Input in, PaperSizing sizing,
             BigDecimal dailyLossLimitPercent, ExperimentalDirection direction) {
+        return runDynamicEquity(in, sizing, dailyLossLimitPercent, direction, null);
+    }
+
+    private static DynamicReport runDynamicEquity(Input in, PaperSizing sizing,
+            BigDecimal dailyLossLimitPercent, ExperimentalDirection direction,
+            FuturesOfflineVolumeConfirmation gate) {
         if (sizing == null || sizing.equityUsdt() == null || sizing.equityUsdt().signum() <= 0
                 || sizing.riskPercent() == null || sizing.riskPercent().signum() <= 0
                 || sizing.riskPercent().compareTo(BigDecimal.ONE) > 0
@@ -87,6 +107,11 @@ public final class FuturesHistoricalWalkForwardRunner {
             // Rejected SHORT signals consume no risk budget or execution window.
             if (direction == ExperimentalDirection.LONG_ONLY
                     && "WATCH_SHORT".equals(decision.action())) continue;
+            // Opt-in historical research gate only. At i the signal candle has
+            // just CLOSED. Reject before risk, sizing, and busyUntil are touched.
+            if (gate != null && !gate.permits(i, decisionTime,
+                    "WATCH_LONG".equals(decision.action()) ? "LONG" : "SHORT",
+                    in.m5())) continue;
             java.time.LocalDate currentDay = decisionTime.atZone(java.time.ZoneOffset.UTC).toLocalDate();
             if (!currentDay.equals(day)) {
                 day = currentDay;

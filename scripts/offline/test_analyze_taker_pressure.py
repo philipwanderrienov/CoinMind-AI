@@ -31,7 +31,7 @@ class TakerPressureResearchTests(unittest.TestCase):
         result = aggregate([a, b, c])
         self.assertEqual(3, len(result))
         self.assertEqual("-2.5",
-                         next(row["grossNetPnl"] for row in result
+                         next(row["netPnl"] for row in result
                               if row["month"] == "2026-06" and row["side"] == "LONG"))
         self.assertEqual({"BUY_DOMINANT", "SELL_DOMINANT"},
                          {row["takerPressure"] for row in result})

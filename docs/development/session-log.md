@@ -636,3 +636,30 @@ python3 -m unittest discover -s scripts/offline -p 'test_*.py'
 python3 scripts/offline/capture_news_rss.py --feed-url 'https://www.coindesk.com/arc/outboundfeeds/rss/?outputType=xml' --source 'CoinDesk' --archive /home/phive/coinmind-news-first-seen.csv
 ```
 If approved redirect still fails, inspect final 3xx Location via read-only `curl -sSI` or use verified approved publisher alternate; don't silently whitelist unknown third-party domains. No Maven, deploy, or restarts required for these changes. Futures live BLOCKED.
+
+
+## 2026-11-05 — Gemini API free-tier-first OFFLINE News Intelligence prototype (NOT YET SERVER-VERIFIED)
+
+User has a Gemini API key on Free tier and wants CoinMind-AI to maximize FREE API capabilities before considering paid usage. Reviewed official Google Gemini API docs: `gemini-2.5-flash-lite` and `gemini-2.5-flash` are free-tier-capable, but model quotas are per project and may change. Free-tier API content may be used by Google to improve its products; do not send private user data.
+
+Added `scripts/offline/gemini_news_research.py` with two commands:
+- `capture`: fetch publisher-allowlisted HTTPS RSS/Atom via existing secure collector, save actual URL, publication, new real firstSeenUtc, AND the actual RSS title to **separate new headline-only CSV**. The older 40 source metadata records (15 Fed, 25 CoinDesk; previously confirmed by user) have no title and are never retroactively filled/backdated. Titles previously unknown become known only now.
+- `score`: default **dry run**, explicit `--execute` reads `GEMINI_API_KEY` environment only, posts batches of <= 5 public headlines to Gemini REST generateContent `gemini-2.5-flash-lite`, JSON responses, bounded 1 to 3 batches per invocation (default one), response-ID/labels/range validation, cached immutable CSV by (newsId,model), append-only and lock/fsync, fails closed on API error/429; no retries or fallback to paid models, no key logging or GitHub secrets. Each `scoredUtc` MUST be used in any future point-in-time replay: classification unavailable before actual API scoring, even when a headline was published earlier. Gemini output is only BTC relevance, sentiment, qualitative impact, short explanation; TITLE-ONLY and can be wrong, not trade signals, no production provider changes. Added 5 Python regression tests for capture timestamps, immutable archive, Gemini JSON validation, dry-run opt-in, and cache skip. New expected Python total **52 tests** (prior 47 + 5), not yet actually run on server. Java remains last confirmed 147 tests (unchanged). Added `docs/research/gemini-free-tier-news.md` with full safe usage instructions and explicit project Free tier verification and privacy notice.
+
+**User action needed, no key sharing:** on phive-server:
+```bash
+cd /home/phive/Documents/CoinMind-AI
+git pull --ff-only origin main
+python3 -m unittest discover -s scripts/offline -p 'test_*.py'
+python3 scripts/offline/gemini_news_research.py capture --feed-url 'https://www.coindesk.com/arc/outboundfeeds/rss?outputType=xml' --source CoinDesk --archive /home/phive/coinmind-news-headlines-v1.csv
+python3 scripts/offline/gemini_news_research.py capture --feed-url 'https://www.federalreserve.gov/feeds/press_monetary.xml' --source 'Federal Reserve' --archive /home/phive/coinmind-news-headlines-v1.csv
+python3 scripts/offline/gemini_news_research.py score --archive /home/phive/coinmind-news-headlines-v1.csv --output /home/phive/coinmind-gemini-news-scores-v1.csv
+```
+Only after confirming active key is Free-tier in Google AI Studio (being issued a "free-tier key" does NOT certify unbilled project):
+```bash
+read -rsp 'Gemini API key: ' GEMINI_API_KEY; echo
+export GEMINI_API_KEY
+python3 scripts/offline/gemini_news_research.py score --archive /home/phive/coinmind-news-headlines-v1.csv --output /home/phive/coinmind-gemini-news-scores-v1.csv --max-batches 1 --execute
+unset GEMINI_API_KEY
+```
+No production deployment, service restart, real orders, auto trading, or new prediction-market provider. Futures live BLOCKED. Gemini is research annotation only. Longer-term integrate with backend AI provider via explicit opt-in only after tests and privacy review.
